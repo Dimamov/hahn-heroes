@@ -1,6 +1,6 @@
-# Hahn Heroes
+# H.A.H.N. — Heroes Awakening Hidden Nexus
 
-Hahn Heroes turns chores, kind actions, and learning goals into points that unlock an ongoing superhero story.
+H.A.H.N. turns chores, kind actions, and learning goals into points that unlock an anime mystery set at Hahn Intermediate.
 
 ## First playable build
 
