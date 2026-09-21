@@ -2,8 +2,8 @@
   "name": "H.A.H.N. — Heroes Awakening Hidden Nexus",
   "short_name": "H.A.H.N. Heroes",
   "description": "Heroes Awakening Hidden Nexus",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "display_override": [
     "fullscreen",
