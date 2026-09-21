@@ -1,4 +1,4 @@
-const CACHE='hahn-v1';
+const CACHE='hahn-v2';
 const ASSETS=['/','/index.html','/hahn-concept.jpg','/manifest.webmanifest','/app-icon.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS))));
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
