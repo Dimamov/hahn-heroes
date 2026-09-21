@@ -14,15 +14,15 @@
   "theme_color": "#020917",
   "icons": [
     {
-      "src": "21BD3E27-9655-4D63-BDF7-15590C919AA6.png",
-      "sizes": "1024x1024",
-      "type": "image/png",
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "21BD3E27-9655-4D63-BDF7-15590C919AA6.png",
-      "sizes": "1024x1024",
-      "type": "image/png",
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "maskable"
     }
   ]
