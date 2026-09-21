@@ -1,0 +1,20 @@
+{
+  "name": "H.A.H.N. — Heroes Awakening Hidden Nexus",
+  "short_name": "H.A.H.N.",
+  "description": "Same school. Bigger mysteries.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#020917",
+  "theme_color": "#020917",
+  "icons": [
+    {
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
