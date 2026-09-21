@@ -5,16 +5,25 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["fullscreen", "standalone"],
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
   "orientation": "portrait",
   "background_color": "#020917",
   "theme_color": "#020917",
   "icons": [
     {
-      "src": "ChatGPT Image Sep 20, 2026, 10_01_06 PM.png",
-      "sizes": "1024x1536",
+      "src": "21BD3E27-9655-4D63-BDF7-15590C919AA6.png",
+      "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "21BD3E27-9655-4D63-BDF7-15590C919AA6.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
