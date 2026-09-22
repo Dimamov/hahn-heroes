@@ -5,7 +5,7 @@
   if(!open||!games||!dialog)return;
 
   games.insertBefore(open,games.querySelector('.close'));
-  open.textContent='🔎 SPOT THE DIFFERENCE · 50 LEVELS';
+  open.textContent='🔎 SPOT THE DIFFERENCE';
   dialog.innerHTML=`<div class="modal"><div class="diff-top"><small>MINI-GAME · HIDDEN NEXUS</small><span class="diff-count" id="diffLevel"></span></div><h2>🔎 SPOT THE DIFFERENCE</h2><p class="diff-help">Find five changes. Tap either picture. Three careless taps trigger a focus warning.</p><div id="diffGame"></div><div class="diff-status" id="diffStatus"></div><div class="diff-actions"><button class="close" id="diffBack">Back</button><button class="choice" id="diffNew">NEXT SET</button></div></div>`;
   document.body.insertAdjacentHTML('beforeend','<div class="diff-warning" id="diffWarning" hidden><div class="diff-warning-card"><strong>⚠️ FOCUS, HERO!</strong><p>Three wrong taps detected. Slow down, compare both pictures carefully, and tap only a difference you actually found.</p><button class="choice" id="diffFocus">I’LL LOOK CAREFULLY</button></div></div>');
 
@@ -28,7 +28,7 @@
     }
     return{image:images[index%images.length],position:`${42+Math.round(r()*16)}% ${34+Math.round(r()*32)}%`,spots};
   }
-  const levels=Array.from({length:50},(_,i)=>buildLevel(i));
+  const levels=[]; // Old auto-generated 50-level command disabled; approved purpose-built sets will replace it.
   function drawDots(){status.innerHTML=Array.from({length:5},(_,i)=>`<span class="diff-dot ${found.has(i)?'on':''}"></span>`).join('')}
   function mark(scene,i){const p=levels[level].spots[i],m=document.createElement('span');m.className='diff-hit';m.style.left=p.x+'%';m.style.top=p.y+'%';scene.appendChild(m)}
   function nearest(x,y){let best=-1,dist=Infinity;levels[level].spots.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<dist){dist=d;best=i}});return dist<=8.5?best:-1}
