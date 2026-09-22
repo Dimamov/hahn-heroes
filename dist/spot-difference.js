@@ -37,7 +37,8 @@
     for(let i=0;i<levels[level].spots.length;i++){
       if(found.has(i))continue;
       const [sx,topY,bottomY,r]=levels[level].spots[i];
-      if(Math.hypot(x-sx,y-topY)<=r||Math.hypot(x-sx,y-bottomY)<=r)return i;
+      const hitRadius=Math.max(r*1.5,.11);
+      if(Math.hypot(x-sx,y-topY)<=hitRadius||Math.hypot(x-sx,y-bottomY)<=hitRadius)return i;
     }
     return -1;
   }
