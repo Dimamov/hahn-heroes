@@ -6,8 +6,11 @@
 #diffGame{flex:1;min-height:0;display:grid;grid-template-rows:1fr 1fr;gap:7px}
 .diff-scene{position:relative;min-height:0;overflow:hidden;border:2px solid #2eaee9;border-radius:13px;background:#020713;touch-action:manipulation;box-shadow:inset 0 0 18px #000}
 .diff-scene img{width:100%;height:100%;display:block;object-fit:cover;pointer-events:none;user-select:none;-webkit-user-drag:none}
-.diff-change{position:absolute;width:9.5%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;backdrop-filter:hue-rotate(125deg) saturate(1.9) brightness(1.12);-webkit-backdrop-filter:hue-rotate(125deg) saturate(1.9) brightness(1.12);background:#bd6cff20;box-shadow:inset 0 0 10px #e5c6ff44}
-.diff-change.alt{border-radius:28%;backdrop-filter:grayscale(1) contrast(1.3);-webkit-backdrop-filter:grayscale(1) contrast(1.3);background:#071a3545}
+.diff-change{position:absolute;width:10%;aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.diff-change:before{content:"";position:absolute;left:50%;top:50%;width:15%;height:44%;transform:translate(-50%,-50%) rotate(45deg);border-radius:45%;background:#8edcff;box-shadow:0 0 3px #60c9ff;opacity:.82}
+.diff-change:after{content:"";position:absolute;left:50%;top:50%;width:44%;height:15%;transform:translate(-50%,-50%) rotate(45deg);border-radius:45%;background:#8edcff;box-shadow:0 0 3px #60c9ff;opacity:.82}
+.diff-change.alt:before{width:38%;height:11%;transform:translate(-50%,-50%) rotate(-16deg);border-radius:50%;background:#07101c;box-shadow:0 1px 1px #8db2ce88;opacity:.9}
+.diff-change.alt:after{display:none}
 .diff-hit{position:absolute;width:12%;aspect-ratio:1;border:3px solid #55ff91;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 13px #43ef79,inset 0 0 9px #43ef7966;animation:diffPop .25s ease-out;pointer-events:none}
 @keyframes diffPop{from{transform:translate(-50%,-50%) scale(.3)}to{transform:translate(-50%,-50%) scale(1)}}
 .diff-status{display:flex;justify-content:center;gap:6px;min-height:18px}.diff-dot{width:12px;height:12px;border-radius:50%;border:2px solid #436187;background:#07162a}.diff-dot.on{border-color:#7effa0;background:#43ef79;box-shadow:0 0 9px #43ef79}
