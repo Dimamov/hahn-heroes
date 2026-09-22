@@ -65,14 +65,14 @@ const story=[
 ];
 let storyPage=Number(localStorage.getItem('hahnEpisode1Page')||0);
 const episodeImages=[
-'episode-1/Episode-1-Panel-01-Opening-App.png',
-'episode-1/Episode-1-Panel-02-Something-Is-Different-App.png',
-'episode-1/Episode-1-Panel-03-A-Hidden-Door-App.png',
-'episode-1/Episode-1-Panel-04-Beyond-Hahn-App.png',
-'episode-1/Episode-1-Panel-05-Meet-The-Keeper-App.png',
-'episode-1/Episode-1-Panel-06-Ana-Steps-Forward-App.png',
-'episode-1/Episode-1-Panel-07-The-First-Keeper-App.png',
-'episode-1/Episode-1-Panel-08-Journey-Begins-App.png'
+'episode-1/Episode-1-Panel-01-Opening-App.jpg',
+'episode-1/Episode-1-Panel-02-Something-Is-Different-App.jpg',
+'episode-1/Episode-1-Panel-03-A-Hidden-Door-App.jpg',
+'episode-1/Episode-1-Panel-04-Beyond-Hahn-App.jpg',
+'episode-1/Episode-1-Panel-05-Meet-The-Keeper-App.jpg',
+'episode-1/Episode-1-Panel-06-Ana-Steps-Forward-App.jpg',
+'episode-1/Episode-1-Panel-07-The-First-Keeper-App.jpg',
+'episode-1/Episode-1-Panel-08-Journey-Begins-App.jpg'
 ];
 function drawStory(){storyPage=Math.max(0,Math.min(storyPage,episodeImages.length-1));readerContent.className='';readerContent.innerHTML='<img class="manga-page" src="'+episodeImages[storyPage]+'" alt="Episode 1 page '+(storyPage+1)+'">';pageCount.textContent=(storyPage+1)+' / '+episodeImages.length;document.querySelector('#prevPage').disabled=storyPage===0;document.querySelector('#nextPage').textContent=storyPage===episodeImages.length-1?'Finish Episode':'Next →';localStorage.setItem('hahnEpisode1Page',storyPage)}
 function openReader(){storyPage=0;drawStory();reader.hidden=false;reader.style.display='flex';document.body.style.overflow='hidden'}
