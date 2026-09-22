@@ -5,11 +5,21 @@
   if(!open||!games||!dialog)return;
 
   const levels=[
-    {id:'approved-1',title:'Nexus Art Room',image:'spot-difference/set-1.jpg',spots:[[.16,.11,.62,.075],[.39,.14,.66,.07],[.08,.29,.80,.08],[.76,.29,.80,.07],[.91,.36,.87,.075]]},
-    {id:'approved-2',title:'Hahn Front Entrance',image:'spot-difference/set-2.jpg',spots:[[.13,.18,.68,.075],[.19,.40,.90,.075],[.42,.34,.84,.08],[.63,.38,.88,.07],[.84,.41,.91,.08]]},
-    {id:'approved-3',title:'Cardinal Code Study',image:'spot-difference/set-3.jpg',spots:[[.08,.21,.71,.075],[.09,.42,.92,.075],[.48,.42,.92,.08],[.82,.39,.89,.075],[.91,.35,.85,.075]]},
-    {id:'approved-4',title:'Cardinals Study Hall',image:'spot-difference/set-4.jpg',spots:[[.08,.29,.79,.075],[.20,.42,.92,.08],[.47,.40,.90,.08],[.66,.34,.84,.08],[.90,.38,.88,.075]]},
-    {id:'approved-5',title:'Never Give Up',image:'spot-difference/set-5.jpg',spots:[[.12,.19,.69,.08],[.48,.34,.84,.08],[.83,.20,.70,.08],[.87,.40,.90,.08],[.23,.39,.89,.075]]}
+    {id:'approved-1',title:'Nexus Art Room',image:'spot-difference/set-1.jpg',spots:[
+      {top:[.19,.14],bottom:[.19,.65]},{top:[.46,.18],bottom:[.46,.69]},{top:[.06,.23],bottom:[.06,.74]},{top:[.77,.31],bottom:[.77,.82]},{top:[.91,.35],bottom:[.93,.86]}
+    ]},
+    {id:'approved-2',title:'Hahn Front Entrance',image:'spot-difference/set-2.jpg',spots:[
+      {top:[.13,.22],bottom:[.13,.72]},{top:[.14,.41],bottom:[.14,.91]},{top:[.42,.43],bottom:[.43,.93]},{top:[.66,.38],bottom:[.66,.88]},{top:[.88,.40],bottom:[.88,.90]}
+    ]},
+    {id:'approved-3',title:'Cardinal Code Study',image:'spot-difference/set-3.jpg',spots:[
+      {top:[.08,.20],bottom:[.08,.70]},{top:[.10,.35],bottom:[.10,.85]},{top:[.50,.43],bottom:[.50,.93]},{top:[.84,.34],bottom:[.84,.84]},{top:[.94,.40],bottom:[.94,.90]}
+    ]},
+    {id:'approved-4',title:'Cardinals Study Hall',image:'spot-difference/set-4.jpg',spots:[
+      {top:[.10,.35],bottom:[.10,.85]},{top:[.30,.40],bottom:[.30,.90]},{top:[.47,.43],bottom:[.47,.93]},{top:[.76,.36],bottom:[.84,.76]},{top:[.94,.34],bottom:[.94,.84]}
+    ]},
+    {id:'approved-5',title:'Never Give Up',image:'spot-difference/set-5.jpg',spots:[
+      {top:[.13,.14],bottom:[.13,.65]},{top:[.14,.27],bottom:[.19,.77]},{top:[.36,.39],bottom:[.42,.80]},{top:[.87,.18],bottom:[.89,.68]},{top:[.88,.42],bottom:[.88,.92]}
+    ]}
   ];
 
   games.insertBefore(open,games.querySelector('.close'));
@@ -25,10 +35,10 @@
   function addMark(index){
     const spot=levels[level].spots[index];
     const image=game.querySelector('img'),imageRect=image.getBoundingClientRect(),gameRect=game.getBoundingClientRect();
-    for(const y of [spot[1],spot[2]]){
+    for(const [x,y] of [spot.top,spot.bottom]){
       const mark=document.createElement('span');
       mark.className='diff-hit';
-      mark.style.left=((imageRect.left-gameRect.left+spot[0]*imageRect.width)/gameRect.width*100)+'%';
+      mark.style.left=((imageRect.left-gameRect.left+x*imageRect.width)/gameRect.width*100)+'%';
       mark.style.top=((imageRect.top-gameRect.top+y*imageRect.height)/gameRect.height*100)+'%';
       game.appendChild(mark);
     }
@@ -36,9 +46,8 @@
   function hitIndex(x,y){
     for(let i=0;i<levels[level].spots.length;i++){
       if(found.has(i))continue;
-      const [sx,topY,bottomY,r]=levels[level].spots[i];
-      const hitRadius=Math.max(r*1.5,.11);
-      if(Math.hypot(x-sx,y-topY)<=hitRadius||Math.hypot(x-sx,y-bottomY)<=hitRadius)return i;
+      const spot=levels[level].spots[i],hitRadius=.075;
+      if(Math.hypot(x-spot.top[0],y-spot.top[1])<=hitRadius||Math.hypot(x-spot.bottom[0],y-spot.bottom[1])<=hitRadius)return i;
     }
     return -1;
   }
