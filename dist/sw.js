@@ -1,4 +1,4 @@
-const CACHE='hahn-v16';
+const CACHE='hahn-v17';
 const ASSETS=[...['./episode-1/Episode-1-Panel-01-Opening-App.jpg','./episode-1/Episode-1-Panel-02-Something-Is-Different-App.jpg','./episode-1/Episode-1-Panel-03-A-Hidden-Door-App.jpg','./episode-1/Episode-1-Panel-04-Beyond-Hahn-App.jpg','./episode-1/Episode-1-Panel-05-Meet-The-Keeper-App.jpg','./episode-1/Episode-1-Panel-06-Ana-Steps-Forward-App.jpg','./episode-1/Episode-1-Panel-07-The-First-Keeper-App.jpg','./episode-1/Episode-1-Panel-08-Journey-Begins-App.jpg'],'./','./index.html','./word-rush.js','./ChatGPT Image Sep 20, 2026, 10_01_06 PM.png','./app-icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
