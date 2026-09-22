@@ -32,6 +32,27 @@
   function drawDots(){status.innerHTML=Array.from({length:5},(_,i)=>`<span class="diff-dot ${found.has(i)?'on':''}"></span>`).join('')}
   function mark(scene,i){const p=levels[level].spots[i],m=document.createElement('span');m.className='diff-hit';m.style.left=p.x+'%';m.style.top=p.y+'%';scene.appendChild(m)}
   function nearest(x,y){let best=-1,dist=Infinity;levels[level].spots.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<dist){dist=d;best=i}});return dist<=8.5?best:-1}
+  const imageCache=new Map();
+  function getImage(src){if(imageCache.has(src))return imageCache.get(src);const p=new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=src});imageCache.set(src,p);return p}
+  function drawCover(ctx,img,w,h,position){
+    const scale=Math.max(w/img.naturalWidth,h/img.naturalHeight),sw=w/scale,sh=h/scale;
+    const parts=position.split(' '),px=parseFloat(parts[0])/100,py=parseFloat(parts[1])/100;
+    const sx=(img.naturalWidth-sw)*px,sy=(img.naturalHeight-sh)*py;
+    ctx.drawImage(img,sx,sy,sw,sh,0,0,w,h);
+  }
+  async function paintScene(canvas,data,changed){
+    const rect=canvas.parentElement.getBoundingClientRect(),ratio=Math.min(2,devicePixelRatio||1),w=Math.max(600,Math.round(rect.width*ratio)),h=Math.max(260,Math.round(rect.height*ratio));
+    canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d'),img=await getImage(data.image);drawCover(ctx,img,w,h,data.position);if(!changed)return;
+    data.spots.forEach((p,i)=>{
+      const x=p.x/100*w,y=p.y/100*h,r=Math.max(15,w*.027),sx=Math.max(0,x-r),sy=Math.max(0,y-r),size=Math.min(r*2,w-sx,h-sy);
+      const patch=document.createElement('canvas');patch.width=size;patch.height=size;patch.getContext('2d').drawImage(canvas,sx,sy,size,size,0,0,size,size);
+      ctx.save();ctx.beginPath();ctx.ellipse(x,y,r*.82,r*.68,0,0,Math.PI*2);ctx.clip();
+      if(i%3===0){ctx.filter='hue-rotate(95deg) saturate(1.25)';ctx.drawImage(patch,sx,sy)}
+      else if(i%3===1){ctx.translate(x*2,0);ctx.scale(-1,1);ctx.drawImage(patch,sx,sy)}
+      else{ctx.filter='grayscale(.78) brightness(1.08)';ctx.drawImage(patch,sx,sy)}
+      ctx.restore();ctx.filter='none';
+    });
+  }
   function tapped(e){
     if(locked)return;const scene=e.currentTarget,rect=scene.getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width*100,y=(e.clientY-rect.top)/rect.height*100,i=nearest(x,y);
     if(i>=0){
@@ -45,10 +66,9 @@
   function renderLevel(){
     found=new Set();wrong=0;locked=false;const data=levels[level];levelText.textContent=`SET ${level+1} / 50${completed['level-'+level]?' · CLEARED':''}`;game.innerHTML='';
     for(let side=0;side<2;side++){
-      const scene=document.createElement('div');scene.className='diff-scene';scene.setAttribute('aria-label',side?'Changed picture':'Original picture');scene.innerHTML=`<img src="${data.image}" alt="Hidden Nexus scene featuring Ana or the First Keeper">`;
-      scene.querySelector('img').style.objectPosition=data.position;
-      if(side) data.spots.forEach((p,i)=>{const c=document.createElement('span');c.className='diff-change '+(i%2?'alt':'');c.style.left=p.x+'%';c.style.top=p.y+'%';scene.appendChild(c)});
+      const scene=document.createElement('div');scene.className='diff-scene';scene.setAttribute('aria-label',side?'Changed picture':'Original picture');const canvas=document.createElement('canvas');canvas.setAttribute('role','img');canvas.setAttribute('aria-label','Hidden Nexus scene featuring Ana or the First Keeper');scene.appendChild(canvas);
       scene.addEventListener('pointerup',tapped);game.appendChild(scene);
+      requestAnimationFrame(()=>paintScene(canvas,data,side===1));
     }
     drawDots();
   }
