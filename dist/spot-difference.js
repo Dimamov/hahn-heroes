@@ -6,19 +6,19 @@
 
   const levels=[
     {id:'approved-1',title:'Nexus Art Room',image:'spot-difference/set-1.jpg',spots:[
-      {top:[.19,.14],bottom:[.19,.65]},{top:[.46,.18],bottom:[.46,.69]},{top:[.06,.23],bottom:[.06,.74]},{top:[.77,.31],bottom:[.77,.82]},{top:[.91,.35],bottom:[.93,.86]}
+      {top:[.19,.14],bottom:[.19,.65]},{top:[.44,.12],bottom:[.44,.62]},{top:[.06,.23],bottom:[.06,.74]},{top:[.77,.32],bottom:[.77,.83]},{top:[.92,.35],bottom:[.93,.88]},{top:[.82,.09],bottom:[.82,.59]},{top:[.41,.45],bottom:[.41,.95]},{top:[.11,.46],bottom:[.11,.96]}
     ]},
     {id:'approved-2',title:'Hahn Front Entrance',image:'spot-difference/set-2.jpg',spots:[
       {top:[.13,.22],bottom:[.13,.72]},{top:[.14,.41],bottom:[.14,.91]},{top:[.42,.43],bottom:[.43,.93]},{top:[.66,.38],bottom:[.66,.88]},{top:[.88,.40],bottom:[.88,.90]}
     ]},
     {id:'approved-3',title:'Cardinal Code Study',image:'spot-difference/set-3.jpg',spots:[
-      {top:[.08,.20],bottom:[.08,.70]},{top:[.10,.35],bottom:[.10,.85]},{top:[.50,.43],bottom:[.50,.93]},{top:[.84,.34],bottom:[.84,.84]},{top:[.94,.40],bottom:[.94,.90]}
+      {top:[.08,.20],bottom:[.08,.70]},{top:[.10,.35],bottom:[.10,.85]},{top:[.50,.43],bottom:[.50,.93]},{top:[.84,.34],bottom:[.84,.84]},{top:[.94,.40],bottom:[.94,.90]},{top:[.19,.48],bottom:[.19,.98]}
     ]},
     {id:'approved-4',title:'Cardinals Study Hall',image:'spot-difference/set-4.jpg',spots:[
-      {top:[.10,.35],bottom:[.10,.85]},{top:[.30,.40],bottom:[.30,.90]},{top:[.47,.43],bottom:[.47,.93]},{top:[.76,.36],bottom:[.84,.76]},{top:[.94,.34],bottom:[.94,.84]}
+      {top:[.10,.35],bottom:[.10,.85]},{top:[.30,.40],bottom:[.30,.90]},{top:[.47,.43],bottom:[.47,.93]},{top:[.76,.36],bottom:[.84,.81]},{top:[.94,.34],bottom:[.94,.84]},{top:[.12,.46],bottom:[.12,.96]},{top:[.55,.07],bottom:[.55,.57]}
     ]},
     {id:'approved-5',title:'Never Give Up',image:'spot-difference/set-5.jpg',spots:[
-      {top:[.13,.14],bottom:[.13,.65]},{top:[.14,.27],bottom:[.19,.77]},{top:[.36,.39],bottom:[.42,.80]},{top:[.87,.18],bottom:[.89,.68]},{top:[.88,.42],bottom:[.88,.92]}
+      {top:[.13,.14],bottom:[.13,.65]},{top:[.14,.27],bottom:[.19,.77]},{top:[.36,.39],bottom:[.42,.88]},{top:[.87,.18],bottom:[.89,.68]},{top:[.88,.42],bottom:[.88,.92]}
     ]}
   ];
 
@@ -31,10 +31,17 @@
   let level=0,found=new Set(),wrong=0,locked=false,rapid=0,lastTap=0;
   const game=document.querySelector('#diffGame'),status=document.querySelector('#diffStatus'),levelText=document.querySelector('#diffLevel');
 
-  function drawDots(){status.innerHTML=Array.from({length:5},(_,i)=>`<span class="diff-dot ${found.has(i)?'on':''}"></span>`).join('')}
+  function drawDots(){status.innerHTML=Array.from({length:5},(_,i)=>`<span class="diff-dot ${i<found.size?'on':''}"></span>`).join('')}
+  // The image element can contain empty space from object-fit: contain.
+  // Convert taps and markers using the rectangle of the painted image.
+  function paintedImageRect(){
+    const image=game.querySelector('img'),box=image.getBoundingClientRect();
+    const scale=Math.min(box.width/image.naturalWidth,box.height/image.naturalHeight);
+    const width=image.naturalWidth*scale,height=image.naturalHeight*scale;
+    return {left:box.left+(box.width-width)/2,top:box.top+(box.height-height)/2,width,height};
+  }
   function addMark(index){
-    const spot=levels[level].spots[index];
-    const image=game.querySelector('img'),imageRect=image.getBoundingClientRect(),gameRect=game.getBoundingClientRect();
+    const spot=levels[level].spots[index],imageRect=paintedImageRect(),gameRect=game.getBoundingClientRect();
     for(const [x,y] of [spot.top,spot.bottom]){
       const mark=document.createElement('span');
       mark.className='diff-hit';
@@ -56,7 +63,9 @@
     if(locked)return;
     const now=Date.now();rapid=now-lastTap<300?rapid+1:Math.max(0,rapid-1);lastTap=now;
     if(rapid>=3){rapid=0;showWarning();return}
-    const rect=game.querySelector('img').getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width,y=(e.clientY-rect.top)/rect.height,index=hitIndex(x,y);
+    const rect=paintedImageRect(),x=(e.clientX-rect.left)/rect.width,y=(e.clientY-rect.top)/rect.height;
+    if(x<0||x>1||y<0||y>1)return; // Empty margins are not mistakes.
+    const index=hitIndex(x,y);
     if(index>=0){
       found.add(index);addMark(index);drawDots();if(navigator.vibrate)navigator.vibrate(30);
       if(found.size===5){
@@ -76,7 +85,7 @@
     found=new Set();wrong=0;rapid=0;locked=false;
     const data=levels[level];
     levelText.textContent=`SET ${level+1} / ${levels.length}${completed[data.id]?' · CLEARED':''}`;
-    game.innerHTML=`<img src="${data.image}?v=27" alt="${data.title}. Two vertically stacked pictures with five differences.">`;
+    game.innerHTML=`<img src="${data.image}?v=36" alt="${data.title}. Two vertically stacked pictures with five differences.">`;
     game.onclick=tapped;drawDots();
   }
   function nextLevel(){
