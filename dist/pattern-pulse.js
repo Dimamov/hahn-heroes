@@ -89,6 +89,7 @@
     const earned = typeof clearOnce === 'function' ? clearOnce(key, dailyMode ? 30 : 25) : false;
     if (streak === 3 && typeof clearOnce === 'function') clearOnce('pattern-streak-first-three', 10);
     update();
+    window.dispatchEvent(new CustomEvent('nexus:played',{detail:{id:'pattern'}}));
     showAnaResult('success', {detail:`Nexus Charge full · ${streak} win streak${earned ? ' · Points earned!' : ' · Already rewarded'}`, button:'POWER UP!', onContinue:()=>{display.classList.remove('pulse-celebrate');dialog.close()}});
   }
   function miss() {
