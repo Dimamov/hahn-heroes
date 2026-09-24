@@ -6,7 +6,7 @@
 
   const levels=[
     {id:'approved-1',title:'Nexus Art Room',image:'spot-difference/set-1.jpg',spots:[
-      {top:[.44,.12],bottom:[.44,.62]},{top:[.06,.23],bottom:[.06,.74]},{top:[.77,.32],bottom:[.77,.83]},{top:[.92,.35],bottom:[.93,.88]},{top:[.82,.09],bottom:[.82,.59]}
+      {top:[.44,.12],bottom:[.44,.62]},{top:[.06,.23],bottom:[.06,.74]},{top:[.77,.32],bottom:[.77,.83]},{top:[.92,.35],bottom:[.93,.88]},{top:[.95,.10],bottom:[.95,.60]}
     ]},
     {id:'approved-2',title:'Hahn Front Entrance',image:'spot-difference/set-2.jpg',spots:[
       {top:[.13,.22],bottom:[.13,.72]},{top:[.14,.41],bottom:[.14,.91]},{top:[.42,.43],bottom:[.43,.93]},{top:[.66,.38],bottom:[.66,.88]},{top:[.88,.40],bottom:[.88,.90]}
