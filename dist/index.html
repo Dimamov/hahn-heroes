@@ -85,8 +85,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 .app{top:0;right:0;bottom:0;left:0;height:auto;min-height:0}
 .reference-home{height:100%;min-height:0}
 .app{background:#080d24}
-/* Standalone iOS can report a dynamic viewport shorter than the painted screen. */
-@media(display-mode:standalone){html,body{background:#080d24}.app{bottom:auto;height:100lvh;min-height:100dvh}}
+html,body{background:#080d24}
 .reference-home{box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom)}
 .reference-home .dnp-btn{height:clamp(40px,5.6dvh,49px);margin:6px 8px 6px;font-size:clamp(16px,4.3vw,21px)}
 @media(max-height:700px){.reference-home .dnp-btn{height:40px;margin:4px 8px 5px}}
