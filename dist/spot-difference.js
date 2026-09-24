@@ -73,12 +73,12 @@
         const id=levels[level].id;
         if(!completed[id]){completed[id]=true;localStorage.setItem('hahnDifferenceClears',JSON.stringify(completed));points=Number(points)+20;save();render();note('Set complete! +20 points')}
         else note('Set complete — already rewarded');
-        setTimeout(()=>{locked=false;nextLevel()},900);
+        showAnaResult('success',{detail:'All five differences found!',onContinue:()=>{locked=false;nextLevel()}});
       }
     }else{
       wrong++;if(typeof playWrongSound==='function')playWrongSound();
       game.animate([{transform:'translateX(0)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:180});
-      if(wrong>=3){wrong=0;showWarning()}
+      if(wrong>=3){wrong=0;locked=true;showAnaResult('retry',{detail:'Compare both pictures before your next tap.',onContinue:()=>{locked=false}})}
     }
   }
   function renderLevel(){

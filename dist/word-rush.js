@@ -97,6 +97,7 @@
     tone(120, .7, .11);
     if (navigator.vibrate) navigator.vibrate([180, 80, 260]);
     if (used >= 10 && typeof clearOnce === 'function') clearOnce('word-rush-10', 25);
+    showAnaResult(used >= 10 ? 'success' : 'retry', {detail: `${used} letters cleared`, onContinue: used >= 10 ? null : beginRound, button: used >= 10 ? 'CONTINUE' : 'TRY AGAIN'});
   }
 
   function beginRound() {
@@ -143,6 +144,7 @@
       status.textContent = 'PERFECT ROUND! EVERY LETTER CLEARED!';
       timer.textContent = '🏆';
       if (typeof clearOnce === 'function') clearOnce('word-rush-perfect', 50);
+      showAnaResult('success', {detail:'Every letter cleared!'});
     }
   });
   start.addEventListener('click', beginRound);
