@@ -1,0 +1,10 @@
+#anaResult:not([open]){display:none}
+#anaResult{position:fixed;inset:0;z-index:1000;place-items:center;padding:18px;border:0;max-width:none;max-height:none;width:100vw;height:100dvh;background:#020817df;backdrop-filter:blur(10px)}
+#anaResult[open]{display:grid}
+.ana-result-card{width:min(420px,100%);max-height:calc(100dvh - 36px);overflow:auto;text-align:center;border:2px solid #45d5ff;border-radius:24px;background:linear-gradient(160deg,#142f62,#080f2b 65%);box-shadow:0 0 40px #6e51ff99;padding:18px 20px 22px;color:#fff}
+#anaResult[data-kind=retry] .ana-result-card{border-color:#ffd467}
+.ana-result-art{height:clamp(125px,27dvh,230px);max-width:260px;margin:auto auto 12px;background:url('hahn-school-hero.jpg') center 49%/cover;border-radius:18px;border:2px solid #9579ff;box-shadow:inset 0 0 25px #6b42d888}
+.ana-result-card small{color:#8fe7ff;font-weight:900;letter-spacing:.13em}
+.ana-result-card h2{margin:8px 0;color:#fff}.ana-result-card p{font-size:18px;line-height:1.35;margin:10px 0}
+#anaResultDetail:empty{display:none}#anaResultDetail{font-size:15px;color:#bde5ff}
+#anaResultButton{width:100%;min-height:50px;margin-top:14px}
