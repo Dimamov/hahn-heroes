@@ -71,13 +71,16 @@
   }
 
   function resetClock() {
-    seconds = 10;
+    const grade = typeof getPlayerGrade === 'function' ? getPlayerGrade() : 5;
+    seconds = grade <= 2 ? 18 : grade <= 4 ? 14 : 10;
     paintTimer();
   }
 
   function chooseCategory() {
+    const grade = typeof getPlayerGrade === 'function' ? getPlayerGrade() : 5;
+    const count = grade <= 2 ? 18 : grade <= 4 ? 30 : categories.length;
     let next;
-    do next = Math.floor(Math.random() * categories.length); while (next === lastCategory && categories.length > 1);
+    do next = Math.floor(Math.random() * count); while (next === lastCategory && count > 1);
     lastCategory = next;
     category.textContent = categories[next].toUpperCase();
   }

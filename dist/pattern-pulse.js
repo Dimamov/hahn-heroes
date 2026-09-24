@@ -50,16 +50,16 @@
     stats.textContent = `STREAK ${streak} · PERSONAL BEST ${best} · ${dailyMode ? 'DAILY PATTERN' : 'FREE PLAY'}`;
   }
   function drawChoices() {
-    const count = round === 0 ? 5 : round === 1 ? 7 : 8;
+    const grade=typeof getPlayerGrade==='function'?getPlayerGrade():5;const count=Math.min(8,grade<=2?3+round:grade<=4?4+round:round===0?5:round===1?7:8);
     choices.innerHTML = icons.slice(0, count).map((_, i) => `<button type="button" class="pulse-choice" data-icon="${i}" aria-label="${icons[i][1]}">${tile(i)}</button>`).join('');
   }
   async function watch() {
     const id = ++run;
     active = false; index = 0; hintUsed = false;
-    const length = [3, 5, 7][round], rand = randomForRound(), pool = round === 0 ? 5 : round === 1 ? 7 : 8;
+    const grade=typeof getPlayerGrade==='function'?getPlayerGrade():5;const length=(grade<=2?[2,3,4]:grade<=4?[3,4,5]:[3,5,7])[round], rand = randomForRound(), pool = Math.min(8,grade<=2?3+round:grade<=4?4+round:round===0?5:round===1?7:8);
     sequence = Array.from({length}, () => Math.floor(rand() * pool));
     // The final round introduces a clear rule while retaining all seven flashes.
-    answer = round === 2 ? sequence.filter((_, n) => n !== 1) : sequence.slice();
+    answer = round === 2 && grade>=5 ? sequence.filter((_, n) => n !== 1) : sequence.slice();
     choices.innerHTML = '';
     prompt.textContent = `ROUND ${round + 1} / 3 · WATCH`;
     display.innerHTML = '<span class="pulse-instruction">Watch the Nexus signals</span>';
@@ -73,7 +73,7 @@
     display.innerHTML = '<span class="pulse-instruction">Hold that pattern in your mind…</span>';
     await pause(620); if (id !== run || !dialog.open) return;
     prompt.textContent = 'REPEAT';
-    display.innerHTML = `<span class="pulse-instruction">${round === 2 ? 'Skip the SECOND signal. Repeat the rest.' : 'Tap the signals in order.'}</span>`;
+    display.innerHTML = `<span class="pulse-instruction">${round === 2 && grade>=5 ? 'Skip the SECOND signal. Repeat the rest.' : 'Tap the signals in order.'}</span>`;
     drawChoices(); active = true;
   }
   function finish() {
