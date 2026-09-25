@@ -14,3 +14,6 @@ jobs:
         with:
           node-version: '22'
       - run: node tests/smoke.cjs
+      - run: npm install --no-save playwright
+      - run: npx playwright install chromium --with-deps
+      - run: python3 -m http.server 8765 --directory dist & sleep 2; node tests/browser.cjs
