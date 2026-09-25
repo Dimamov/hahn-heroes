@@ -60,7 +60,7 @@
   document.body.append(guide);let guideReturn=null;
   function firstFragment(){if(localStorage.getItem('nexusFirstFragmentPending')!=='1')return;localStorage.removeItem('nexusFirstFragmentPending');award('lantern')}
   function closeGuide(){guide.hidden=true;guideReturn?.focus();guideReturn=null;firstFragment()}
-  function openGuide(from){guideReturn=from||document.activeElement;document.querySelector('#nxKeeperMoment')?.remove();guide.hidden=false;guide.querySelector('#nxGuideEnter').focus()}
+  function openGuide(from){guideReturn=from||document.activeElement;document.querySelector('#nxKeeperMoment')?.remove();guide.hidden=false;guide.scrollTop=0;guide.querySelector('.nx-guide-inner')?.scrollIntoView({block:'start',behavior:'instant'});guide.scrollTop=0;guide.querySelector('#nxGuideClose').focus({preventScroll:true})}
   for(const id of ['nxGuideClose','nxGuideSkip','nxGuideEnter'])guide.querySelector('#'+id).onclick=closeGuide;
   guide.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeGuide()}});
   document.querySelector('#openNexusGuide').onclick=()=>{document.querySelector('#settingsDialog').close();openGuide(document.querySelector('#settings'))};
