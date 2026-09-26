@@ -21,8 +21,10 @@
   function draw(){if(!dialog.open)return;const outfit=image('outfit'),hair=image('hair');if(!outfit?.complete||!outfit.naturalWidth||!hair?.complete||!hair.naturalWidth)return;ctx.clearRect(0,0,384,640);
     // Both artwork sheets use the same character pose and a 5 by 2 layout.
     const tile=(im,i)=>[(i%5)*im.width/5,Math.floor(i/5)*im.height/2,im.width/5,im.height/2];
-    ctx.drawImage(hair,...tile(hair,selected.hair),0,0,384,640);
-    ctx.save();ctx.beginPath();ctx.rect(0,175,384,465);ctx.clip();ctx.drawImage(outfit,...tile(outfit,selected.outfit),0,0,384,640);ctx.restore();
+    // Outfit tiles are complete figures. Draw one figure, then replace only its
+    // head with the chosen hair tile so limbs and footwear never double up.
+    ctx.drawImage(outfit,...tile(outfit,selected.outfit),0,0,384,640);
+    ctx.save();ctx.beginPath();ctx.rect(78,12,228,168);ctx.clip();ctx.drawImage(hair,...tile(hair,selected.hair),0,0,384,640);ctx.restore();
     const accessory=image('extra');if(accessory?.complete&&accessory.naturalWidth){const i=selected.extra-1,p=[[138,75,108,60],[118,20,147,74],[145,5,95,60],[126,5,132,85],[210,285,110,120],[94,365,60,46],[157,155,65,60],[108,153,167,90],[94,370,65,70],[123,-28,138,100]][i];if(i>=0)ctx.drawImage(accessory,...tile(accessory,i),...p)}
     if(selected.face===1){ctx.fillStyle='#8b514c';for(const x of [139,149,159,227,237,247]){ctx.beginPath();ctx.arc(x,108+(x%3),2,0,Math.PI*2);ctx.fill()}}if(selected.face===2){ctx.strokeStyle='#4b3558';ctx.lineWidth=3;for(const x of [145,238]){ctx.beginPath();ctx.moveTo(x-8,70);ctx.lineTo(x+7,68);ctx.stroke()}}
     if(selected.makeup===1){ctx.fillStyle='#f794b877';for(const x of [145,240]){ctx.beginPath();ctx.ellipse(x,111,14,5,0,0,Math.PI*2);ctx.fill()}}if(selected.makeup===2){ctx.fillStyle='#ffe09a';ctx.font='20px sans-serif';ctx.fillText('✦',251,111)}
