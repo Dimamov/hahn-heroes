@@ -4,7 +4,7 @@
   const extraNames=['None','Starlight Glasses','Star Hair Clips','Violet Bow','Nexus Headphones','Crossbody Satchel','Lunar Bracelets','Crystal Necklace','Comet Scarf','Pulse Wrist Device','Energy Halo'];
   const prices=[0,0,0,100,200,300,400,500,750,1000];
   const categories={hair:{label:'HAIR',symbol:'✦',names:hairNames},outfit:{label:'OUTFITS',symbol:'◈',names:outfitNames},extra:{label:'EXTRAS',symbol:'✧',names:extraNames},face:{label:'FACE',symbol:'◉',names:['Classic','Freckles','Focus marks']},makeup:{label:'DETAILS',symbol:'✳',names:['None','Rosy cheeks','Star shimmer']}};
-  const asset={girl:{hair:'character-lab/girl-hair-v2.png',outfit:'character-lab/girl-outfits-safe.webp'},boy:{hair:'character-lab/boy-hair-v2.png',outfit:'character-lab/boy-outfits-cutout.webp'},extra:'character-lab/accessories-v2.png'};
+  const asset={girl:{hair:'character-lab/girl-hair-cutout.webp',outfit:'character-lab/girl-outfits-safe.webp'},boy:{hair:'character-lab/boy-hair-cutout.webp',outfit:'character-lab/boy-outfits-cutout.webp'},extra:'character-lab/accessories-v2.png'};
   const images={};for(const [key,url] of Object.entries({...asset.girl,...{'girlOutfit':asset.girl.outfit,'boyHair':asset.boy.hair,'boyOutfit':asset.boy.outfit,extra:asset.extra}})){const im=new Image();im.src=url;images[key]=im}
   let saved,selected,category='hair',owned={},activeGender='girl';
   const dialog=document.createElement('dialog');dialog.id='heroStudio';
@@ -21,10 +21,9 @@
   function draw(){if(!dialog.open)return;const outfit=image('outfit'),hair=image('hair');if(!outfit?.complete||!outfit.naturalWidth||!hair?.complete||!hair.naturalWidth)return;ctx.clearRect(0,0,384,640);
     // Both artwork sheets use the same character pose and a 5 by 2 layout.
     const tile=(im,i)=>[(i%5)*im.width/5,Math.floor(i/5)*im.height/2,im.width/5,im.height/2];
-    ctx.drawImage(outfit,...tile(outfit,selected.outfit),0,0,384,640);
-    const head=document.createElement('canvas');head.width=384;head.height=215;const hc=head.getContext('2d',{willReadFrequently:true});hc.drawImage(hair,...tile(hair,selected.hair),0,0,384,640);const pixels=hc.getImageData(0,0,384,215);
-    for(let y=0;y<215;y++)for(let x=0;x<384;x++){const n=(y*384+x)*4,r=pixels.data[n],g=pixels.data[n+1],b=pixels.data[n+2],delta=Math.max(r,g,b)-Math.min(r,g,b);if((delta<22&&r>105)||y>202)pixels.data[n+3]=0;else if(y>170)pixels.data[n+3]*=(202-y)/32}hc.putImageData(pixels,0,0);ctx.drawImage(head,0,0);
-    const accessory=image('extra');if(accessory?.complete&&accessory.naturalWidth){const i=selected.extra-1,p=[[138,75,108,60],[118,20,147,74],[137,-2,110,88],[118,13,148,105],[217,162,110,145],[92,220,195,83],[157,130,72,72],[111,107,163,116],[97,221,65,69],[123,-28,138,100]][i];if(i>=0)ctx.drawImage(accessory,...tile(accessory,i),...p)}
+    ctx.drawImage(hair,...tile(hair,selected.hair),0,0,384,640);
+    ctx.save();ctx.beginPath();ctx.rect(0,175,384,465);ctx.clip();ctx.drawImage(outfit,...tile(outfit,selected.outfit),0,0,384,640);ctx.restore();
+    const accessory=image('extra');if(accessory?.complete&&accessory.naturalWidth){const i=selected.extra-1,p=[[138,75,108,60],[118,20,147,74],[145,5,95,60],[126,5,132,85],[210,285,110,120],[94,365,60,46],[157,155,65,60],[108,153,167,90],[94,370,65,70],[123,-28,138,100]][i];if(i>=0)ctx.drawImage(accessory,...tile(accessory,i),...p)}
     if(selected.face===1){ctx.fillStyle='#8b514c';for(const x of [139,149,159,227,237,247]){ctx.beginPath();ctx.arc(x,108+(x%3),2,0,Math.PI*2);ctx.fill()}}if(selected.face===2){ctx.strokeStyle='#4b3558';ctx.lineWidth=3;for(const x of [145,238]){ctx.beginPath();ctx.moveTo(x-8,70);ctx.lineTo(x+7,68);ctx.stroke()}}
     if(selected.makeup===1){ctx.fillStyle='#f794b877';for(const x of [145,240]){ctx.beginPath();ctx.ellipse(x,111,14,5,0,0,Math.PI*2);ctx.fill()}}if(selected.makeup===2){ctx.fillStyle='#ffe09a';ctx.font='20px sans-serif';ctx.fillText('✦',251,111)}
   }
