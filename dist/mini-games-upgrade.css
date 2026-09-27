@@ -1,0 +1,16 @@
+/* A focused, readable play space on phones, tablets, and desktop. */
+:is(#triviaDialog,#memoryDialog,#scrambleDialog,#whichDialog,#patternDialog,#wordRushDialog){width:100vw!important;max-width:none!important;height:100dvh!important;max-height:none!important;margin:0!important;border:0!important;border-radius:0!important;background:radial-gradient(circle at 50% -15%,#264a89 0,#101a43 40%,#060b25 85%)!important;overflow:auto}
+:is(#triviaDialog,#memoryDialog,#scrambleDialog,#whichDialog,#patternDialog,#wordRushDialog) .modal{width:min(100%,850px)!important;min-height:100dvh!important;max-height:none!important;margin:auto!important;padding:calc(20px + env(safe-area-inset-top)) clamp(16px,4vw,42px) calc(25px + env(safe-area-inset-bottom))!important;box-sizing:border-box;background:linear-gradient(155deg,#17265a99,#100f3599)!important;border-inline:1px solid #90b9ff33;box-shadow:0 0 80px #010515a0;overflow:visible!important}
+:is(#triviaDialog,#memoryDialog,#scrambleDialog,#whichDialog,#patternDialog,#wordRushDialog) h2{font-size:clamp(26px,6vw,42px);text-shadow:0 2px #01081c,0 0 20px #9b79ff}
+:is(#triviaDialog,#memoryDialog,#scrambleDialog,#whichDialog,#patternDialog,#wordRushDialog) .choice{min-height:58px;font-size:clamp(16px,2.4vw,20px)}
+#memoryDialog .memory-board{width:min(100%,680px);max-width:none;margin:clamp(14px,3vh,28px) auto;gap:clamp(8px,1.5vw,16px)}
+#memoryDialog .memory-card{border:3px solid #9dc9ff;border-radius:15px;box-shadow:0 4px 15px #0008,0 0 12px #a18aff55}
+#memoryDialog .memory-card img{width:100%;height:100%;object-fit:cover}
+#memoryDialog .modal>p{font-size:clamp(16px,2.6vw,20px)}
+.settings-grade{display:grid;gap:6px;text-align:left;padding:12px;border:1px solid #6688c4;border-radius:12px;background:#0e1c3a}
+.settings-grade label{font-weight:850;color:#fff}.settings-grade small{color:#bdd4ee}
+@media(max-height:700px) and (min-width:700px){#memoryDialog .memory-board{width:min(65vh,580px)}}
+#nexusCasesDialog{width:100vw!important;max-width:none!important;height:100dvh!important;max-height:none!important;margin:0!important;border:0!important;border-radius:0!important;background:radial-gradient(circle at 50% -15%,#283b81,#080e2c 72%)!important;overflow:auto!important}
+#nexusCasesDialog .nexus-cases{width:min(100%,860px);min-height:100dvh;margin:auto;background:#111c42a8;box-shadow:0 0 70px #0009}
+#nexusCasesDialog .case-art{height:clamp(190px,35vh,390px)}
+#nexusCasesDialog .case-content{padding:clamp(18px,4vw,38px)}

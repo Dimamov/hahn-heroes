@@ -1,0 +1,22 @@
+#patternDialog{width:min(480px,calc(100% - 20px));max-height:calc(100dvh - 24px);overflow:auto;border:2px solid #a164fb;background:radial-gradient(circle at 50% 10%,#332267,#070d25 70%)}
+#patternDialog .modal{padding:18px}
+#patternDialog h2{color:#fff;text-shadow:0 0 14px #ae62ff}
+#patternPrompt{min-height:22px;font-weight:900;letter-spacing:.07em;color:#9befff}
+.pulse-charge-label{display:flex;justify-content:space-between;color:#e0d0ff;font-weight:900;font-size:12px}
+#pulseCharge{height:15px;border:1px solid #aa7efa;border-radius:20px;background:#111333;overflow:hidden;box-shadow:0 0 12px #7d40de88}
+#pulseChargeFill{display:block;width:0;height:100%;background:linear-gradient(90deg,#8d45ed,#49deff,#b8ff76);transition:width .28s}
+#pulseStats{font-size:11px;color:#b8c8f5;text-align:center;margin:8px 0}
+#patternDisplay{display:flex;align-items:center;justify-content:center;gap:7px;min-height:clamp(125px,26dvh,185px);margin:8px 0;border:1px solid #674db2;border-radius:18px;background:radial-gradient(circle,#34236a,#10132e 72%);box-shadow:inset 0 0 25px #7045ec77;overflow:hidden;text-align:center;flex-wrap:wrap}
+.pulse-instruction{display:block;width:100%;font-size:16px;color:#e9e5ff;font-weight:800;padding:8px}
+.pulse-icon{display:inline-grid;place-items:center;width:clamp(58px,18vw,94px);height:clamp(58px,18vw,94px);border-radius:18px;background:linear-gradient(145deg,#293b7a,#3a1e73);border:2px solid #9877ee;box-shadow:inset 0 0 15px #8b68f699,0 0 12px #9a6bea99;flex:none}
+.pulse-icon svg{width:85%;height:85%;filter:drop-shadow(0 0 7px #c5b8ff)}
+.pulse-flash{animation:pulse-signal .38s ease-in-out both}.pulse-victory{animation:pulse-victory .65s ease-in-out infinite alternate}.pulse-hint{box-shadow:0 0 22px #ffeb8b}
+#patternChoices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;min-height:0}
+.pulse-choice{padding:4px;border:0;border-radius:15px;background:#10173b;cursor:pointer;touch-action:manipulation}
+.pulse-choice .pulse-icon{width:100%;height:auto;aspect-ratio:1;border-radius:13px}.pulse-choice:active,.pulse-choice.pulse-tapped{transform:scale(.91);filter:brightness(1.7)}
+.pulse-options{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;color:#dcd8ff;margin:12px 0}.pulse-options label{display:flex;gap:5px;align-items:center}.pulse-options input{accent-color:#ad69ff}
+#pulseStart{width:100%;margin:8px 0;border:2px solid #b790fc;border-radius:14px;padding:13px;background:linear-gradient(100deg,#6e30c8,#265bac);color:#fff;font-weight:900}
+#patternDialog .close{width:100%;margin-top:10px}
+@keyframes pulse-signal{from{transform:scale(.72);opacity:.55}to{transform:scale(1.12);opacity:1;box-shadow:0 0 35px #ad83ff}}
+@keyframes pulse-victory{to{transform:scale(1.14) rotate(5deg);box-shadow:0 0 35px #ffe27b}}
+@media(max-height:680px){#patternDialog .modal{padding:12px}#patternDisplay{min-height:110px}.pulse-icon{width:60px;height:60px}.pulse-options{margin:5px 0}}
