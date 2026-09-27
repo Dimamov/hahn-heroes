@@ -31,8 +31,8 @@
       const head=new Path2D();
       head.moveTo(91,104);head.bezierCurveTo(72,48,112,-6,192,-8);
       head.bezierCurveTo(272,-6,313,48,293,104);
-      head.bezierCurveTo(284,137,256,155,225,158);
-      head.lineTo(159,158);head.bezierCurveTo(124,155,99,137,91,104);head.closePath();
+      head.bezierCurveTo(284,126,254,140,225,139);
+      head.quadraticCurveTo(192,151,159,139);head.bezierCurveTo(126,140,99,126,91,104);head.closePath();
       ctx.save();ctx.clip(head);ctx.clearRect(0,0,384,190);
       ctx.drawImage(hair,...tile(hair,selected.hair),0,0,384,640);
       ctx.restore();
