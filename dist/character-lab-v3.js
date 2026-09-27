@@ -24,14 +24,22 @@
     // Outfit tiles are complete figures. Draw one figure, then replace only its
     // head with the chosen hair tile so limbs and footwear never double up.
     ctx.drawImage(outfit,...tile(outfit,selected.outfit),0,0,384,640);
-    // Remove the head baked into each outfit before placing the selected head.
-    // The final boy outfit's figure is offset within its atlas tile.
-    const headShift=activeGender==='boy'&&selected.outfit===9?-43:0;
-    ctx.clearRect(0,0,384,150);
-    ctx.save();ctx.beginPath();ctx.rect(0,0,384,150);ctx.clip();ctx.drawImage(hair,...tile(hair,selected.hair),headShift,0,384,640);ctx.restore();
+    // Replace the head within its silhouette. Keeping the outfit shoulders and
+    // collar avoids a horizontal cut or a second sweatshirt across the chest.
+    // Both atlases share the same head position for each style.
+    if(selected.hair!==0){
+      const head=new Path2D();
+      head.moveTo(91,104);head.bezierCurveTo(72,48,112,-6,192,-8);
+      head.bezierCurveTo(272,-6,313,48,293,104);
+      head.bezierCurveTo(284,137,256,155,225,158);
+      head.lineTo(159,158);head.bezierCurveTo(124,155,99,137,91,104);head.closePath();
+      ctx.save();ctx.clip(head);ctx.clearRect(0,0,384,190);
+      ctx.drawImage(hair,...tile(hair,selected.hair),0,0,384,640);
+      ctx.restore();
+    }
     const accessory=image('extra');if(accessory?.complete&&accessory.naturalWidth){const i=selected.extra-1,p=[[138,75,108,60],[118,20,147,74],[145,5,95,60],[126,5,132,85],[210,285,110,120],[94,365,60,46],[157,155,65,60],[108,153,167,90],[94,370,65,70],[123,-28,138,100]][i];if(i>=0)ctx.drawImage(accessory,...tile(accessory,i),...p)}
-    if(selected.face===1){ctx.fillStyle='#8b514c';for(const x of [139,149,159,227,237,247]){ctx.beginPath();ctx.arc(x,108+(x%3),2,0,Math.PI*2);ctx.fill()}}if(selected.face===2){ctx.strokeStyle='#4b3558';ctx.lineWidth=3;for(const x of [145,238]){ctx.beginPath();ctx.moveTo(x-8,70);ctx.lineTo(x+7,68);ctx.stroke()}}
-    if(selected.makeup===1){ctx.fillStyle='#f794b877';for(const x of [145,240]){ctx.beginPath();ctx.ellipse(x,111,14,5,0,0,Math.PI*2);ctx.fill()}}if(selected.makeup===2){ctx.fillStyle='#ffe09a';ctx.font='20px sans-serif';ctx.fillText('✦',251,111)}
+    if(selected.face===1){ctx.fillStyle='#8b514c';for(const x of [162,170,178,206,214,222]){ctx.beginPath();ctx.arc(x,111+(x%3),2,0,Math.PI*2);ctx.fill()}}if(selected.face===2){ctx.strokeStyle='#4b3558';ctx.lineWidth=3;for(const x of [161,218]){ctx.beginPath();ctx.moveTo(x-8,73);ctx.lineTo(x+7,71);ctx.stroke()}}
+    if(selected.makeup===1){ctx.fillStyle='#f794b877';for(const x of [166,218]){ctx.beginPath();ctx.ellipse(x,111,14,5,0,0,Math.PI*2);ctx.fill()}}if(selected.makeup===2){ctx.fillStyle='#ffe09a';ctx.font='20px sans-serif';ctx.fillText('✦',235,112)}
   }
   function renderCategories(){const host=q('#studioCategories');host.replaceChildren();for(const [kind,c] of Object.entries(categories)){const b=document.createElement('button');b.type='button';b.className='studio-category';b.setAttribute('aria-label',c.label);b.setAttribute('aria-pressed',category===kind);b.innerHTML='<span>'+c.symbol+'</span><small>'+c.label+'</small>';b.onclick=()=>{category=kind;update()};host.append(b)}}
   function renderOptions(){const host=q('#studioOptions'),c=categories[category];host.replaceChildren();c.names.forEach((name,i)=>{const b=document.createElement('button');b.type='button';b.className='studio-option';b.setAttribute('aria-label',name+(i>=(category==='extra'?4:3)&&!owned[key(category,i)]?' locked, '+prices[category==='extra'?i-1:i]+' points':''));b.setAttribute('aria-pressed',selected[category]===i);const art=document.createElement('span');art.className='studio-option-art '+category;const img=category==='hair'?asset[activeGender].hair:category==='outfit'?asset[activeGender].outfit:asset.extra;if(category==='extra'&&i===0){art.textContent='○'}else if(['hair','outfit','extra'].includes(category)){const n=category==='extra'?i-1:i;art.style.backgroundImage='url("'+img+'")';art.style.backgroundPosition=(n%5)*25+'% '+(n>=5?100:0)+'%'}else art.textContent=category==='face'?['◉','⁙','⌁'][i]:['○','●','✦'][i];const caption=document.createElement('span');caption.className='studio-option-caption';caption.textContent=name;const badge=document.createElement('span');badge.className='studio-option-badge';badge.textContent=i>=(category==='extra'?4:3)?(owned[key(category,i)]?'OWNED':prices[category==='extra'?i-1:i]+' ✦'):'FREE';b.append(art,caption);if(i>=(category==='extra'?4:3)) b.append(badge);b.onclick=()=>{selected[category]=i;update()};host.append(b)})}
