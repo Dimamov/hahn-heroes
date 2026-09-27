@@ -10,3 +10,7 @@
 .settings-grade{display:grid;gap:6px;text-align:left;padding:12px;border:1px solid #6688c4;border-radius:12px;background:#0e1c3a}
 .settings-grade label{font-weight:850;color:#fff}.settings-grade small{color:#bdd4ee}
 @media(max-height:700px) and (min-width:700px){#memoryDialog .memory-board{width:min(65vh,580px)}}
+#nexusCasesDialog{width:100vw!important;max-width:none!important;height:100dvh!important;max-height:none!important;margin:0!important;border:0!important;border-radius:0!important;background:radial-gradient(circle at 50% -15%,#283b81,#080e2c 72%)!important;overflow:auto!important}
+#nexusCasesDialog .nexus-cases{width:min(100%,860px);min-height:100dvh;margin:auto;background:#111c42a8;box-shadow:0 0 70px #0009}
+#nexusCasesDialog .case-art{height:clamp(190px,35vh,390px)}
+#nexusCasesDialog .case-content{padding:clamp(18px,4vw,38px)}
