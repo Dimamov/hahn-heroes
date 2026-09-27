@@ -27,8 +27,8 @@
     // Remove the head baked into each outfit before placing the selected head.
     // The final boy outfit's figure is offset within its atlas tile.
     const headShift=activeGender==='boy'&&selected.outfit===9?-43:0;
-    ctx.clearRect(0,0,384,181);
-    ctx.save();ctx.beginPath();ctx.rect(0,0,384,181);ctx.clip();ctx.drawImage(hair,...tile(hair,selected.hair),headShift,0,384,640);ctx.restore();
+    ctx.clearRect(0,0,384,150);
+    ctx.save();ctx.beginPath();ctx.rect(0,0,384,150);ctx.clip();ctx.drawImage(hair,...tile(hair,selected.hair),headShift,0,384,640);ctx.restore();
     const accessory=image('extra');if(accessory?.complete&&accessory.naturalWidth){const i=selected.extra-1,p=[[138,75,108,60],[118,20,147,74],[145,5,95,60],[126,5,132,85],[210,285,110,120],[94,365,60,46],[157,155,65,60],[108,153,167,90],[94,370,65,70],[123,-28,138,100]][i];if(i>=0)ctx.drawImage(accessory,...tile(accessory,i),...p)}
     if(selected.face===1){ctx.fillStyle='#8b514c';for(const x of [139,149,159,227,237,247]){ctx.beginPath();ctx.arc(x,108+(x%3),2,0,Math.PI*2);ctx.fill()}}if(selected.face===2){ctx.strokeStyle='#4b3558';ctx.lineWidth=3;for(const x of [145,238]){ctx.beginPath();ctx.moveTo(x-8,70);ctx.lineTo(x+7,68);ctx.stroke()}}
     if(selected.makeup===1){ctx.fillStyle='#f794b877';for(const x of [145,240]){ctx.beginPath();ctx.ellipse(x,111,14,5,0,0,Math.PI*2);ctx.fill()}}if(selected.makeup===2){ctx.fillStyle='#ffe09a';ctx.font='20px sans-serif';ctx.fillText('✦',251,111)}
