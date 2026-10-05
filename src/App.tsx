@@ -29,6 +29,7 @@ import { Kindness } from './screens/Kindness.tsx';
 import { WhackShadow } from './games/WhackShadow.tsx';
 import { BubblePop } from './games/BubblePop.tsx';
 import { BlockBlast } from './games/BlockBlast.tsx';
+import { HeroDefense } from './games/HeroDefense.tsx';
 import { Race } from './screens/Race.tsx';
 import { Badges } from './screens/Badges.tsx';
 import { Codes } from './screens/Codes.tsx';
@@ -234,6 +235,7 @@ export default function App() {
       {screen === 'game:whack-shadow' && <WhackShadow />}
       {screen === 'game:bubble-pop' && <BubblePop />}
       {screen === 'game:block-blast' && <BlockBlast />}
+      {screen === 'game:hero-defense' && <HeroDefense />}
       {screen === 'game:fun-box' && <FunBox />}
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}

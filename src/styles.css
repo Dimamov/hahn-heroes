@@ -836,3 +836,11 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .blk-mini { display: grid; gap: 2px; height: 100%; max-width: 100%; }
 .blk-mini i { border-radius: 3px; background: transparent; }
 @media (max-height: 480px) and (orientation: landscape) { .blk-board { height: 50vh; } .blk-slot { height: 38px; } }
+
+.td-board { position: relative; display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(8, 1fr); gap: 2px; flex: 0 0 auto; height: 50vh; aspect-ratio: 6 / 8; max-width: 100%; margin: 0 auto; }
+.td-cell { padding: 0; min-width: 0; min-height: 0; border: 0; border-radius: 6px; background: #1f6f4a66; font-size: min(7vw, 4vh); }
+.td-cell.road { background: #7c5a3a88; }
+.td-foe { position: absolute; width: 14%; transform: translate(-50%, -50%); text-align: center; font-style: normal; font-size: min(7vw, 4vh); pointer-events: none; }
+.td-foe b { display: block; height: 4px; margin: 0 auto; border-radius: 2px; background: #f87171; }
+.td-bar { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+@media (max-height: 480px) and (orientation: landscape) { .td-board { height: 44vh; } .td-bar .chip { padding: 4px 8px; } }
