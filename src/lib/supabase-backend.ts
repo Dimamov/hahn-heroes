@@ -129,7 +129,7 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     },
     async classMissions() {
       const missions = await rows(sb.from('class_missions').select('*').order('created_at', { ascending: false }));
-      const subs = await rows(sb.from('class_submissions').select('*'));
+      const subs = await rows(sb.from('class_submissions').select('*').is('reset_at', null));
       return missions.map((m): ClassMission => {
         const s = subs.find((x) => x.mission_id === m.id);
         return {
@@ -208,7 +208,7 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const missions = await rows(sb.from('class_missions').select('id, title').eq('class_id', classId).order('created_at', { ascending: false }));
       if (!missions.length) return [];
       const subs = await rows(sb.from('class_submissions').select('mission_id, child_id, score_pct, coins_awarded, heroes(display_name)')
-        .in('mission_id', missions.map((m) => m.id)));
+        .in('mission_id', missions.map((m) => m.id)).is('reset_at', null));
       return missions.map((m) => ({
         id: m.id, title: m.title,
         submissions: subs.filter((s) => s.mission_id === m.id).map((s) => ({
