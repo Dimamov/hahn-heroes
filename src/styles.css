@@ -314,3 +314,39 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .tbar { width: 100%; max-width: 22px; background: linear-gradient(180deg, #22d3ee, #8b5cff); border-radius: 4px 4px 0 0; }
 .bar-n { font-size: .7rem; color: var(--muted, #94a3b8); min-height: .9em; }
 .bar-col small { font-size: .62rem; color: var(--muted, #94a3b8); white-space: nowrap; }
+
+/* Arcade games */
+.game { gap: 10px; }
+.pulse-pads { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: min(100%, 46vh); aspect-ratio: 1; margin: 0 auto; }
+.pulse-pad { border-radius: 26px; background: color-mix(in srgb, var(--pad) 35%, #120f35); border: 3px solid color-mix(in srgb, var(--pad) 70%, #fff 0%); transition: filter .1s, transform .1s; }
+.pulse-pad.lit { background: var(--pad); filter: brightness(1.4); box-shadow: 0 0 36px var(--pad); transform: scale(1.03); }
+.memory-board { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 10px; width: min(100%, 62vh * .75); flex: 1 1 auto; min-height: 0; margin: 0 auto; max-height: 62vh; }
+.mem-card { border-radius: 16px; background: var(--panel-2); border: 2px solid var(--violet); font-size: min(11vw, 6vh); color: var(--cyan); }
+.mem-card.up { background: #3a2f8f; }
+.mem-card.matched { border-color: var(--gold); background: #fbbf2430; }
+.wb-slots { min-height: 64px; display: grid; place-items: center; border-radius: 16px; border: 2px solid var(--violet); background: var(--panel); font: 800 2rem 'Baloo 2', monospace; letter-spacing: .2em; text-transform: uppercase; }
+.wb-tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.wb-tile { width: 52px; height: 58px; border-radius: 14px; background: linear-gradient(180deg, #4b3ba8, #2c2270); border: 2px solid var(--cyan); font: 800 1.7rem 'Baloo 2'; text-transform: uppercase; }
+.wb-tile.used { opacity: .25; }
+.wb-actions { justify-content: center; gap: 10px; }
+.found-words { max-height: 14vh; overflow: hidden; }
+.spot-pair { display: grid; gap: 10px; justify-items: center; }
+.spot-board { position: relative; width: min(100%, 30vh); aspect-ratio: 1; border-radius: 18px; border: 2px solid var(--violet); background: radial-gradient(circle at 50% 30%, #2b2275, #12103a); touch-action: manipulation; }
+.spot-item { position: absolute; transform: translate(-50%, -50%); font-size: min(11vw, 5vh); pointer-events: none; }
+.spot-ring { position: absolute; width: 18%; aspect-ratio: 1; border-radius: 50%; border: 3px solid var(--gold); transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 12px var(--gold); }
+.note.focus { color: var(--gold); font-weight: 800; }
+.win { display: flex; flex-direction: column; gap: 12px; align-items: stretch; justify-content: center; flex: 1; text-align: center; }
+.rush-card { display: grid; place-items: center; gap: 4px; padding: 20px; border-radius: 24px; background: var(--panel-2); border: 3px solid var(--cyan); }
+.rush-card small { font-size: 1.2rem; font-weight: 800; color: var(--muted); }
+.rush-card b { font: 800 min(34vw, 16vh) 'Baloo 2'; line-height: 1; color: var(--gold); }
+.rush-timer { height: 14px; border-radius: 8px; background: var(--panel); overflow: hidden; }
+.rush-timer i { display: block; height: 100%; background: linear-gradient(90deg, var(--magenta), var(--cyan)); transition: width 1s linear; }
+.funbox { font-size: min(30vw, 16vh); line-height: 1; background: none; align-self: center; }
+.fun-card { text-align: center; }
+.fun-card p { margin: 6px 0 0; font-weight: 800; font-size: 1.1rem; }
+.bigred { align-self: center; width: min(64vw, 36vh); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ff6b6b, #c1121f 70%); border: 8px solid #7a0b14; font: 800 1.5rem 'Baloo 2'; color: #fff; box-shadow: 0 10px 0 #5a0810; }
+.bigred:active { transform: translateY(6px); box-shadow: 0 4px 0 #5a0810; }
+.bigred.alarm { animation: flashred .4s infinite alternate; font-size: 4rem; }
+@keyframes flashred { from { filter: brightness(1); } to { filter: brightness(1.8); } }
+.video-wrap { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 40vh; }
+.video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 16px; }

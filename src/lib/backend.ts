@@ -156,6 +156,7 @@ export interface SenseiTraffic {
   hours: { hour: number; heroes: number }[];
   screens: { screen: string; count: number }[];
 }
+export interface ArcadeStatus { coins: number; games: string[]; claimed: string[] }
 export interface PendingTeacher {
   id: string;
   displayName: string;
@@ -235,6 +236,10 @@ export interface Backend {
   createClassMission(classId: string, mission: NewClassMission): Promise<void>;
   classResults(classId: string): Promise<ClassMissionResults[]>;
   resetSubmission(missionId: string, childId: string): Promise<void>;
+  /** Which reward games are open today and which ones this hero already collected. */
+  arcadeStatus(): Promise<ArcadeStatus>;
+  /** Pays the daily reward for a finished game, once per game per school day. */
+  arcadeClaim(game: string): Promise<{ awarded: number; duplicate: boolean; capped: boolean }>;
   senseiOverview(): Promise<SenseiOverview>;
   /** Tells the Sensei this person is here. Safe to call often; the server throttles it. */
   ping(screen: string): Promise<void>;

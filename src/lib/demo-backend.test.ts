@@ -3,6 +3,7 @@ import { createDemoBackend } from './demo-backend.ts';
 import { SignInError } from './backend.ts';
 import bank from '../../content/questions.json';
 
+const DAY_MS = 24 * 60 * 60 * 1000;
 const keyOf = (id: string) => (bank as { id: string; answer: number }[]).find((q) => q.id === id)!.answer;
 
 const memoryStorage = () => {
@@ -312,6 +313,21 @@ describe('demo backend: grown-ups and missions', () => {
       expect(t.hours).toHaveLength(24);
       clock = new Date(clock.getTime() + 10 * 60_000);
       expect((await b.senseiTraffic()).nowHeroes).toBe(0);
+    });
+  });
+
+  describe('arcade', () => {
+    it('pays each game once a day and ignores unknown games', async () => {
+      const b = make();
+      await b.signUp(input);
+      expect(await b.arcadeClaim('memory-flip')).toEqual({ awarded: 5, duplicate: false, capped: false });
+      expect(await b.arcadeClaim('memory-flip')).toEqual({ awarded: 0, duplicate: true, capped: false });
+      await expect(b.arcadeClaim('hacks')).rejects.toThrow();
+      expect((await b.arcadeStatus()).claimed).toEqual(['memory-flip']);
+      expect((await b.balances()).xp).toBe(3);
+      clock = new Date(clock.getTime() + DAY_MS);
+      expect((await b.arcadeStatus()).claimed).toEqual([]);
+      expect((await b.arcadeClaim('memory-flip')).awarded).toBe(5);
     });
   });
 });

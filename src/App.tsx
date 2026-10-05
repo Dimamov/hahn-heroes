@@ -11,6 +11,14 @@ import { Profile } from './screens/Profile.tsx';
 import { LearnHome, Practice } from './screens/Learn.tsx';
 import type { Subject } from './lib/backend.ts';
 import { Announcements, ClassMissions, HomeMissions, MissionsHome, ParentCode, Quiz } from './screens/Missions.tsx';
+import { Arcade } from './screens/Arcade.tsx';
+import { PatternPulse } from './games/PatternPulse.tsx';
+import { MemoryFlip } from './games/MemoryFlip.tsx';
+import { WordBuilder } from './games/WordBuilder.tsx';
+import { SpotDifference } from './games/SpotDifference.tsx';
+import { WordRush } from './games/WordRush.tsx';
+import { FunBox } from './games/FunBox.tsx';
+import { DoNotPress } from './games/DoNotPress.tsx';
 import { AdultAuth } from './screens/adult/AdultAuth.tsx';
 import { AdultApp } from './screens/adult/AdultApp.tsx';
 
@@ -21,6 +29,7 @@ interface Session {
   dailyAvailable: boolean;
   unread: number;
   missionDot: boolean;
+  arcadeDot: boolean;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
   go: (screen: string) => void;
@@ -44,6 +53,7 @@ export default function App() {
   const [dailyAvailable, setDailyAvailable] = useState(false);
   const [unread, setUnread] = useState(0);
   const [missionDot, setMissionDot] = useState(false);
+  const [arcadeDot, setArcadeDot] = useState(false);
 
   const refresh = useCallback(async () => {
     const [b, d] = await Promise.all([backend.balances(), backend.dailyStatus()]);
@@ -51,6 +61,7 @@ export default function App() {
     setDailyAvailable(d.available);
     // The rest is nice to have: a failure here must not hide the balance.
     backend.announcements().then((a) => setUnread(a.unread)).catch(() => undefined);
+    backend.arcadeStatus().then((a) => setArcadeDot(a.games.some((g) => !a.claimed.includes(g)))).catch(() => undefined);
     Promise.all([backend.homeMissions(), backend.classMissions()])
       .then(([home, cls]) => setMissionDot(home.some((m) => m.status === 'assigned' || m.status === 'sent_back') || cls.some((m) => !m.result)))
       .catch(() => undefined);
@@ -87,6 +98,7 @@ export default function App() {
     setBalances(emptyBalances());
     setUnread(0);
     setMissionDot(false);
+    setArcadeDot(false);
     setScreen('welcome');
   }, [backend]);
 
@@ -101,7 +113,7 @@ export default function App() {
     return <Welcome demo={backend.mode === 'demo'} onNew={() => setScreen('new')} onSignIn={() => setScreen('signin')} onAdult={() => setScreen('adult')} />;
   }
 
-  const session: Session = { backend, hero, balances, dailyAvailable, unread, missionDot, refresh, signOut, go: setScreen };
+  const session: Session = { backend, hero, balances, dailyAvailable, unread, missionDot, arcadeDot, refresh, signOut, go: setScreen };
   const quizId = screen.startsWith('quiz:') ? screen.slice(5) : null;
   const practiceSubject = screen.startsWith('practice:') ? (screen.slice(9) as Subject) : null;
   return (
@@ -114,9 +126,17 @@ export default function App() {
       {quizId && <Quiz id={quizId} />}
       {screen === 'learn' && <LearnHome />}
       {practiceSubject && <Practice subject={practiceSubject} />}
+      {screen === 'arcade' && <Arcade />}
+      {screen === 'game:pattern-pulse' && <PatternPulse />}
+      {screen === 'game:memory-flip' && <MemoryFlip />}
+      {screen === 'game:word-builder' && <WordBuilder />}
+      {screen === 'game:spot-difference' && <SpotDifference />}
+      {screen === 'game:word-rush' && <WordRush />}
+      {screen === 'game:fun-box' && <FunBox />}
+      {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn'].includes(screen) && !quizId && !practiceSubject && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }

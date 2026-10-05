@@ -13,7 +13,7 @@ export interface Destination {
 // Icons are emoji placeholders until the nav icon set (image list section 10b) arrives.
 export const DESTINATIONS: Destination[] = [
   { id: 'learn', label: 'Learn', icon: '🧠', tint: '#34d399', blurb: 'Practice math, words, reading and science to earn points.', milestone: 'Learning engine' },
-  { id: 'arcade', label: 'Arcade', icon: '🕹️', tint: '#ff3fa4', blurb: 'ODIN, Word Rush, Pattern Pulse, Memory Flip and more, solo or with your squad.', milestone: 'Solo arcade and squad play' },
+  { id: 'arcade', label: 'Arcade', icon: '🕹️', tint: '#ff3fa4', blurb: 'Pattern Pulse, Memory Flip, Word Builder and more.', milestone: 'Solo arcade' },
   { id: 'adventures', label: 'Adventures', icon: '📖', tint: '#8b5cff', blurb: 'Episode 1, Mystery Lab and Chronicle Quest. Uncover the secret of the Nexus.', milestone: 'Story and events' },
   { id: 'missions', label: 'Missions', icon: '📋', tint: '#22d3ee', blurb: 'Home missions from your grown-up and class missions from your teacher.', milestone: 'Parents, teachers and the Sensei' },
   { id: 'hero', label: 'My Hero', icon: '🦸', tint: '#a78bfa', blurb: 'Wardrobe, shop and skills for your hero.', milestone: 'Collections' },
