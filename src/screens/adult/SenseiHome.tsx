@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react';
 import { ItemGrid } from '../../components/ItemGrid.tsx';
 import { CardFace } from '../../components/CardFace.tsx';
 import { CARDS } from '../../lib/cards.ts';
-import type { Adult, Announcement, Backend, ChatLogLine, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
+import { SECRET_PLACES, type Adult, type Announcement, type Backend, type CharacterRequest, type SenseiSecret, ChatLogLine, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
+import { shrinkImage } from '../../lib/image-file.ts';
+import { KindReview } from './KindReview.tsx';
+import { CodeMaker } from './CodeMaker.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
-type View = 'home' | 'challenge' | 'events' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings';
+type View = 'home' | 'challenge' | 'events' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes' | 'kind';
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
@@ -20,6 +23,10 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
   if (view === 'teachers') return <Teachers backend={backend} onBack={back} />;
   if (view === 'announce') return <Announce backend={backend} onBack={back} />;
   if (view === 'drawings') return <DrawingReports backend={backend} onBack={back} />;
+  if (view === 'codes') return <CodeMaker backend={backend} onBack={back} />;
+  if (view === 'kind') return <KindReview backend={backend} onBack={back} />;
+  if (view === 'secret') return <SecretHunt backend={backend} onBack={back} />;
+  if (view === 'characters') return <Characters backend={backend} onBack={back} />;
   if (view === 'card') return <GiveCard backend={backend} onBack={back} />;
   if (view === 'chat') return <ChatUnlocks backend={backend} onBack={back} />;
   if (view === 'traffic') return <Traffic backend={backend} onBack={back} />;
@@ -42,6 +49,10 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
       )}
       <div className="grow" />
       <div className="btn-grid">
+        <button className="btn" onClick={() => setView('characters')}>🧙 Teacher characters</button>
+        <button className="btn" onClick={() => setView('secret')}>✨ Weekly secret</button>
+        <button className="btn" onClick={() => setView('codes')}>🔑 Secret codes</button>
+        <button className="btn" onClick={() => setView('kind')}>💛 Kindness</button>
         <button className="btn" onClick={() => setView('card')}>🎁 Give a card</button>
         <button className="btn" onClick={() => setView('chat')}>💬 Chat unlocks</button>
         <button className="btn" onClick={() => setView('drawings')}>🚩 Drawing reports</button>
@@ -389,6 +400,76 @@ function ChatUnlocks({ backend, onBack }: { backend: Backend; onBack: () => void
             <button className="btn small primary" onClick={() => setLog(null)}>Close</button>
           </div>
         </div>
+      )}
+    </main>
+  );
+}
+
+/** Teacher photo requests: look at the photo and wish list, make the art elsewhere, upload it for the teacher to approve. */
+function Characters({ backend, onBack }: { backend: Backend; onBack: () => void }) {
+  const [list, setList] = useState<CharacterRequest[] | null>(null);
+  const [art, setArt] = useState<Record<string, string>>({});
+  const [note, setNote] = useState<Record<string, string>>({});
+  const [error, setError] = useState('');
+  const load = () => backend.senseiCharacterQueue().then(setList).catch(() => setList([]));
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const pick = async (id: string, f: File | undefined) => {
+    if (!f) return;
+    setError('');
+    try { const a = await shrinkImage(f, 1100, 'image/jpeg'); setArt({ ...art, [id]: a }); } catch { setError('That file is not a picture.'); }
+  };
+  const send = async (r: CharacterRequest) => {
+    setError('');
+    try { await backend.senseiCharacterDeliver(r.teacherId, art[r.teacherId], note[r.teacherId] ?? ''); load(); }
+    catch { setError("Couldn't send that. Try a smaller image."); }
+  };
+  return (
+    <main className="screen">
+      <ScreenBar title="Teacher characters" onBack={onBack} />
+      <p className="error" role="alert">{error}</p>
+      {list === null ? <div className="spinner" /> : (
+        <PagedList items={list} perPage={1} empty="No character requests waiting."
+          render={(r) => (
+            <div className="card" key={r.teacherId}>
+              <div className="card-top"><b>{r.name}</b><span className="reward">{r.status === 'changes' ? 'Changes asked' : 'New'}</span></div>
+              {r.photo ? <img className="char-photo" src={r.photo} alt={`Photo from ${r.name}`} /> : <p className="muted">Photo removed.</p>}
+              {r.wish && <p><b>Wish list (a request):</b> {r.wish}</p>}
+              {r.changeNote && <p><b>Asked to change:</b> {r.changeNote}</p>}
+              <input type="file" accept="image/*" onChange={(e) => pick(r.teacherId, e.target.files?.[0])} aria-label="Upload the finished art" />
+              <label className="field plain"><span>Note for the teacher (optional)</span>
+                <input value={note[r.teacherId] ?? ''} maxLength={300} onChange={(e) => setNote({ ...note, [r.teacherId]: e.target.value })} /></label>
+              <button className="btn small primary" disabled={!art[r.teacherId]} onClick={() => send(r)}>Send for approval</button>
+            </div>
+          )} />
+      )}
+    </main>
+  );
+}
+
+/** Choose where this week's sparkle hides, the hint and the card prize (until someone finds it). */
+function SecretHunt({ backend, onBack }: { backend: Backend; onBack: () => void }) {
+  const [cur, setCur] = useState<SenseiSecret | null>(null);
+  const [place, setPlace] = useState('');
+  const [hint, setHint] = useState('');
+  const [card, setCard] = useState('');
+  const [note, setNote] = useState('');
+  const load = () => backend.senseiSecret().then((c) => { setCur(c); setPlace(c.place); setHint(c.hint); setCard(c.card); }).catch(() => undefined);
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const save = async () => { try { await backend.senseiSecretSet(place, hint, card); setNote('Saved for this week! ✨'); load(); } catch { setNote('It cannot change once a hero has found it.'); } };
+  return (
+    <main className="screen">
+      <ScreenBar title="Weekly secret" onBack={onBack} />
+      {!cur ? <div className="spinner" /> : (
+        <>
+          <p className="hint">{cur.finders} found it{cur.winnerSquad ? ` · first squad: ${cur.winnerSquad}` : ''}. Pick the screen where the sparkle hides.</p>
+          <div className="chips">{SECRET_PLACES.map((p) => <button key={p} className={`chip${place === p ? ' chosen' : ''}`} onClick={() => setPlace(p)}>{p}</button>)}</div>
+          <label className="field plain"><span>Hint (blank for the standard one)</span><input value={hint} maxLength={120} onChange={(e) => setHint(e.target.value)} /></label>
+          <label className="field plain"><span>Card prize</span>
+            <select value={card} onChange={(e) => setCard(e.target.value)}>{CARDS.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name} ({c.rarity})</option>)}</select></label>
+          <p className="note" role="status">{note}</p>
+          <div className="grow" />
+          <button className="btn primary" disabled={cur.finders > 0} onClick={save}>Save</button>
+        </>
       )}
     </main>
   );

@@ -17,7 +17,7 @@ export function Home() {
     } catch { /* the badge stays; the child can tap again */ }
   };
 
-  const pages = [DESTINATIONS.slice(0, 9), DESTINATIONS.slice(9)];
+  const pages = Array.from({ length: Math.ceil(DESTINATIONS.length / 9) }, (_, i) => DESTINATIONS.slice(i * 9, i * 9 + 9));
   return (
     <main className="screen home" style={{ backgroundImage: 'linear-gradient(180deg, rgba(11,10,36,.55), rgba(11,10,36,.96)), url(/assets/backgrounds/hahn-entrance-tall.webp)' }}>
       <header className="home-top">

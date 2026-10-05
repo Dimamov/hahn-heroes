@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createDemoBackend } from './demo-backend.ts';
 import { SignInError } from './backend.ts';
+import { HUNTS } from './treasure.ts';
 import { isWild, playable } from './odin-rules.ts';
 import bank from '../../content/questions.json';
 
@@ -155,7 +156,7 @@ describe('demo backend: grown-ups and missions', () => {
   it('only lets a hero show titles they have earned', async () => {
     const b = make();
     await b.signUp(input);
-    expect(await b.showcaseState()).toEqual({ title: 'rookie', pose: 'stand', unlocked: ['rookie'] });
+    expect(await b.showcaseState()).toEqual({ title: 'rookie', pose: 'stand', emote: 'wave', xp: 0, unlocked: ['rookie'] });
     await expect(b.showcaseSet('detective', 'stand')).rejects.toThrow('earned');
     await expect(b.showcaseSet('rookie', 'dance')).rejects.toThrow('pose');
     await b.showcaseSet('rookie', 'cheer');
@@ -164,6 +165,216 @@ describe('demo backend: grown-ups and missions', () => {
     expect((await b.showcaseState()).unlocked).toEqual(['rookie', 'detective']);
     await b.showcaseSet('detective', 'power');
     expect(await b.showcaseState()).toMatchObject({ title: 'detective', pose: 'power' });
+  });
+
+  it('gives a teacher a class report and student details, and no one else', async () => {
+    const { b, hero, cls } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    await b.joinClass(cls.joinCode!);
+    const set = await b.startPractice('math');
+    await b.answerQuestion(set.questions[0].id, 0);
+    await b.signOut();
+    await expect(b.classReport(cls.id)).rejects.toThrow();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    const r = await b.classReport(cls.id);
+    expect(r.className).toBe('Room 12');
+    expect(r.students).toHaveLength(1);
+    expect(r.students[0]).toMatchObject({ name: 'Brave Comet', answered: 1, daysActive: 1 });
+    expect((await b.childWeek(r.students[0].id)).answered).toBe(1);
+    expect((await b.classReport(cls.id, 1)).students[0].answered).toBe(0);
+  });
+
+  it('gives a hero their own weekly recap', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    expect((await b.myWeek()).answered).toBe(0);
+    const set = await b.startPractice('math');
+    await b.answerQuestion(set.questions[0].id, 0);
+    const w = await b.myWeek();
+    expect(w).toMatchObject({ answered: 1, daysActive: 1 });
+    expect((await b.myWeek(1)).answered).toBe(0);
+  });
+
+  it('unlocks emotes with XP and shows them in the room', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    expect(await b.showcaseState()).toMatchObject({ emote: 'wave', xp: 0 });
+    await expect(b.emoteSet('dance')).rejects.toThrow('unlocked');
+    await expect(b.emoteSet('moonwalk')).rejects.toThrow('unlocked');
+    await b.emoteSet('wave');
+    expect((await b.dormGet()).emote).toBe('wave');
+  });
+
+  it('lets a hero strike the school boss once a day and collect when it falls', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    const before = await b.raidState();
+    expect(before).toMatchObject({ defeated: false, struckToday: false, damage: 0, power: 10 });
+    await expect(b.raidClaim()).rejects.toThrow('not_defeated');
+    expect(await b.raidStrike()).toMatchObject({ ok: true, damage: 10 });
+    expect(await b.raidStrike()).toMatchObject({ ok: false, reason: 'already_struck' });
+    const after = await b.raidState();
+    expect(after).toMatchObject({ damage: 10, myDamage: 10, struckToday: true, strikers: 1 });
+  });
+
+  it('hides a weekly secret: each hero finds it once and the first squad wins the card', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    const s0 = await b.secretState();
+    expect(s0).toMatchObject({ found: false, won: false, mySquadWon: false });
+    expect(await b.secretFind()).toMatchObject({ ok: true, firstSquad: false });
+    expect(await b.secretFind()).toMatchObject({ ok: false });
+    expect(await b.secretClaim()).toEqual({ ok: false });
+    expect(await b.secretState()).toMatchObject({ found: true, finders: 1 });
+    await b.signOut();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    await expect(b.senseiSecretSet('learn', '', s0.card.id)).rejects.toThrow('already found');
+    expect((await b.senseiSecret()).finders).toBe(1);
+  });
+
+  it('makes stickers from fixed choices, charges 10, limits three a day and gives only inside a squad', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    const design = { hero: 'ana', bg: 'violet', frame: 'star', deco: '⭐', word: 'Hero!' };
+    await expect(b.stickerMake(design)).rejects.toThrow('not enough');
+    for (let d = 0; d < 3; d++) { await b.claimDaily(); clock = new Date(clock.getTime() + DAY_MS); }
+    await expect(b.stickerMake({ ...design, word: 'anything I like' })).rejects.toThrow('lists');
+    const before = (await b.balances()).coins;
+    expect(await b.stickerMake(design)).toEqual({ ok: true });
+    expect((await b.balances()).coins).toBe(before - 10);
+    expect((await b.stickerList()).stickers).toHaveLength(1);
+    const [s] = (await b.stickerList()).stickers;
+    await expect(b.stickerGive(s.id, 'someone-else')).rejects.toThrow('squad');
+  });
+
+  it('makes comics from fixed lists, caps the shelf and only shares inside a squad', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    const p = { hero: 'ana', scene: 'forest', pose: 'cheer', line: 'We did it!' };
+    const panels: [typeof p, typeof p, typeof p] = [p, p, p];
+    await expect(b.comicMake([p, p, { ...p, line: 'hello there' }])).rejects.toThrow('lists');
+    await b.comicMake(panels);
+    const [c] = await b.comicList();
+    expect(c).toMatchObject({ shared: false });
+    await expect(b.comicShare(c.id, true)).rejects.toThrow('squad');
+    for (let i = 0; i < 9; i++) await b.comicMake(panels);
+    await expect(b.comicMake(panels)).rejects.toThrow('full');
+    await b.comicDelete(c.id);
+    expect(await b.comicList()).toHaveLength(9);
+    expect(await b.comicSquad()).toEqual([]);
+  });
+
+  it('runs the room contest: enter needs a room, votes stay inside the squad and House, one vote a week', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    await expect(b.contestEnter()).rejects.toThrow('decorate');
+    const st = await b.contestState();
+    expect(st.theme.length).toBeGreaterThan(3);
+    expect(st.entries).toEqual([]);
+    await expect(b.contestVote('someone-else')).rejects.toThrow('squad or House');
+    expect(await b.contestClaim()).toEqual({ ok: false });
+  });
+
+  it('lets a teacher make one capped class code a day and kids redeem it once', async () => {
+    const { b, hero, cls } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    await b.joinClass(cls.joinCode!);
+    await b.signOut();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    await expect(b.codeCreate(cls.id, 6, 0)).rejects.toThrow('up to 5');
+    await expect(b.codeCreate(cls.id, 0, 0)).rejects.toThrow('at least');
+    const code = await b.codeCreate(cls.id, 3, 15);
+    await expect(b.codeCreate(cls.id, 1, 1)).rejects.toThrow('already made');
+    expect((await b.codeMine())[0]).toMatchObject({ code, redeemed: 0 });
+    await b.signOut();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    expect(await b.codeRedeem('nope')).toEqual({ ok: false, reason: 'not_found' });
+    const before = (await b.balances()).coins;
+    expect(await b.codeRedeem(code.toLowerCase())).toEqual({ ok: true, coins: 3, xp: 15 });
+    expect((await b.balances()).coins).toBe(before + 3);
+    expect(await b.codeRedeem(code)).toEqual({ ok: false, reason: 'already_used' });
+  });
+
+  it('shows achievement badges once the matching thing has been done', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    expect(await b.badgeWall()).toEqual([]);
+    await b.comicMake([0, 1, 2].map(() => ({ hero: 'ana', scene: 'hall', pose: 'stand', line: 'Awesome!' })) as never);
+    expect(await b.badgeWall()).toEqual(['comic-creator']);
+  });
+
+  it('runs the treasure hunt in order, pays each clue once and gives the card once', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    let s = await b.treasureState();
+    expect(s).toMatchObject({ step: 0, done: false });
+    const places = HUNTS[s.hunt].steps.map((x) => x.place);
+    expect(await b.treasureFind(places[1])).toEqual({ ok: false });
+    expect(await b.treasureClaim()).toEqual({ ok: false });
+    for (const p of places) expect((await b.treasureFind(p)).ok).toBe(true);
+    expect((await b.treasureState()).done).toBe(true);
+    expect(await b.treasureFind(places[0])).toEqual({ ok: false });
+    expect(await b.treasureClaim()).toEqual({ ok: true });
+    expect(await b.treasureClaim()).toEqual({ ok: false });
+    s = await b.treasureState();
+    expect(s.claimed).toBe(true);
+  });
+
+  it('needs a squad for the hideout and lets members place only decorations they own', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    expect(await b.baseGet()).toMatchObject({ squad: null });
+    await expect(b.basePlace(0, 'd-lamp')).rejects.toThrow('join a squad');
+  });
+
+  it('saves looks from fixed lists and owned items, and likes stay inside the circle', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    await expect(b.lookSave({ hair: 'rainbow-hair', makeup: 'none', aura: 'none', outfit: null, accessory: null }, true)).rejects.toThrow('lists');
+    await expect(b.lookSave({ hair: 'blue', makeup: 'none', aura: 'none', outfit: 'o-nexus-hoodie', accessory: null }, true)).rejects.toThrow('own that outfit');
+    await b.lookSave({ hair: 'blue', makeup: 'sparkle', aura: 'flame', outfit: null, accessory: null }, true);
+    expect(await b.lookGet()).toMatchObject({ hair: 'blue', pinned: true, likes: 0 });
+    await expect(b.lookLike('someone-else')).rejects.toThrow('only like looks');
+    expect(await b.lookGallery()).toEqual([]);
+  });
+
+  it('shows the monthly class race by class name only', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    const r = await b.raceState();
+    expect(r.classes.length).toBeGreaterThan(0);
+    expect(r.classes[0].rank).toBe(1);
+    expect(Object.keys(r.classes[0]).sort()).toEqual(['grade', 'members', 'mine', 'name', 'rank', 'total']);
+  });
+
+  it('lets squad mates thank each other with preset reasons, a grown-up approves, capped by the week', async () => {
+    const b = make();
+    const a = await b.signUp(input);
+    await b.signOut();
+    const c = await b.signUp({ ...input, nameNoun: 'Owl' });
+    await b.requestFriend(a.friendCode);
+    await b.signOut();
+    await b.signIn(a.heroCode, [0, 4, 8, 2]);
+    await b.respondFriend((await b.friends()).incoming[0].id, true);
+    await b.createSquad('Brave', 'Wolves');
+    await b.inviteToSquad(c.id);
+    await b.signOut();
+    await b.signIn(c.heroCode, [0, 4, 8, 2]);
+    await b.respondSquadInvite((await b.mySquad()).invites[0].squadId, true);
+    await expect(b.kindNominate(a.id, 'my own words')).rejects.toThrow('reasons');
+    await b.kindNominate(a.id, 'cheered');
+    await expect(b.kindNominate(a.id, 'teamwork')).rejects.toThrow('already');
+    expect((await b.kindState()).nominatedToday).toBe(true);
+    await b.signOut();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    const rows = await b.kindReview();
+    expect(rows).toHaveLength(1);
+    expect(rows[0].repeat).toBe(false);
+    expect(await b.kindDecide(rows[0].id, true)).toEqual({ awarded: 5 });
+    await expect(b.kindDecide(rows[0].id, true)).rejects.toThrow('not waiting');
+    await b.signOut();
+    await b.signIn(a.heroCode, [0, 4, 8, 2]);
+    expect((await b.kindState()).received).toEqual([{ reason: 'cheered', day: expect.any(String) }]);
   });
 
   it('lets a teacher send a quiz without a reading passage', async () => {
@@ -514,6 +725,11 @@ describe('demo backend: grown-ups and missions', () => {
       const math = (await b.childLearning(hero.id)).find((s) => s.subject === 'math')!;
       expect(math).toMatchObject({ answered: 20, correct: 20, left: 0 });
       expect(math.skills.length).toBeGreaterThan(2);
+      const week = await b.childWeek(hero.id);
+      expect(week).toMatchObject({ answered: 80, correct: 80, daysActive: 1 });
+      expect(week.subjects.map((x) => x.subject)).toEqual(['math', 'reading', 'science', 'vocab']);
+      expect(week.points).toBe(150);
+      expect((await b.childWeek(hero.id, 1)).answered).toBe(0);
     });
   });
 
@@ -928,5 +1144,36 @@ describe('demo backend: grown-ups and missions', () => {
       expect(await b.senseiTriviaPrize(10)).toBe(1);
       expect(await b.senseiTriviaPrize(10)).toBe(0);
     });
+  });
+});
+
+describe('teacher character requests', () => {
+  it('goes teacher to Sensei and back, and only then is approved', async () => {
+    const b = createDemoBackend(memoryStorage(), () => new Date('2026-10-12T15:00:00Z'));
+    await b.adultSignUp('tess@example.com', 'secret1', 'teacher', 'Tess Teacher');
+    await b.signOut();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    const [pending] = await b.pendingTeachers();
+    await b.approveTeacher(pending.id, true);
+    await b.signOut();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    const photo = 'data:image/jpeg;base64,AAAA';
+    await expect(b.teacherCharacterSubmit('nope', '')).rejects.toThrow();
+    await b.teacherCharacterSubmit(photo, 'A staff');
+    expect((await b.teacherCharacter()).status).toBe('new');
+    await b.signOut();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    const [req] = await b.senseiCharacterQueue();
+    expect(req).toMatchObject({ name: 'Tess Teacher', wish: 'A staff', photo });
+    await b.senseiCharacterDeliver(req.teacherId, 'data:image/png;base64,BBBB', 'Staff added');
+    expect(await b.senseiCharacterQueue()).toEqual([]);
+    await b.signOut();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    expect((await b.teacherCharacter()).status).toBe('review');
+    await b.teacherCharacterRespond(true, '');
+    await b.teacherCharacterRemovePhoto();
+    const c = await b.teacherCharacter();
+    expect(c).toMatchObject({ status: 'approved', photo: null });
+    expect(c.art).toBeTruthy();
   });
 });

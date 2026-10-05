@@ -3,6 +3,7 @@ import { useSession } from '../App.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
 import { ItemGrid } from '../components/ItemGrid.tsx';
 import { HOUSE_COLORS, type NexlingState } from '../lib/backend.ts';
+import { NexlingPlay } from './NexlingPlay.tsx';
 import { NEXLING_TYPES, STAGE_NAMES, nexlingType, type NexlingType } from '../lib/nexlings.ts';
 
 const SOURCE_LABEL: Record<string, string> = { learning: 'Learn practice', game: 'arcade games', class_mission: 'class missions', home_mission: 'home missions', streak: 'streaks', daily: 'the daily check-in', event: 'events' };
@@ -25,6 +26,7 @@ export function Nexlings() {
   const [color, setColor] = useState(HOUSE_COLORS[5]);
   const [error, setError] = useState('');
   const [evolved, setEvolved] = useState<number | null>(null);
+  const [playing, setPlaying] = useState(false);
 
   const load = useCallback(() => backend.nexlingState().then((s) => {
     setState(s);
@@ -77,6 +79,7 @@ export function Nexlings() {
     );
   }
 
+  if (playing && mineType) return <NexlingPlay pet={{ icon: mineType.icon, name: mine.nickname, color: mine.color }} onBack={() => setPlaying(false)} />;
   const stage = mine.stage;
   const lo = state.stages[stage - 1] ?? 0;
   const pct = mine.nextAt ? Math.min(100, Math.round(((mine.growth - lo) / (mine.nextAt - lo)) * 100)) : 100;
@@ -92,6 +95,7 @@ export function Nexlings() {
       <div className="bar-track" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><div className="bar-fill" style={{ width: `${pct}%`, background: mine.color }} /></div>
       <p className="note">{mine.nextAt ? `${mine.growth} / ${mine.nextAt} growth to the next stage` : `${mine.growth} growth. Fully grown!`}<br />Grows extra from {SOURCE_LABEL[mineType?.bonus ?? '']}.</p>
       <div className="grow" />
+      <button className="btn ghost" onClick={() => setPlaying(true)}>🎮 Play with {mine.nickname}</button>
       <div className="seg">
         <button onClick={() => { setName(mine.nickname); setColor(mine.color); setEditing(true); }}>✏️ Customize</button>
         <button onClick={() => setSwitching(true)}>🔄 Switch</button>

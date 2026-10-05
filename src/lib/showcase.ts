@@ -18,4 +18,16 @@ export const POSES = [
 export type Pose = (typeof POSES)[number]['id'];
 export const titleById = (id: string) => TITLES.find((t) => t.id === id) ?? TITLES[0];
 
-export interface ShowcaseState { title: string; pose: Pose; unlocked: string[] }
+/** Emotes are short moves unlocked by XP. The server checks the XP. */
+export const EMOTES = [
+  { id: 'wave', label: 'Wave', icon: '👋', xp: 0 },
+  { id: 'spin', label: 'Spin', icon: '🌀', xp: 50 },
+  { id: 'dance', label: 'Dance', icon: '💃', xp: 150 },
+  { id: 'flex', label: 'Flex', icon: '💪', xp: 300 },
+  { id: 'bow', label: 'Bow', icon: '🙇', xp: 500 },
+  { id: 'jump', label: 'Victory jump', icon: '🎉', xp: 800 },
+] as const;
+export type EmoteId = (typeof EMOTES)[number]['id'];
+export const emoteClass = (id: string) => `emote-${EMOTES.some((e) => e.id === id) ? id : 'wave'}`;
+
+export interface ShowcaseState { title: string; pose: Pose; emote: EmoteId; xp: number; unlocked: string[] }
