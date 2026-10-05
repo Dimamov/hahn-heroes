@@ -1,5 +1,6 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
+import { HIDE, moveHide, newHideGame, searchHide, seekerOf, tickHide, type HideGame } from './hide.ts';
 import { fallbackHint } from './hints.ts';
 import { GOOFY, GOOFY_REWARD } from './goofy.ts';
 import { isSpyEmoji } from './spy.ts';
@@ -265,6 +266,7 @@ interface DemoRoom {
   shadow?: DemoShadow;
   drawing?: DemoDrawing;
   nexus?: DemoNexus;
+  hide?: HideGame;
   hostId: string;
   state: 'lobby' | 'playing' | 'done' | 'closed';
   phase: 'question' | 'reveal';
@@ -2141,7 +2143,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     },
     async createRoom(game) {
       const me = meHero();
-      if (!['trivia-clash', 'odin', 'shadow-signal', 'squad-drawing', 'escape-nexus'].includes(game)) throw new Error('unknown game');
+      if (!['trivia-clash', 'odin', 'shadow-signal', 'squad-drawing', 'escape-nexus', 'hide-seek'].includes(game)) throw new Error('unknown game');
       if (await this.currentRoom!()) throw new Error('leave your room first');
       const code = generateCode(4).replace(/[^A-Z]/g, 'K');
       db.room = { code, game, hostId: me.id, state: 'lobby', phase: 'question', idx: 0, phaseStart: at(), questions: [], players: [{ id: me.id, name: me.displayName, starter: me.starter, score: 0, bot: false, answers: {} }] };
@@ -2175,6 +2177,12 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const r = db.room;
       if (!r || r.hostId !== me.id || r.state !== 'lobby') throw new Error('you are not hosting a room');
       if (r.players.length < ROOM_RULES.min) throw new Error('you need at least 2 players');
+      if (r.game === 'hide-seek') {
+        r.hide = newHideGame(r.players, at());
+        r.state = 'playing'; r.phase = 'question'; r.idx = 0; r.phaseStart = at();
+        commit();
+        return;
+      }
       if (r.game === 'escape-nexus') {
         const seals: Record<string, DemoSeal> = {};
         for (const p of r.players) {
@@ -2463,6 +2471,50 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     async senseiDrawingReports() {
       meAdult('sensei');
       return [...(db.drawingReports ?? [])].reverse().slice(0, 40);
+    },
+    async hideView(code) {
+      const me = meHero().id;
+      const r = db.room;
+      if (!r || r.game !== 'hide-seek' || r.code !== code.trim().toUpperCase() || !r.players.some((p) => p.id === me) || !r.hide) throw new Error('you are not in that room');
+      const g = r.hide;
+      tickHide(g, at());
+      if (g.phase === 'done') r.state = 'done';
+      commit();
+      const seeker = seekerOf(g);
+      const secs = g.phase === 'hide' ? HIDE.hide : g.phase === 'seek' ? HIDE.seek : g.phase === 'reveal' ? HIDE.reveal : 0;
+      const nameOf = (id: string) => r.players.find((p) => p.id === id)?.name ?? 'Hero';
+      return {
+        state: r.state, phase: g.phase, round: g.round, rounds: g.order.length,
+        secondsLeft: Math.max(0, Math.ceil(secs - (at() - g.startedAt) / 1000)), secondsTotal: secs, layout: g.layout,
+        seeker: seeker === me, searchesLeft: Math.max(0, HIDE.searches - g.searched.length), searched: g.searched,
+        found: g.found.map((f) => ({ spot: f.spot, name: nameOf(f.id) })),
+        mySpot: seeker === me ? null : g.spots[me] ?? null, meCaught: g.caught.includes(me),
+        canSneak: seeker !== me && g.phase === 'seek' && !g.sneaked.includes(me) && !g.caught.includes(me),
+        hiders: g.phase === 'reveal' || g.phase === 'done' ? Object.entries(g.spots).map(([id, spot]) => ({ name: nameOf(id), spot, caught: g.caught.includes(id) })) : null,
+        players: g.order.map((id, i) => {
+          const p = r.players.find((x) => x.id === id)!;
+          return { i, name: p.name, starter: p.starter, me: id === me, score: g.scores[id] ?? 0, seeker: id === seeker && g.phase !== 'done', left: false };
+        }),
+      };
+    },
+    async hideMove(spot) {
+      const me = meHero().id;
+      const g = db.room?.hide;
+      if (!db.room || !g || db.room.state !== 'playing') throw new Error('you are not in a game');
+      tickHide(g, at());
+      moveHide(g, me, spot);
+      tickHide(g, at());
+      commit();
+    },
+    async hideSearch(spot) {
+      const me = meHero().id;
+      const g = db.room?.hide;
+      if (!db.room || !g || db.room.state !== 'playing') throw new Error('you are not in a game');
+      tickHide(g, at());
+      const found = searchHide(g, me, spot);
+      tickHide(g, at());
+      commit();
+      return { found };
     },
     async nexusView(code) {
       const me = meHero().id;

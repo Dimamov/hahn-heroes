@@ -386,6 +386,27 @@ export interface DrawingView {
 }
 export interface DrawingReport { artist: string; reporter: string; word: string; at: string }
 export interface NexusPlayer { i: number; name: string; starter: string; me: boolean; solved: number; need: number; done: boolean; left: boolean }
+export interface HideView {
+  state: 'lobby' | 'playing' | 'done' | 'closed';
+  phase: 'hide' | 'seek' | 'reveal' | 'done';
+  round: number;
+  rounds: number;
+  secondsLeft: number;
+  secondsTotal: number;
+  /** Eight-letter props of the hall, six to a row, 24 in all. */
+  layout: string[];
+  seeker: boolean;
+  searchesLeft: number;
+  searched: number[];
+  found: { spot: number; name: string }[];
+  /** Where I am hiding (hiders only). */
+  mySpot: number | null;
+  meCaught: boolean;
+  canSneak: boolean;
+  /** Everyone's spot, only once the round is revealed. */
+  hiders: { name: string; spot: number; caught: boolean }[] | null;
+  players: { i: number; name: string; starter: string; me: boolean; score: number; seeker: boolean; left: boolean }[];
+}
 export interface NexusView {
   state: 'lobby' | 'playing' | 'done' | 'closed';
   outcome: 'play' | 'won' | 'lost';
@@ -684,6 +705,11 @@ export interface Backend {
   drawingGuess(text: string): Promise<{ correct: boolean; points: number }>;
   drawingReport(): Promise<void>;
   senseiDrawingReports(): Promise<DrawingReport[]>;
+  hideView(code: string): Promise<HideView>;
+  /** Hide and Seek: pick a hiding spot, or sneak to a new one (once a round) while being searched for. */
+  hideMove(spot: number): Promise<void>;
+  /** Hide and Seek: the seeker checks one spot. */
+  hideSearch(spot: number): Promise<{ found: number }>;
   nexusView(code: string): Promise<NexusView>;
   nexusAnswer(choice: number): Promise<NexusAnswer>;
   nexusBoost(index: number): Promise<void>;

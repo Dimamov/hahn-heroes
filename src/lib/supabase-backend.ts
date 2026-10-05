@@ -809,6 +809,21 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiDrawingReports() {
       return rpc('sensei_drawing_reports');
     },
+    async hideView(code) {
+      const d = await rpc('hide_view', { p_code: code });
+      return {
+        state: d.state, phase: d.phase, round: d.round ?? 0, rounds: d.rounds ?? 1, secondsLeft: d.seconds_left ?? 0, secondsTotal: d.seconds_total ?? 0,
+        layout: d.layout ?? [], seeker: !!d.seeker, searchesLeft: d.searches_left ?? 0, searched: d.searched ?? [], found: d.found ?? [],
+        mySpot: d.my_spot ?? null, meCaught: !!d.me_caught, canSneak: !!d.can_sneak, hiders: d.hiders ?? null, players: d.players ?? [],
+      };
+    },
+    async hideMove(spot) {
+      await rpc('hide_move', { p_spot: spot });
+    },
+    async hideSearch(spot) {
+      const d = await rpc('hide_search', { p_spot: spot });
+      return { found: d.found ?? 0 };
+    },
     async nexusView(code) {
       const d = await rpc('nexus_view', { p_code: code });
       return {
