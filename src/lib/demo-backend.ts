@@ -19,6 +19,7 @@ import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
 import { RAID_BOSSES, RAID_RULES } from './raid.ts';
 import { HEROES } from './heroes.ts';
+import { COMIC_LINES, COMIC_MAX, COMIC_POSES, COMIC_SCENES, type ComicPanels } from './comics.ts';
 import { STICKER_BGS, STICKER_COST, STICKER_DAILY, STICKER_DECOS, STICKER_FRAMES, STICKER_MAX, STICKER_WORDS } from './stickers.ts';
 import { EMOTES, type EmoteId, type Pose } from './showcase.ts';
 import {
@@ -282,6 +283,7 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  comics?: { id: number; maker: string; panels: ComicPanels; shared: boolean; deleted?: boolean }[];
   stickers?: { id: number; maker: string; owner: string; hero: string; bg: string; frame: string; deco: string; word: string; day: string }[];
   secret?: { week: string; place: string; hint: string; card: string; finds: string[]; winner: { squadId: string; by: string } | null; claims: string[] };
   raid?: { week: string; boss: string; maxHp: number; strikes: { heroId: string; day: string; damage: number }[] };
@@ -1633,6 +1635,42 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       s.owner = toHero;
       commit();
       return { ok: true };
+    },
+    async comicList() {
+      const me = meHero().id;
+      return (db.comics ??= []).filter((c) => c.maker === me && !c.deleted).sort((a, b) => b.id - a.id).map((c) => ({ id: c.id, panels: c.panels, shared: c.shared }));
+    },
+    async comicSquad() {
+      const me = meHero().id;
+      const sq = mySquadId(me);
+      if (sq === undefined) return [];
+      return (db.comics ??= []).filter((c) => c.shared && !c.deleted && c.maker !== me && mySquadId(c.maker) === sq).sort((a, b) => b.id - a.id)
+        .map((c) => ({ id: c.id, panels: c.panels, maker: Object.values(db.accounts).find((a) => a.id === c.maker)?.displayName ?? 'Hero' }));
+    },
+    async comicMake(panels) {
+      const me = meHero().id;
+      const all = (db.comics ??= []);
+      const ok = Array.isArray(panels) && panels.length === 3 && panels.every((p) => HEROES.some((h) => h.id === p.hero) && COMIC_SCENES.some((s) => s.id === p.scene)
+        && (COMIC_POSES as readonly string[]).includes(p.pose) && (COMIC_LINES as readonly string[]).includes(p.line));
+      if (!ok) throw new Error('pick from the lists');
+      if (all.filter((c) => c.maker === me && !c.deleted).length >= COMIC_MAX) throw new Error('your comic shelf is full');
+      all.push({ id: Math.max(0, ...all.map((c) => c.id)) + 1, maker: me, panels: panels.map((p) => ({ hero: p.hero, scene: p.scene, pose: p.pose, line: p.line })) as ComicPanels, shared: false });
+      commit();
+    },
+    async comicShare(id, share) {
+      const me = meHero().id;
+      const c = (db.comics ??= []).find((x) => x.id === id && x.maker === me && !x.deleted);
+      if (!c) throw new Error('that is not your comic');
+      if (share && mySquadId(me) === undefined) throw new Error('join a squad to share');
+      c.shared = share;
+      commit();
+    },
+    async comicDelete(id) {
+      const me = meHero().id;
+      const c = (db.comics ??= []).find((x) => x.id === id && x.maker === me && !x.deleted);
+      if (!c) throw new Error('that is not your comic');
+      c.deleted = true; c.shared = false;
+      commit();
     },
     async houseChallengeClaim() {
       const hero = meHero();
