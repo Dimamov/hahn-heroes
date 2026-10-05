@@ -1657,6 +1657,20 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       commit();
       return { ok: true };
     },
+    async raceState(back = 0) {
+      const hero = meHero();
+      const d = schoolDate(now());
+      const month = new Date(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1 - Math.min(Math.max(back, 0), 1), 1)).toISOString().slice(0, 10);
+      const link = db.members.find((m) => m.childId === hero.id);
+      const mine = link && db.classes.find((c) => c.id === link.classId);
+      const rows = [
+        { name: 'Room 4', grade: 5, members: 22, total: back ? 1380 : 910, mine: false },
+        { name: 'Room 9', grade: 6, members: 24, total: back ? 1210 : 1040, mine: false },
+        { name: 'Room 12', grade: 5, members: 21, total: back ? 990 : 760, mine: false },
+        ...(mine ? [{ name: mine.name, grade: mine.grade, members: db.members.filter((m) => m.classId === mine.id).length, total: back ? 0 : Math.min(heroSeasonPoints(hero.id), HOUSE_CAP * 4), mine: true }] : []),
+      ];
+      return { month, minMembers: 3, classes: rows.map((r) => ({ ...r, rank: 1 + rows.filter((o) => o.total > r.total).length })).sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name)) };
+    },
     async lookGet() {
       const me = meHero().id;
       const l = (db.looks ??= []).find((x) => x.heroId === me);

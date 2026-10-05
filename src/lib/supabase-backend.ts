@@ -478,6 +478,10 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('sticker_give', { p_sticker: stickerId, p_to: toHero });
       return { ok: !!d.ok, reason: d.reason };
     },
+    async raceState(back = 0) {
+      const d = await rpc('class_race', { p_back: back });
+      return { month: d.month, minMembers: d.min_members, classes: d.classes };
+    },
     async lookGet() {
       return (await rpc('look_get')) as never;
     },
