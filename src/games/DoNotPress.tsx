@@ -15,8 +15,15 @@ export function DoNotPress() {
     if (busy.current) return;
     busy.current = true;
     setPhase('siren');
+    // Ask for full screen while the tap still counts as a gesture. iPhones may refuse; the overlay below fills the screen anyway.
+    try { void document.documentElement.requestFullscreen?.().catch(() => undefined); } catch { /* not supported */ }
     const ms = siren(3) || 3000;
     timer.current = window.setTimeout(() => { setPhase('video'); busy.current = false; }, ms);
+  };
+
+  const closeVideo = () => {
+    setPhase('idle');
+    try { if (document.fullscreenElement) void document.exitFullscreen(); } catch { /* ignore */ }
   };
 
   return (
@@ -29,13 +36,10 @@ export function DoNotPress() {
       )}
       {phase === 'siren' && <p className="hint">Uh oh...</p>}
       {phase === 'video' && (
-        <>
-          <p className="hint">You were warned! 🎶</p>
-          <div className="video-wrap">
-            <iframe title="Surprise" src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowFullScreen />
-          </div>
-          <button className="btn" onClick={() => setPhase('idle')}>Close</button>
-        </>
+        <div className="dnp-full" role="dialog" aria-label="Surprise video">
+          <iframe title="Surprise" src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&playsinline=1&rel=0&fs=1" allow="autoplay; encrypted-media; fullscreen" allowFullScreen />
+          <button className="btn dnp-close" onClick={closeVideo}>✕ Close</button>
+        </div>
       )}
       <div className="grow" />
     </GameFrame>
