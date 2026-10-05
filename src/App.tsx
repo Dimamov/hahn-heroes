@@ -25,6 +25,7 @@ import { Nexlings } from './screens/Nexlings.tsx';
 import { Cards } from './screens/Cards.tsx';
 import { Arcade } from './screens/Arcade.tsx';
 import { PatternPulse } from './games/PatternPulse.tsx';
+import { RhythmTap } from './games/RhythmTap.tsx';
 import { MemoryFlip } from './games/MemoryFlip.tsx';
 import { WordBuilder } from './games/WordBuilder.tsx';
 import { SpotDifference } from './games/SpotDifference.tsx';
@@ -177,6 +178,7 @@ export default function App() {
       {screen === 'guide' && <Guide />}
       {screen === 'myweek' && <MyWeek />}
       {screen === 'game:pattern-pulse' && <PatternPulse />}
+      {screen === 'game:rhythm-tap' && <RhythmTap />}
       {screen === 'game:memory-flip' && <MemoryFlip />}
       {screen === 'game:word-builder' && <WordBuilder />}
       {screen === 'game:spot-difference' && <SpotDifference />}

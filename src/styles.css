@@ -656,3 +656,13 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .report-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; font-weight: 800; }
 .card.report-row { flex-direction: row; padding: 10px 14px; }
 .fun-answer { color: var(--gold, #fbbf24); }
+
+/* Rhythm Tap */
+.rt-board { position: relative; flex: 1 1 auto; min-height: 0; display: flex; gap: 8px; overflow: hidden; border-radius: 16px; background: #120f35; padding: 0 8px; }
+.rt-lane { position: relative; flex: 1; background: #1c1850; border-radius: 12px; }
+.rt-note { position: absolute; left: 12%; width: 76%; height: 22px; margin-top: -11px; border-radius: 11px; box-shadow: 0 0 8px #0006; }
+.rt-line { position: absolute; left: 0; right: 0; bottom: 6%; height: 4px; background: #fff8; }
+.rt-pads { display: flex; gap: 8px; height: min(16vh, 110px); }
+.rt-pad { flex: 1; border-radius: 16px; border: 3px solid #fff4; touch-action: manipulation; }
+.rt-pad:active { filter: brightness(1.3); }
+.rt-combo { color: var(--gold, #fbbf24); }

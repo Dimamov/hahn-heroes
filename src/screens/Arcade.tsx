@@ -15,6 +15,7 @@ export const GAMES = [
   { id: 'squad-drawing', label: 'Squad Drawing', icon: '🎨', reward: false },
   { id: 'escape-nexus', label: 'Escape the Nexus', icon: '🔐', reward: false },
   { id: 'word-rush', label: 'Word Rush', icon: '⏱️', reward: false },
+  { id: 'rhythm-tap', label: 'Rhythm Tap', icon: '🥁', reward: false },
   { id: 'fun-box', label: 'Fun Box', icon: '🎁', reward: false },
 ] as const;
 
