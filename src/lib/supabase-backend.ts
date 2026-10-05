@@ -301,6 +301,40 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async leaveSquad() {
       await rpc('squad_leave');
     },
+    async cardsState() {
+      return rpc('cards_state');
+    },
+    async openPack() {
+      return rpc('card_open_pack');
+    },
+    async setShowcase(cardIds) {
+      await rpc('card_set_showcase', { p_cards: cardIds });
+    },
+    async tradeOpen(friendHeroId) {
+      return rpc('trade_open', { p_friend: friendHeroId });
+    },
+    async tradeList() {
+      return (await rpc('trade_list')).map((t: any) => ({ id: t.id, friend: t.friend, friendId: t.friend_id, startedByMe: t.started_by_me }));
+    },
+    async tradeView(tradeId) {
+      const d = await rpc('trade_view', { p_trade: tradeId });
+      return {
+        id: d.id, status: d.status, ver: d.ver, friend: d.friend, friendId: d.friend_id, myOffer: d.my_offer, theirOffer: d.their_offer,
+        iConfirmed: d.i_confirmed, theyConfirmed: d.they_confirmed, fairness: { level: d.fairness.level, iGiveMore: !!d.fairness.i_give_more },
+      };
+    },
+    async tradeSet(tradeId, offer) {
+      await rpc('trade_set', { p_trade: tradeId, p_offer: offer });
+    },
+    async tradeConfirm(tradeId, ver, ack) {
+      return rpc('trade_confirm', { p_trade: tradeId, p_ver: ver, p_ack: ack });
+    },
+    async tradeCancel(tradeId) {
+      await rpc('trade_cancel', { p_trade: tradeId });
+    },
+    async senseiGiveCard(heroCode, cardId) {
+      return rpc('sensei_give_card', { p_hero_code: heroCode, p_card: cardId });
+    },
     async skillState() {
       const d = await rpc('skill_state');
       return { points: d.points, surge: surgeOf(d.surge), skills: d.skills };

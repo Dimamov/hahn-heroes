@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
+import { ItemGrid } from '../../components/ItemGrid.tsx';
+import { CardFace } from '../../components/CardFace.tsx';
+import { CARDS } from '../../lib/cards.ts';
 import type { Adult, Backend, ChatRequest, DrawingReport, PendingTeacher, SenseiOverview, SenseiTraffic } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
-type View = 'home' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings';
+type View = 'home' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings';
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
@@ -17,6 +20,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
   if (view === 'teachers') return <Teachers backend={backend} onBack={back} />;
   if (view === 'announce') return <Announce backend={backend} onBack={back} />;
   if (view === 'drawings') return <DrawingReports backend={backend} onBack={back} />;
+  if (view === 'card') return <GiveCard backend={backend} onBack={back} />;
   if (view === 'chat') return <ChatUnlocks backend={backend} onBack={back} />;
   if (view === 'traffic') return <Traffic backend={backend} onBack={back} />;
   if (view === 'trivia') return <Trivia backend={backend} current={overview?.triviaNight} onBack={back} />;
@@ -35,6 +39,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
         </div>
       )}
       <div className="grow" />
+      <button className="btn" onClick={() => setView('card')}>🎁 Give a card</button>
       <button className="btn" onClick={() => setView('chat')}>💬 Chat unlocks</button>
       <button className="btn" onClick={() => setView('drawings')}>🚩 Drawing reports</button>
       <button className="btn" onClick={() => setView('traffic')}>📈 Players and traffic</button>
@@ -92,6 +97,25 @@ function Announce({ backend, onBack }: { backend: Backend; onBack: () => void })
       <label className="field plain grow-field"><span>Message</span><textarea value={body} maxLength={400} onChange={(e) => setBody(e.target.value)} /></label>
       <p className="error" role="alert">{error}</p>
       <button className="btn primary" disabled={!title.trim() || !body.trim()} onClick={send}>Post to all heroes</button>
+    </main>
+  );
+}
+
+function GiveCard({ backend, onBack }: { backend: Backend; onBack: () => void }) {
+  const [code, setCode] = useState('');
+  const [pick, setPick] = useState<string | null>(null);
+  const [note, setNote] = useState('');
+  const send = async () => {
+    try { const name = await backend.senseiGiveCard(code.trim(), pick!); setNote(`Sent to ${name}! 🎉`); setPick(null); } catch { setNote('No hero has that code, or the card could not be sent.'); }
+  };
+  const rarer = [...CARDS].reverse();
+  return (
+    <main className="screen">
+      <ScreenBar title="Give a card" onBack={onBack} />
+      <label className="field plain"><span>Hero code</span><input value={code} maxLength={8} onChange={(e) => setCode(e.target.value.toUpperCase())} /></label>
+      <ItemGrid items={rarer} empty="" render={(c) => <CardFace key={c.id} id={c.id} small selected={pick === c.id} onClick={() => setPick(c.id)} />} />
+      <p className="note" role="status">{note}</p>
+      <button className="btn primary" disabled={code.trim().length < 8 || !pick} onClick={send}>Send the card</button>
     </main>
   );
 }

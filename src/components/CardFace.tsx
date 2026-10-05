@@ -1,0 +1,21 @@
+import { cardById, rarityInfo } from '../lib/cards.ts';
+
+/** A collectible card. Unowned cards show as a mystery. Art is an emoji until the real card art arrives. */
+export function CardFace({ id, qty, hidden = false, small = false, onClick, selected = false }: { id: string; qty?: number; hidden?: boolean; small?: boolean; onClick?: () => void; selected?: boolean }) {
+  const def = cardById(id);
+  if (!def) return null;
+  const r = rarityInfo(def.rarity);
+  const body = (
+    <>
+      <span className="card-icon">{hidden ? '❔' : def.icon}</span>
+      <b className="card-name">{hidden ? '???' : def.name}</b>
+      <small className="card-rarity" style={{ color: r.color }}>{hidden ? '' : r.label}</small>
+      {qty !== undefined && qty > 1 && <span className="card-qty">×{qty}</span>}
+    </>
+  );
+  const cls = `tcard${small ? ' small' : ''}${hidden ? ' hidden' : ''}${selected ? ' on' : ''}${def.rarity === 'legendary' ? ' legend' : ''}`;
+  const style = { borderColor: hidden ? '#334155' : r.color } as const;
+  return onClick
+    ? <button className={cls} style={style} onClick={onClick} aria-label={hidden ? 'Undiscovered card' : def.name}>{body}</button>
+    : <div className={cls} style={style}>{body}</div>;
+}
