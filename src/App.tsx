@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { createBackend } from './lib/index.ts';
 import type { Adult, Backend, Balances, Hero } from './lib/backend.ts';
 import { emptyBalances } from './lib/backend.ts';
+import { flushAnswers } from './lib/offline.ts';
 import { Welcome } from './screens/Welcome.tsx';
 import { Onboarding } from './screens/Onboarding.tsx';
 import { SignIn } from './screens/SignIn.tsx';
@@ -66,7 +67,9 @@ export default function App() {
   const [adult, setAdult] = useState<Adult | null>(null);
   const [screen, setScreen] = useState<Screen>('welcome');
   const [resetting, setResetting] = useState(() => backend.resetPending());
-  const [balances, setBalances] = useState<Balances>(emptyBalances());
+  const [balances, setBalances] = useState<Balances>(() => {
+    try { return { ...emptyBalances(), ...JSON.parse(localStorage.getItem('hh-balances') ?? '{}') }; } catch { return emptyBalances(); }
+  });
   const [dailyAvailable, setDailyAvailable] = useState(false);
   const [unread, setUnread] = useState(0);
   const [missionDot, setMissionDot] = useState(false);
@@ -76,6 +79,7 @@ export default function App() {
   const refresh = useCallback(async () => {
     const [b, d] = await Promise.all([backend.balances(), backend.dailyStatus()]);
     setBalances(b);
+    try { localStorage.setItem('hh-balances', JSON.stringify(b)); } catch { /* blocked storage */ }
     setDailyAvailable(d.available);
     // The rest is nice to have: a failure here must not hide the balance.
     backend.announcements().then((a) => setUnread(a.unread)).catch(() => undefined);
@@ -98,6 +102,15 @@ export default function App() {
     if (hero) refresh().catch(() => undefined);
   }, [hero, refresh]);
 
+  // Practice answers given without Wi-Fi are sent when the app opens and whenever the connection returns.
+  useEffect(() => {
+    if (!hero) return;
+    const sendWaiting = () => { flushAnswers(backend, hero.id).then((r) => { if (r.sent) refresh().catch(() => undefined); }).catch(() => undefined); };
+    sendWaiting();
+    window.addEventListener('online', sendWaiting);
+    return () => window.removeEventListener('online', sendWaiting);
+  }, [hero, backend, refresh]);
+
   // Tell the Sensei this person is here: on every screen change, then about once a minute while visible.
   const who = hero ? 'hero' : adult && adult.role !== 'sensei' ? 'adult' : null;
   useEffect(() => {
@@ -112,6 +125,7 @@ export default function App() {
   const enterHero = (h: Hero) => { setHero(h); setScreen('home'); };
   const signOut = useCallback(async () => {
     await backend.signOut();
+    try { localStorage.removeItem('hh-balances'); } catch { /* blocked storage */ }
     setHero(null);
     setAdult(null);
     setBalances(emptyBalances());
