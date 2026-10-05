@@ -359,4 +359,18 @@ describe('demo backend: grown-ups and missions', () => {
       expect((await b.mySquad()).squad).toBeNull();
     });
   });
+
+  describe('adult password', () => {
+    it('lets a grown-up pick a new password', async () => {
+      const b = make();
+      await b.adultSignUp('p@x.test', 'password1', 'parent', 'Pat Parent');
+      await b.adultRequestReset('p@x.test');
+      expect(b.resetPending()).toBe(false);
+      await expect(b.adultSetPassword('short')).rejects.toThrow();
+      await b.adultSetPassword('newpassword1');
+      await b.signOut();
+      await expect(b.adultSignIn('p@x.test', 'password1')).rejects.toThrow();
+      await b.adultSignIn('p@x.test', 'newpassword1');
+    });
+  });
 });

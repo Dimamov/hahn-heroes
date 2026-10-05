@@ -531,6 +531,14 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       db.submissions = db.submissions.filter((s) => !(s.missionId === missionId && s.childId === childId));
       commit();
     },
+    async adultRequestReset() { /* demo mode has no email to send */ },
+    resetPending() { return false; },
+    async adultSetPassword(password) {
+      const a = meAdult();
+      if (password.length < 8) throw new AdultAuthError('weak');
+      a.password = password;
+      commit();
+    },
     async arcadeStatus() {
       const id = meHero().id;
       const today = schoolDate(now());

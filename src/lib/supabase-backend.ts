@@ -170,6 +170,17 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       if (error) throw new AdultAuthError(error.code === 'email_not_confirmed' ? 'network' : 'wrong');
       return ensureAdultProfile();
     },
+    async adultRequestReset(email) {
+      await sb.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/` }).catch(() => undefined);
+    },
+    resetPending() {
+      return window.location.hash.includes('type=recovery');
+    },
+    async adultSetPassword(password) {
+      const { error } = await sb.auth.updateUser({ password });
+      if (error) throw new AdultAuthError(error.code === 'weak_password' ? 'weak' : 'network');
+      window.history.replaceState(null, '', window.location.pathname);
+    },
     async claimLink(code) {
       const d = await rpc('claim_link_code', { p_code: code });
       return d.ok ? { ok: true, childName: d.display_name } : { ok: false, error: d.error };

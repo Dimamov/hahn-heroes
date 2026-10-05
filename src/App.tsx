@@ -21,6 +21,7 @@ import { WordRush } from './games/WordRush.tsx';
 import { FunBox } from './games/FunBox.tsx';
 import { DoNotPress } from './games/DoNotPress.tsx';
 import { AdultAuth } from './screens/adult/AdultAuth.tsx';
+import { NewPassword } from './screens/adult/NewPassword.tsx';
 import { AdultApp } from './screens/adult/AdultApp.tsx';
 
 interface Session {
@@ -50,6 +51,7 @@ export default function App() {
   const [hero, setHero] = useState<Hero | null>(null);
   const [adult, setAdult] = useState<Adult | null>(null);
   const [screen, setScreen] = useState<Screen>('welcome');
+  const [resetting, setResetting] = useState(() => backend.resetPending());
   const [balances, setBalances] = useState<Balances>(emptyBalances());
   const [dailyAvailable, setDailyAvailable] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -104,6 +106,8 @@ export default function App() {
   }, [backend]);
 
   if (!ready) return <main className="screen center"><div className="spinner" aria-label="Loading" /></main>;
+
+  if (resetting) return <NewPassword backend={backend} onDone={() => { setResetting(false); backend.restore().then((who) => { if (who?.kind === 'adult') setAdult(who.adult); }).catch(() => undefined); }} />;
 
   if (adult) return <AdultApp backend={backend} adult={adult} onAdult={setAdult} onSignOut={signOut} />;
 
