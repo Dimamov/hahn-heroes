@@ -806,3 +806,9 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 
 .chips.kind-reasons { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .chips.kind-reasons .chip { font-size: 13px; padding: 8px 6px; text-align: center; line-height: 1.15; }
+
+.whack-board { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 10px; width: min(100%, 62vh * .9); flex: 1 1 auto; min-height: 0; margin: 0 auto; max-height: 62vh; }
+.whack-hole { position: relative; overflow: hidden; border-radius: 50% / 40%; background: radial-gradient(ellipse at 50% 80%, #05030f 55%, var(--panel-2) 56%); border: 2px solid var(--violet); font-size: min(12vw, 7vh); touch-action: manipulation; }
+.whack-pop { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; transform: translateY(100%); transition: transform .12s ease-out; }
+.whack-pop.up { transform: translateY(8%); }
+@media (max-height: 480px) and (orientation: landscape) { .whack-board { grid-template-columns: repeat(3, 1fr); width: min(100%, 90vh); max-height: 70vh; } .whack-hole { font-size: min(9vw, 11vh); } }
