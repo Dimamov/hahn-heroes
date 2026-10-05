@@ -34,3 +34,7 @@ Copy `.env.example` to `.env` and fill in the Supabase URL and publishable key t
 - `supabase/migrations/`: the database; `supabase/functions/`: kid sign-in functions and shared rules
 - `public/assets/`: web-sized art; `npm run assets` rebuilds it from the original ChatGPT files
 - Earlier ChatGPT prototype: the `first-playable-build` and `qa-next-update` branches (untouched)
+
+## Hosting (Cloudflare)
+
+`wrangler.jsonc` publishes the built app as a Cloudflare Worker named `hahn-heroes` (separate from the other Detcord workers). Simplest setup: in the Cloudflare dashboard, Workers & Pages, Create, import this GitHub repository, build command `npm run build`, deploy command `npx wrangler deploy`. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` as build variables (the publishable key is meant to be public; never put the service role key or `KID_AUTH_SECRET` there).

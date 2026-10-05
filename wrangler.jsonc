@@ -1,0 +1,9 @@
+{
+  // Hosts the built app (dist/) on Cloudflare as static assets. Dedicated to HAHN Heroes.
+  "name": "hahn-heroes",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
