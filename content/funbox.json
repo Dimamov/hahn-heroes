@@ -1,162 +1,407 @@
 [
-{
-"k": "joke",
-"t": "Why did the student eat his homework? The teacher said it was a piece of cake!"
-},
-{
-"k": "joke",
-"t": "What do you call a sleeping dinosaur? A dino-snore!"
-},
-{
-"k": "joke",
-"t": "Why can't a bicycle stand up by itself? It's two tired!"
-},
-{
-"k": "joke",
-"t": "What did the ocean say to the beach? Nothing, it just waved!"
-},
-{
-"k": "joke",
-"t": "Why did the math book look sad? It had too many problems."
-},
-{
-"k": "joke",
-"t": "What has hands but can't clap? A clock!"
-},
-{
-"k": "joke",
-"t": "Why do bees have sticky hair? They use honeycombs!"
-},
-{
-"k": "joke",
-"t": "What do you call cheese that isn't yours? Nacho cheese!"
-},
-{
-"k": "joke",
-"t": "Why was the computer cold? It left its Windows open!"
-},
-{
-"k": "joke",
-"t": "What kind of tree fits in your hand? A palm tree!"
-},
-{
-"k": "joke",
-"t": "Why did the cookie go to the doctor? It felt crummy."
-},
-{
-"k": "joke",
-"t": "What do you call a fish with no eyes? A fsh!"
-},
-{
-"k": "joke",
-"t": "How does the moon cut his hair? Eclipse it!"
-},
-{
-"k": "joke",
-"t": "Why did the scarecrow win an award? He was outstanding in his field!"
-},
-{
-"k": "joke",
-"t": "What's a ghost's favorite fruit? Boo-berries!"
-},
-{
-"k": "riddle",
-"t": "What gets wetter the more it dries? A towel."
-},
-{
-"k": "riddle",
-"t": "What has keys but can't open a lock? A piano."
-},
-{
-"k": "riddle",
-"t": "What can you catch but not throw? A cold."
-},
-{
-"k": "riddle",
-"t": "What has a face and two hands but no arms or legs? A clock."
-},
-{
-"k": "riddle",
-"t": "The more you take, the more you leave behind. What am I? Footsteps."
-},
-{
-"k": "riddle",
-"t": "What goes up but never comes down? Your age."
-},
-{
-"k": "fortune",
-"t": "A brave heart and a curious mind will open a hidden door today."
-},
-{
-"k": "fortune",
-"t": "Someone near you needs a kind word. You will know who."
-},
-{
-"k": "fortune",
-"t": "Practice a little every day and you will surprise yourself."
-},
-{
-"k": "fortune",
-"t": "Your next idea is a big one. Write it down!"
-},
-{
-"k": "fortune",
-"t": "A new friend is closer than you think."
-},
-{
-"k": "fortune",
-"t": "Mistakes are just the Nexus teaching you the next move."
-},
-{
-"k": "fortune",
-"t": "Today is a great day to help someone."
-},
-{
-"k": "fortune",
-"t": "The strongest heroes are the ones who keep trying."
-},
-{
-"k": "fact",
-"t": "A group of flamingos is called a flamboyance."
-},
-{
-"k": "fact",
-"t": "Octopuses have three hearts and blue blood."
-},
-{
-"k": "fact",
-"t": "Honey never spoils. Jars found in ancient tombs were still good!"
-},
-{
-"k": "fact",
-"t": "A day on Venus is longer than a year on Venus."
-},
-{
-"k": "fact",
-"t": "Bananas are berries, but strawberries are not."
-},
-{
-"k": "fact",
-"t": "Sharks have been around longer than trees."
-},
-{
-"k": "fact",
-"t": "Your brain uses about the same power as a small light bulb."
-},
-{
-"k": "cheer",
-"t": "You showed up today. That is what heroes do!"
-},
-{
-"k": "cheer",
-"t": "Great job sticking with it. Keep going!"
-},
-{
-"k": "cheer",
-"t": "Every hero started as a beginner."
-},
-{
-"k": "cheer",
-"t": "Being kind is a superpower. You have it!"
-}
+ {
+  "k": "joke",
+  "t": "Why did the student eat his homework?",
+  "a": "The teacher said it was a piece of cake!"
+ },
+ {
+  "k": "joke",
+  "t": "What do you call a sleeping dinosaur?",
+  "a": "A dino-snore!"
+ },
+ {
+  "k": "joke",
+  "t": "Why can't a bicycle stand up by itself?",
+  "a": "It's two tired!"
+ },
+ {
+  "k": "joke",
+  "t": "What did the ocean say to the beach?",
+  "a": "Nothing, it just waved!"
+ },
+ {
+  "k": "joke",
+  "t": "Why did the math book look sad?",
+  "a": "It had too many problems."
+ },
+ {
+  "k": "joke",
+  "t": "What has hands but can't clap?",
+  "a": "A clock!"
+ },
+ {
+  "k": "joke",
+  "t": "Why do bees have sticky hair?",
+  "a": "They use honeycombs!"
+ },
+ {
+  "k": "joke",
+  "t": "What do you call cheese that isn't yours?",
+  "a": "Nacho cheese!"
+ },
+ {
+  "k": "joke",
+  "t": "Why was the computer cold?",
+  "a": "It left its Windows open!"
+ },
+ {
+  "k": "joke",
+  "t": "What kind of tree fits in your hand?",
+  "a": "A palm tree!"
+ },
+ {
+  "k": "joke",
+  "t": "Why did the cookie go to the doctor?",
+  "a": "It felt crummy."
+ },
+ {
+  "k": "joke",
+  "t": "What do you call a fish with no eyes?",
+  "a": "A fsh!"
+ },
+ {
+  "k": "joke",
+  "t": "How does the moon cut his hair?",
+  "a": "Eclipse it!"
+ },
+ {
+  "k": "joke",
+  "t": "Why did the scarecrow win an award?",
+  "a": "He was outstanding in his field!"
+ },
+ {
+  "k": "joke",
+  "t": "What's a ghost's favorite fruit?",
+  "a": "Boo-berries!"
+ },
+ {
+  "k": "riddle",
+  "t": "What gets wetter the more it dries?",
+  "a": "A towel."
+ },
+ {
+  "k": "riddle",
+  "t": "What has keys but can't open a lock?",
+  "a": "A piano."
+ },
+ {
+  "k": "riddle",
+  "t": "What can you catch but not throw?",
+  "a": "A cold."
+ },
+ {
+  "k": "riddle",
+  "t": "What has a face and two hands but no arms or legs?",
+  "a": "A clock."
+ },
+ {
+  "k": "riddle",
+  "t": "The more you take, the more you leave behind. What am I?",
+  "a": "Footsteps."
+ },
+ {
+  "k": "riddle",
+  "t": "What goes up but never comes down?",
+  "a": "Your age."
+ },
+ {
+  "k": "fortune",
+  "t": "A brave heart and a curious mind will open a hidden door today."
+ },
+ {
+  "k": "fortune",
+  "t": "Someone near you needs a kind word. You will know who."
+ },
+ {
+  "k": "fortune",
+  "t": "Practice a little every day and you will surprise yourself."
+ },
+ {
+  "k": "fortune",
+  "t": "Your next idea is a big one. Write it down!"
+ },
+ {
+  "k": "fortune",
+  "t": "A new friend is closer than you think."
+ },
+ {
+  "k": "fortune",
+  "t": "Mistakes are just the Nexus teaching you the next move."
+ },
+ {
+  "k": "fortune",
+  "t": "Today is a great day to help someone."
+ },
+ {
+  "k": "fortune",
+  "t": "The strongest heroes are the ones who keep trying."
+ },
+ {
+  "k": "fact",
+  "t": "A group of flamingos is called a flamboyance."
+ },
+ {
+  "k": "fact",
+  "t": "Octopuses have three hearts and blue blood."
+ },
+ {
+  "k": "fact",
+  "t": "Honey never spoils. Jars found in ancient tombs were still good!"
+ },
+ {
+  "k": "fact",
+  "t": "A day on Venus is longer than a year on Venus."
+ },
+ {
+  "k": "fact",
+  "t": "Bananas are berries, but strawberries are not."
+ },
+ {
+  "k": "fact",
+  "t": "Sharks have been around longer than trees."
+ },
+ {
+  "k": "fact",
+  "t": "Your brain uses about the same power as a small light bulb."
+ },
+ {
+  "k": "cheer",
+  "t": "You showed up today. That is what heroes do!"
+ },
+ {
+  "k": "cheer",
+  "t": "Great job sticking with it. Keep going!"
+ },
+ {
+  "k": "cheer",
+  "t": "Every hero started as a beginner."
+ },
+ {
+  "k": "cheer",
+  "t": "Being kind is a superpower. You have it!"
+ },
+ {
+  "k": "joke",
+  "t": "What do you call a bear with no teeth?",
+  "a": "A gummy bear!"
+ },
+ {
+  "k": "joke",
+  "t": "Why did the music teacher need a ladder?",
+  "a": "To reach the high notes!"
+ },
+ {
+  "k": "joke",
+  "t": "What did zero say to eight?",
+  "a": "Nice belt!"
+ },
+ {
+  "k": "joke",
+  "t": "Why was the broom late?",
+  "a": "It over-swept!"
+ },
+ {
+  "k": "joke",
+  "t": "What do you call a dog magician?",
+  "a": "A labracadabrador!"
+ },
+ {
+  "k": "joke",
+  "t": "Why did the tomato turn red?",
+  "a": "It saw the salad dressing!"
+ },
+ {
+  "k": "joke",
+  "t": "What do planets like to read?",
+  "a": "Comet books!"
+ },
+ {
+  "k": "joke",
+  "t": "Why did the picture go to jail?",
+  "a": "It was framed!"
+ },
+ {
+  "k": "joke",
+  "t": "What is a robot's favorite snack?",
+  "a": "Computer chips!"
+ },
+ {
+  "k": "joke",
+  "t": "Why do seagulls fly over the sea?",
+  "a": "If they flew over the bay, they would be bagels!"
+ },
+ {
+  "k": "riddle",
+  "t": "What has a neck but no head?",
+  "a": "A bottle!"
+ },
+ {
+  "k": "riddle",
+  "t": "What has many teeth but cannot bite?",
+  "a": "A comb!"
+ },
+ {
+  "k": "riddle",
+  "t": "What can travel around the world while staying in a corner?",
+  "a": "A stamp!"
+ },
+ {
+  "k": "riddle",
+  "t": "What gets bigger the more you take away?",
+  "a": "A hole!"
+ },
+ {
+  "k": "riddle",
+  "t": "What has one eye but cannot see?",
+  "a": "A needle!"
+ },
+ {
+  "k": "riddle",
+  "t": "I am tall when I am young and short when I am old. What am I?",
+  "a": "A candle!"
+ },
+ {
+  "k": "riddle",
+  "t": "What belongs to you but other people use it more than you do?",
+  "a": "Your name!"
+ },
+ {
+  "k": "riddle",
+  "t": "What runs but never walks?",
+  "a": "Water!"
+ },
+ {
+  "k": "teaser",
+  "t": "If you have 3 apples and take away 2, how many do you have?",
+  "a": "2. The two you took!"
+ },
+ {
+  "k": "teaser",
+  "t": "A farmer has 17 sheep. All but 9 run away. How many are left?",
+  "a": "9!"
+ },
+ {
+  "k": "teaser",
+  "t": "What number comes next: 2, 4, 8, 16, ...?",
+  "a": "32. Each number doubles!"
+ },
+ {
+  "k": "teaser",
+  "t": "How many months have 28 days?",
+  "a": "All 12. Every month has at least 28!"
+ },
+ {
+  "k": "teaser",
+  "t": "What is half of two plus two?",
+  "a": "3. Half of two is one, plus two!"
+ },
+ {
+  "k": "teaser",
+  "t": "Which is heavier: a pound of feathers or a pound of rocks?",
+  "a": "Neither. They both weigh a pound!"
+ },
+ {
+  "k": "tongue",
+  "t": "Red lorry, yellow lorry, red lorry, yellow lorry."
+ },
+ {
+  "k": "tongue",
+  "t": "She sells seashells by the seashore."
+ },
+ {
+  "k": "tongue",
+  "t": "How much wood would a woodchuck chuck if a woodchuck could chuck wood?"
+ },
+ {
+  "k": "tongue",
+  "t": "Peter Piper picked a peck of pickled peppers."
+ },
+ {
+  "k": "tongue",
+  "t": "Fuzzy Wuzzy was a bear. Fuzzy Wuzzy had no hair."
+ },
+ {
+  "k": "tongue",
+  "t": "Unique New York, unique New York, you know you need unique New York."
+ },
+ {
+  "k": "would",
+  "t": "Would you rather be able to fly or be invisible?"
+ },
+ {
+  "k": "would",
+  "t": "Would you rather have a pet dragon or a pet unicorn?"
+ },
+ {
+  "k": "would",
+  "t": "Would you rather live on the moon or under the sea?"
+ },
+ {
+  "k": "would",
+  "t": "Would you rather be super strong or super fast?"
+ },
+ {
+  "k": "would",
+  "t": "Would you rather talk to animals or speak every language?"
+ },
+ {
+  "k": "would",
+  "t": "Would you rather explore a jungle or a castle?"
+ },
+ {
+  "k": "would",
+  "t": "Would you rather have a robot helper or a magic backpack?"
+ },
+ {
+  "k": "would",
+  "t": "Would you rather always have summer or always have snow days?"
+ },
+ {
+  "k": "fact",
+  "t": "Honey never spoils. Jars found in ancient tombs were still good to eat."
+ },
+ {
+  "k": "fact",
+  "t": "A day on Venus is longer than a year on Venus."
+ },
+ {
+  "k": "fact",
+  "t": "Bananas are berries, but strawberries are not."
+ },
+ {
+  "k": "fact",
+  "t": "Your heart beats about 100,000 times every day."
+ },
+ {
+  "k": "fact",
+  "t": "Sharks have been around longer than trees."
+ },
+ {
+  "k": "fact",
+  "t": "A snail can sleep for up to three years."
+ },
+ {
+  "k": "fact",
+  "t": "Lightning is hotter than the surface of the sun."
+ },
+ {
+  "k": "fact",
+  "t": "Wombat poop is shaped like little cubes."
+ },
+ {
+  "k": "fortune",
+  "t": "A small step today becomes a big leap next month."
+ },
+ {
+  "k": "fortune",
+  "t": "Ask one more question today. It will lead somewhere great."
+ },
+ {
+  "k": "cheer",
+  "t": "Wrong answers help your brain grow. Keep trying!"
+ },
+ {
+  "k": "cheer",
+  "t": "You are braver than you think and smarter than you know."
+ }
 ]
