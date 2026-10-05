@@ -330,4 +330,33 @@ describe('demo backend: grown-ups and missions', () => {
       expect((await b.arcadeClaim('memory-flip')).awarded).toBe(5);
     });
   });
+
+  describe('friends and squads', () => {
+    it('connects two heroes, forms a squad and lets members leave', async () => {
+      const b = make();
+      const a = await b.signUp(input);
+      await b.signOut();
+      const c = await b.signUp({ ...input, nameNoun: 'Owl' });
+      await expect(b.requestFriend(c.heroCode)).rejects.toThrow('own code');
+      await b.requestFriend(a.heroCode);
+      await expect(b.requestFriend(a.heroCode)).rejects.toThrow('already');
+      await b.signOut();
+      await b.signIn(a.heroCode, [0, 4, 8]);
+      const incoming = (await b.friends()).incoming;
+      expect(incoming.map((r) => r.name)).toEqual([c.displayName]);
+      await b.respondFriend(incoming[0].id, true);
+      expect((await b.friends()).friends[0].heroId).toBe(c.id);
+      await expect(b.createSquad('Hacky', 'Wolves')).rejects.toThrow();
+      await b.createSquad('Brave', 'Wolves');
+      await b.inviteToSquad(c.id);
+      await b.signOut();
+      await b.signIn(c.heroCode, [0, 4, 8]);
+      const view = await b.mySquad();
+      expect(view.squad).toBeNull();
+      await b.respondSquadInvite(view.invites[0].squadId, true);
+      expect((await b.mySquad()).squad?.members).toHaveLength(2);
+      await b.leaveSquad();
+      expect((await b.mySquad()).squad).toBeNull();
+    });
+  });
 });
