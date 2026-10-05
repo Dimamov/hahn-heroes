@@ -1,0 +1,8 @@
+# Supabase CLI config. Project ids and secrets are not stored here.
+project_id = "hahn-heroes"
+
+[functions.kid-signup]
+verify_jwt = false
+
+[functions.kid-signin]
+verify_jwt = false
