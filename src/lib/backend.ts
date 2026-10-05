@@ -433,6 +433,7 @@ export interface Backend {
   classMissions(): Promise<ClassMission[]>;
   submitClassMission(id: string, answers: number[]): Promise<ClassResult>;
   announcements(): Promise<{ items: Announcement[]; unread: number }>;
+  senseiDeleteAnnouncement(id: number): Promise<void>;
   markAnnouncementsRead(): Promise<void>;
   /** The next Trivia Night, and whether this hero said they are coming. */
   triviaState(): Promise<TriviaState>;

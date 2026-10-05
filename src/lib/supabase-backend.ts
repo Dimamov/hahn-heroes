@@ -152,6 +152,9 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
         .map((a) => ({ id: a.id, title: a.title, body: a.body, createdAt: a.created_at }));
       return { items, unread: await rpc('unread_announcements') };
     },
+    async senseiDeleteAnnouncement(id) {
+      await rpc('sensei_delete_announcement', { p_id: id });
+    },
     async markAnnouncementsRead() {
       await rpc('mark_announcements_read');
     },

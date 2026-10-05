@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ItemGrid } from '../../components/ItemGrid.tsx';
 import { CardFace } from '../../components/CardFace.tsx';
 import { CARDS } from '../../lib/cards.ts';
-import type { Adult, Backend, ChatLogLine, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
+import type { Adult, Announcement, Backend, ChatLogLine, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
@@ -89,6 +89,12 @@ function Announce({ backend, onBack }: { backend: Backend; onBack: () => void })
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
   const send = async () => { try { await backend.postAnnouncement(title.trim(), body.trim()); setSent(true); } catch { setError("Couldn't post that. Please try again."); } };
+  const [tab, setTab] = useState<'new' | 'old'>('new');
+  const [old, setOld] = useState<Announcement[] | null>(null);
+  const [removing, setRemoving] = useState<Announcement | null>(null);
+  const loadOld = () => backend.announcements().then((a) => setOld(a.items)).catch(() => setOld([]));
+  useEffect(() => { loadOld(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const remove = async (a: Announcement) => { setRemoving(null); try { await backend.senseiDeleteAnnouncement(a.id); } catch { setError("Couldn't remove that one."); } loadOld(); };
   if (sent) {
     return (
       <main className="screen center"><div className="grow" /><div className="soon-icon" aria-hidden>📣</div><h3>Posted!</h3>
@@ -98,11 +104,43 @@ function Announce({ backend, onBack }: { backend: Backend; onBack: () => void })
   }
   return (
     <main className="screen">
-      <ScreenBar title="Announcement" onBack={onBack} />
-      <label className="field plain"><span>Title</span><input value={title} maxLength={60} onChange={(e) => setTitle(e.target.value)} /></label>
-      <label className="field plain grow-field"><span>Message</span><textarea value={body} maxLength={400} onChange={(e) => setBody(e.target.value)} /></label>
-      <p className="error" role="alert">{error}</p>
-      <button className="btn primary" disabled={!title.trim() || !body.trim()} onClick={send}>Post to all heroes</button>
+      <ScreenBar title="Announcements" onBack={onBack} />
+      <div className="chips">
+        <button className={`chip${tab === 'new' ? ' chosen' : ''}`} onClick={() => setTab('new')}>Post new</button>
+        <button className={`chip${tab === 'old' ? ' chosen' : ''}`} onClick={() => setTab('old')}>Remove old</button>
+      </div>
+      {tab === 'new' ? (
+        <>
+          <label className="field plain"><span>Title</span><input value={title} maxLength={60} onChange={(e) => setTitle(e.target.value)} /></label>
+          <label className="field plain grow-field"><span>Message</span><textarea value={body} maxLength={400} onChange={(e) => setBody(e.target.value)} /></label>
+          <p className="error" role="alert">{error}</p>
+          <button className="btn primary" disabled={!title.trim() || !body.trim()} onClick={send}>Post to all heroes</button>
+        </>
+      ) : (
+        <>
+          {old === null ? <div className="spinner" /> : (
+            <PagedList items={old} perPage={3} empty="No announcements."
+              render={(a) => (
+                <div className="card" key={a.id}>
+                  <div className="card-top"><b>{a.title}</b><small className="muted">{new Date(a.createdAt).toLocaleDateString()}</small></div>
+                  <div className="card-bottom"><span />
+                    <button className="btn small ghost" onClick={() => setRemoving(a)}>Remove</button>
+                  </div>
+                </div>
+              )} />
+          )}
+          <p className="error" role="alert">{error}</p>
+        </>
+      )}
+      {removing && (
+        <div className="opicker" role="dialog" aria-label="Remove this announcement">
+          <div className="card">
+            <b>Remove “{removing.title}”?</b>
+            <p className="muted">Heroes will no longer see it.</p>
+            <div className="seg"><button onClick={() => setRemoving(null)}>Keep</button><button className="chosen" onClick={() => remove(removing)}>Remove</button></div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

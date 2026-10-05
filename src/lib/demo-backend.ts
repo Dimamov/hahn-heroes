@@ -720,13 +720,13 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     },
     async announcements() {
       const userId = db.current ?? '';
-      const items = [...db.announcements].sort((a, b) => b.id - a.id);
+      const items = db.announcements.filter((a) => !(a as { deleted?: boolean }).deleted).sort((a, b) => b.id - a.id);
       const unread = items.filter((a) => !db.reads.some((r) => r.userId === userId && r.announcementId === a.id)).length;
       return { items, unread };
     },
     async markAnnouncementsRead() {
       const userId = db.current ?? '';
-      for (const a of db.announcements) {
+      for (const a of db.announcements.filter((x) => !(x as { deleted?: boolean }).deleted)) {
         if (!db.reads.some((r) => r.userId === userId && r.announcementId === a.id)) db.reads.push({ userId, announcementId: a.id });
       }
       commit();
@@ -2038,10 +2038,17 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       else if (!a.approved) db.adults = db.adults.filter((x) => x.id !== id);
       commit();
     },
+    async senseiDeleteAnnouncement(id) {
+      meAdult('sensei');
+      const a = db.announcements.find((x) => x.id === id && !(x as { deleted?: boolean }).deleted);
+      if (!a) throw new Error('no such announcement');
+      (a as { deleted?: boolean }).deleted = true;
+      commit();
+    },
     async postAnnouncement(title, body) {
       meAdult('sensei');
       if (!title.trim() || !body.trim()) throw new Error('write a title and a message');
-      db.announcements.push({ id: db.announcements.length + 1, title: title.trim().slice(0, 80), body: body.trim().slice(0, 500), createdAt: now().toISOString() });
+      db.announcements.push({ id: Math.max(0, ...db.announcements.map((a) => a.id)) + 1, title: title.trim().slice(0, 80), body: body.trim().slice(0, 500), createdAt: now().toISOString() });
       commit();
     },
     async triviaState() {
