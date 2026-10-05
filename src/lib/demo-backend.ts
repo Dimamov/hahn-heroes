@@ -12,7 +12,8 @@ import {
   isValidPicture, normalizeHeroCode,
 } from '../../supabase/functions/_shared/kid-auth.ts';
 import { SHOP_ITEMS, itemById } from './shop-catalog.ts';
-import { NEXLING_BONUS, NEXLING_STAGES, nexlingType } from './nexlings.ts';
+import { SKILLS, dailyBonus, growthMultipliers, surgeRules } from './skills.ts';
+import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
 import {
   AdultAuthError, HOUSE_COLORS, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
@@ -277,6 +278,8 @@ interface Db {
   friendships?: { id: string; a: string; b: string; status: 'pending' | 'accepted' | 'declined' | 'removed' }[];
   squads?: { id: string; leader: string; name: string; disbanded: boolean; members: { childId: string; status: 'invited' | 'member' | 'declined' | 'left' }[] }[];
   nexlings?: { heroId: string; type: string; nickname: string; color: string; fromLedger: number }[];
+  learnedSkills?: { heroId: string; skillId: string }[];
+  surge?: { heroId: string; streak: number; until: number }[];
   owned?: { heroId: string; itemId: string }[];
   equipped?: { heroId: string; slot: string; itemId: string | null }[];
   rooms?: { heroId: string; layout: { item: string; cell: number }[] }[];
@@ -390,6 +393,17 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
   /** Two points per correct practice answer, like house_weekly() in the database. */
   const correctPoints = (heroId: string, week?: string) =>
     db.history.filter((h) => h.childId === heroId && h.correct && (!week || schoolWeek(new Date(h.servedAt)) === week)).length * 2;
+  const hasSkill = (heroId: string) => (id: string) => (db.learnedSkills ??= []).some((x) => x.heroId === heroId && x.skillId === id);
+  const surgeFor = (heroId: string) => {
+    const row = (db.surge ??= []).find((x) => x.heroId === heroId) ?? (db.surge[db.surge.push({ heroId, streak: 0, until: 0 }) - 1]);
+    return row;
+  };
+  const surgeView = (heroId: string, started = false) => {
+    const row = surgeFor(heroId);
+    const r = surgeRules(hasSkill(heroId));
+    return { active: row.until > at(), secondsLeft: Math.max(0, Math.ceil((row.until - at()) / 1000)), streak: row.streak, need: r.need, mult: r.mult, started };
+  };
+  const skillBalance = (heroId: string) => db.ledger.filter((l) => l.heroId === heroId && l.currency === 'skill_points').reduce((s, l) => s + l.amount, 0);
   const heroWeekPoints = (heroId: string) => correctPoints(heroId, schoolWeek(now()));
   const heroSeasonPoints = (heroId: string) => correctPoints(heroId);
   const tooManyTries = (actor: string, kind: 'link' | 'class') =>
@@ -494,10 +508,10 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     async dailyStatus() {
       const id = meHero().id;
       const taken = db.ledger.some((r) => r.heroId === id && r.currency === 'coins' && r.key === dailyKey());
-      return { available: !taken, amount: DAILY_LOGIN_COINS };
+      return { available: !taken, amount: DAILY_LOGIN_COINS + dailyBonus(hasSkill(id)) };
     },
     async claimDaily() {
-      const r = award(meHero().id, 'coins', DAILY_LOGIN_COINS, 'daily', dailyKey());
+      const r = award(meHero().id, 'coins', DAILY_LOGIN_COINS + dailyBonus(hasSkill(meHero().id)), 'daily', dailyKey());
       return { awarded: r.awarded, duplicate: r.duplicate };
     },
     async linkCode() {
@@ -675,15 +689,23 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       stat.attempts += 1;
       if (right) stat.correct += 1;
       let awarded: AnswerResultAwarded | undefined;
+      const surge = surgeFor(hero.id);
+      const rules = surgeRules(hasSkill(hero.id));
+      const surging = surge.until > at();
+      let started = false;
       if (right) {
         const key = `learn:${questionId}`;
-        const coins = award(hero.id, 'coins', LEARNING_REWARDS.coins, 'learning', key);
+        let base = LEARNING_REWARDS.coins + (hasSkill(hero.id)('ex2') ? 1 : 0);
+        if (surging) base = Math.round(base * rules.mult);
+        const coins = award(hero.id, 'coins', base, 'learning', key);
         award(hero.id, 'xp', LEARNING_REWARDS.xp, 'learning', key);
         award(hero.id, 'skill_points', LEARNING_REWARDS.skillPoints, 'learning', key);
         awarded = { coins: coins.awarded, xp: LEARNING_REWARDS.xp, skillPoints: LEARNING_REWARDS.skillPoints, capped: coins.capped };
-      }
+        if (!surging && surge.streak + 1 >= rules.need) { surge.streak = 0; surge.until = at() + rules.minutes * 60_000; started = true; }
+        else surge.streak = surging ? 0 : surge.streak + 1;
+      } else surge.streak = 0;
       commit();
-      return { correct: right, rightChoice: q.answer, explanation: q.explanation, repeat: false, awarded };
+      return { correct: right, rightChoice: q.answer, explanation: q.explanation, repeat: false, awarded, surge: surgeView(hero.id, started) };
     },
     async learning() {
       return learningFor(meHero().id);
@@ -887,13 +909,36 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       else squad.members.find((m) => m.childId === me)!.status = 'left';
       commit();
     },
+    async skillState() {
+      const id = meHero().id;
+      const has = hasSkill(id);
+      return {
+        points: skillBalance(id), surge: surgeView(id),
+        skills: SKILLS.map((k) => ({ ...k, learned: has(k.id), ready: k.tier === 1 || has(SKILLS.find((p) => p.tree === k.tree && p.tier === k.tier - 1)!.id) }))
+          .sort((a, b) => a.tree.localeCompare(b.tree) || a.tier - b.tier),
+      };
+    },
+    async skillLearn(skillId) {
+      const id = meHero().id;
+      const k = SKILLS.find((x) => x.id === skillId);
+      if (!k) throw new Error('no such skill');
+      const has = hasSkill(id);
+      if (has(k.id)) return { ok: false, reason: 'already_learned' };
+      if (k.tier > 1 && !has(SKILLS.find((p) => p.tree === k.tree && p.tier === k.tier - 1)!.id)) return { ok: false, reason: 'locked' };
+      if (skillBalance(id) < k.cost) return { ok: false, reason: 'not_enough_points' };
+      db.ledger.push({ heroId: id, currency: 'skill_points', amount: -k.cost, source: 'purchase', key: `skill:${k.id}`, week: schoolWeek(now()) });
+      db.learnedSkills!.push({ heroId: id, skillId: k.id });
+      commit();
+      return { ok: true };
+    },
     async nexlingState() {
       const hero = meHero();
       const n = (db.nexlings ??= []).find((x) => x.heroId === hero.id);
       if (!n) return { stages: NEXLING_STAGES, mine: null };
       const bonus = nexlingType(n.type)!.bonus;
+      const mult = growthMultipliers(hasSkill(hero.id));
       const growth = Math.floor(db.ledger.slice(n.fromLedger).filter((r) => r.heroId === hero.id && r.currency === 'coins' && r.amount > 0)
-        .reduce((sum, r) => sum + (r.source === bonus ? r.amount * NEXLING_BONUS : r.amount), 0));
+        .reduce((sum, r) => sum + (r.source === bonus ? r.amount * mult.bonus : r.amount), 0) * mult.all);
       const stage = NEXLING_STAGES.filter((t) => t <= growth).length;
       return { stages: NEXLING_STAGES, mine: { type: n.type, nickname: n.nickname, color: n.color, growth, stage, nextAt: NEXLING_STAGES.find((t) => t > growth) ?? null } };
     },

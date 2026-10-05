@@ -191,6 +191,26 @@ describe('demo backend: grown-ups and missions', () => {
     expect((await b.nexlingState()).mine).toMatchObject({ type: 'tideling', growth: 0 });
   });
 
+  it('starts Nexus Surge after five right answers and spends skill points on skills', async () => {
+    const b = make();
+    await b.signUp(input);
+    const { questions } = await b.startPractice('math');
+    expect(questions).toHaveLength(5);
+    let last;
+    for (const q of questions) last = await b.answerQuestion(q.id, keyOf(q.id));
+    expect(last!.surge).toMatchObject({ active: true, started: true, need: 5 });
+    expect((await b.skillState()).points).toBe(5);
+    expect(await b.skillLearn('sc2')).toEqual({ ok: false, reason: 'locked' });
+    expect(await b.skillLearn('sc1')).toEqual({ ok: true });
+    expect(await b.skillLearn('sc1')).toEqual({ ok: false, reason: 'already_learned' });
+    expect((await b.skillState()).points).toBe(3);
+    expect((await b.skillState()).surge.need).toBe(4);
+    expect(await b.skillLearn('ex1')).toEqual({ ok: true });
+    expect((await b.dailyStatus()).amount).toBe(13);
+    clock = new Date(clock.getTime() + 11 * 60_000);
+    expect((await b.skillState()).surge.active).toBe(false);
+  });
+
   it('links a parent with a one-time code and limits wrong guesses', async () => {
     const b = make();
     await b.signUp(input);
