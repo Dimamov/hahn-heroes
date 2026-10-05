@@ -9,7 +9,7 @@ export function DoNotPress() {
   const { go } = useSession();
   const busy = useRef(false);
   const timer = useRef<number>(0);
-  useEffect(() => () => clearTimeout(timer.current), []);
+  useEffect(() => () => { clearTimeout(timer.current); document.body.classList.remove('doom'); }, []);
 
   const press = () => {
     if (busy.current) return;
@@ -17,12 +17,20 @@ export function DoNotPress() {
     setPhase('siren');
     // Ask for full screen while the tap still counts as a gesture. iPhones may refuse; the overlay below fills the screen anyway.
     try { void document.documentElement.requestFullscreen?.().catch(() => undefined); } catch { /* not supported */ }
-    const ms = siren(3) || 3000;
-    timer.current = window.setTimeout(() => { setPhase('video'); busy.current = false; }, ms);
+    // The world is ending: shake and pulse the whole screen (CSS, calmer with reduced motion), buzz Android phones, then the video.
+    document.body.classList.add('doom');
+    try { navigator.vibrate?.([200, 100, 200, 100, 200, 100, 200, 100, 200]); } catch { /* not supported */ }
+    const ms = siren(4) || 4000;
+    timer.current = window.setTimeout(() => {
+      document.body.classList.remove('doom');
+      setPhase('video');
+      busy.current = false;
+    }, ms);
   };
 
   const closeVideo = () => {
     setPhase('idle');
+    try { navigator.vibrate?.(0); } catch { /* ignore */ }
     try { if (document.fullscreenElement) void document.exitFullscreen(); } catch { /* ignore */ }
   };
 
