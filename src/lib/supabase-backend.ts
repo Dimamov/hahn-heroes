@@ -478,6 +478,24 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('sticker_give', { p_sticker: stickerId, p_to: toHero });
       return { ok: !!d.ok, reason: d.reason };
     },
+    async contestState() {
+      const d = await rpc('contest_state');
+      return {
+        theme: d.theme, entered: !!d.entered, hasRoom: !!d.has_room, voted: !!d.voted,
+        entries: d.entries.map((e: any) => ({ hero: e.hero, name: e.name, starter: e.starter, layout: e.layout, mineVote: !!e.mine_vote })),
+        last: { theme: d.last.theme, entered: !!d.last.entered, votes: Number(d.last.votes), won: !!d.last.won, claimed: !!d.last.claimed },
+      };
+    },
+    async contestEnter() {
+      await rpc('contest_enter');
+    },
+    async contestVote(heroId) {
+      await rpc('contest_vote', { p_hero: heroId });
+    },
+    async contestClaim() {
+      const d = await rpc('contest_claim');
+      return { ok: !!d.ok };
+    },
     async comicList() {
       return (await rpc('comic_list')) as never;
     },

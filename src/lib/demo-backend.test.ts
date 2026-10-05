@@ -263,6 +263,17 @@ describe('demo backend: grown-ups and missions', () => {
     expect(await b.comicSquad()).toEqual([]);
   });
 
+  it('runs the room contest: enter needs a room, votes stay inside the squad and House, one vote a week', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    await expect(b.contestEnter()).rejects.toThrow('decorate');
+    const st = await b.contestState();
+    expect(st.theme.length).toBeGreaterThan(3);
+    expect(st.entries).toEqual([]);
+    await expect(b.contestVote('someone-else')).rejects.toThrow('squad or House');
+    expect(await b.contestClaim()).toEqual({ ok: false });
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);

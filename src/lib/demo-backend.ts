@@ -19,6 +19,7 @@ import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
 import { RAID_BOSSES, RAID_RULES } from './raid.ts';
 import { HEROES } from './heroes.ts';
+import { CONTEST_POINTS, contestTheme } from './contest.ts';
 import { COMIC_LINES, COMIC_MAX, COMIC_POSES, COMIC_SCENES, type ComicPanels } from './comics.ts';
 import { STICKER_BGS, STICKER_COST, STICKER_DAILY, STICKER_DECOS, STICKER_FRAMES, STICKER_MAX, STICKER_WORDS } from './stickers.ts';
 import { EMOTES, type EmoteId, type Pose } from './showcase.ts';
@@ -283,6 +284,7 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  contest?: { entries: { week: string; heroId: string }[]; votes: { week: string; voter: string; entry: string }[]; claims: { week: string; heroId: string }[] };
   comics?: { id: number; maker: string; panels: ComicPanels; shared: boolean; deleted?: boolean }[];
   stickers?: { id: number; maker: string; owner: string; hero: string; bg: string; frame: string; deco: string; word: string; day: string }[];
   secret?: { week: string; place: string; hint: string; card: string; finds: string[]; winner: { squadId: string; by: string } | null; claims: string[] };
@@ -511,6 +513,16 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       going: rows.find((r) => r.heroId === hero.id)?.going ?? null,
       goingCount: rows.filter((r) => r.going && Object.values(db.accounts).find((a) => a.id === r.heroId)?.grade === hero.grade).length,
     };
+  };
+  /** Squad mates and class mates (House) of a hero, never the hero. */
+  const contestCircle = (heroId: string) => {
+    const out = new Set<string>();
+    const sq = (db.squads ?? []).find((q) => !q.disbanded && q.members.some((m) => m.childId === heroId && m.status === 'member'));
+    sq?.members.filter((m) => m.status === 'member').forEach((m) => out.add(m.childId));
+    const cls = db.members.find((m) => m.childId === heroId);
+    if (cls) db.members.filter((m) => m.classId === cls.classId).forEach((m) => out.add(m.childId));
+    out.delete(heroId);
+    return [...out];
   };
   const meHero = (): Account => {
     const acct = Object.values(db.accounts).find((a) => a.id === db.current);
@@ -1634,6 +1646,53 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (!s) throw new Error('that is not your sticker');
       s.owner = toHero;
       commit();
+      return { ok: true };
+    },
+    async contestState() {
+      const me = meHero().id;
+      const c = (db.contest ??= { entries: [], votes: [], claims: [] });
+      const week = schoolWeek(now());
+      const last = schoolWeek(new Date(now().getTime() - 7 * 86400000));
+      const circle = contestCircle(me);
+      const myLast = c.votes.filter((v) => v.week === last && v.entry === me).length;
+      const best = Math.max(0, ...circle.map((h) => c.votes.filter((v) => v.week === last && v.entry === h).length));
+      return {
+        theme: contestTheme(week), entered: c.entries.some((e) => e.week === week && e.heroId === me),
+        hasRoom: ((db.rooms ??= []).find((r) => r.heroId === me)?.layout.length ?? 0) > 0,
+        voted: c.votes.some((v) => v.week === week && v.voter === me),
+        entries: c.entries.filter((e) => e.week === week && circle.includes(e.heroId)).map((e) => {
+          const h = heroById(e.heroId)!;
+          return { hero: h.id, name: h.displayName, starter: h.starter, layout: (db.rooms ??= []).find((r) => r.heroId === h.id)?.layout ?? [], mineVote: c.votes.some((v) => v.week === week && v.voter === me && v.entry === h.id) };
+        }),
+        last: { theme: contestTheme(last), entered: c.entries.some((e) => e.week === last && e.heroId === me), votes: myLast, won: myLast > 0 && myLast >= best, claimed: c.claims.some((x) => x.week === last && x.heroId === me) },
+      };
+    },
+    async contestEnter() {
+      const hero = meHero();
+      const c = (db.contest ??= { entries: [], votes: [], claims: [] });
+      const week = schoolWeek(now());
+      if (!((db.rooms ??= []).find((r) => r.heroId === hero.id)?.layout.length)) throw new Error('decorate your room first');
+      if (!c.entries.some((e) => e.week === week && e.heroId === hero.id)) c.entries.push({ week, heroId: hero.id });
+      award(hero.id, 'coins', CONTEST_POINTS.enter, 'event', `contest-enter:${week}`);
+      commit();
+    },
+    async contestVote(heroId) {
+      const me = meHero().id;
+      const c = (db.contest ??= { entries: [], votes: [], claims: [] });
+      const week = schoolWeek(now());
+      if (!c.entries.some((e) => e.week === week && e.heroId === heroId) || !contestCircle(me).includes(heroId)) throw new Error('you can only vote for your squad or House');
+      if (c.votes.some((v) => v.week === week && v.voter === me)) throw new Error('you already voted this week');
+      c.votes.push({ week, voter: me, entry: heroId });
+      award(me, 'coins', CONTEST_POINTS.vote, 'event', `contest-vote:${week}`);
+      commit();
+    },
+    async contestClaim() {
+      const me = meHero().id;
+      const s = await this.contestState();
+      if (!s.last.won || s.last.claimed) return { ok: false };
+      const last = schoolWeek(new Date(now().getTime() - 7 * 86400000));
+      db.contest!.claims.push({ week: last, heroId: me });
+      award(me, 'coins', CONTEST_POINTS.win, 'event', `contest-win:${last}`);
       return { ok: true };
     },
     async comicList() {
