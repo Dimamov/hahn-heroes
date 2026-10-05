@@ -347,6 +347,36 @@ describe('demo backend: grown-ups and missions', () => {
     expect(Object.keys(r.classes[0]).sort()).toEqual(['grade', 'members', 'mine', 'name', 'rank', 'total']);
   });
 
+  it('lets squad mates thank each other with preset reasons, a grown-up approves, capped by the week', async () => {
+    const b = make();
+    const a = await b.signUp(input);
+    await b.signOut();
+    const c = await b.signUp({ ...input, nameNoun: 'Owl' });
+    await b.requestFriend(a.friendCode);
+    await b.signOut();
+    await b.signIn(a.heroCode, [0, 4, 8, 2]);
+    await b.respondFriend((await b.friends()).incoming[0].id, true);
+    await b.createSquad('Brave', 'Wolves');
+    await b.inviteToSquad(c.id);
+    await b.signOut();
+    await b.signIn(c.heroCode, [0, 4, 8, 2]);
+    await b.respondSquadInvite((await b.mySquad()).invites[0].squadId, true);
+    await expect(b.kindNominate(a.id, 'my own words')).rejects.toThrow('reasons');
+    await b.kindNominate(a.id, 'cheered');
+    await expect(b.kindNominate(a.id, 'teamwork')).rejects.toThrow('already');
+    expect((await b.kindState()).nominatedToday).toBe(true);
+    await b.signOut();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    const rows = await b.kindReview();
+    expect(rows).toHaveLength(1);
+    expect(rows[0].repeat).toBe(false);
+    expect(await b.kindDecide(rows[0].id, true)).toEqual({ awarded: 5 });
+    await expect(b.kindDecide(rows[0].id, true)).rejects.toThrow('not waiting');
+    await b.signOut();
+    await b.signIn(a.heroCode, [0, 4, 8, 2]);
+    expect((await b.kindState()).received).toEqual([{ reason: 'cheered', day: expect.any(String) }]);
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);

@@ -7,6 +7,7 @@ import type { ContestState } from './contest.ts';
 import type { MadeCode, RedeemResult } from './codes.ts';
 import type { TreasureState } from './treasure.ts';
 import type { RaceState } from './race.ts';
+import type { KindRow, KindState } from './kindness.ts';
 import type { GalleryLook, Look, LookState } from './look.ts';
 import type { AdvAnswerResult, AdvDone, AdvProgress } from './adventures.ts';
 import type { StoryAnswerResult, StoryChoiceResult, StoryDone, StoryProgress } from './story.ts';
@@ -584,6 +585,12 @@ export interface Backend {
   stickerList(): Promise<StickerBook>;
   stickerMake(design: StickerDesign): Promise<{ ok: boolean; reason?: 'daily_limit' | 'full' }>;
   stickerGive(stickerId: number, toHero: string): Promise<{ ok: boolean; reason?: 'full' }>;
+  /** Kindness points: nominate a squad mate with a preset reason, once a day; a grown-up approves before points are paid. */
+  kindState(): Promise<KindState>;
+  kindNominate(heroId: string, reason: string): Promise<void>;
+  /** Teachers (their students) and the Sensei (everyone): nominations waiting for a decision. */
+  kindReview(): Promise<KindRow[]>;
+  kindDecide(id: number, approve: boolean): Promise<{ awarded: number }>;
   /** Class vs class race: this month (0) or last month (1), class names only. */
   raceState(back?: number): Promise<RaceState>;
   /** Avatar studio: mix hair, makeup, aura, an owned outfit and accessory; pin it for friends to like. */

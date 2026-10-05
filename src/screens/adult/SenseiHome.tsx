@@ -5,10 +5,11 @@ import { CARDS } from '../../lib/cards.ts';
 import { SECRET_PLACES, type Adult, type Announcement, type Backend, type CharacterRequest, type SenseiSecret, ChatLogLine, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { shrinkImage } from '../../lib/image-file.ts';
+import { KindReview } from './KindReview.tsx';
 import { CodeMaker } from './CodeMaker.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
-type View = 'home' | 'challenge' | 'events' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes';
+type View = 'home' | 'challenge' | 'events' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes' | 'kind';
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
@@ -23,6 +24,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
   if (view === 'announce') return <Announce backend={backend} onBack={back} />;
   if (view === 'drawings') return <DrawingReports backend={backend} onBack={back} />;
   if (view === 'codes') return <CodeMaker backend={backend} onBack={back} />;
+  if (view === 'kind') return <KindReview backend={backend} onBack={back} />;
   if (view === 'secret') return <SecretHunt backend={backend} onBack={back} />;
   if (view === 'characters') return <Characters backend={backend} onBack={back} />;
   if (view === 'card') return <GiveCard backend={backend} onBack={back} />;
@@ -50,6 +52,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
         <button className="btn" onClick={() => setView('characters')}>🧙 Teacher characters</button>
         <button className="btn" onClick={() => setView('secret')}>✨ Weekly secret</button>
         <button className="btn" onClick={() => setView('codes')}>🔑 Secret codes</button>
+        <button className="btn" onClick={() => setView('kind')}>💛 Kindness</button>
         <button className="btn" onClick={() => setView('card')}>🎁 Give a card</button>
         <button className="btn" onClick={() => setView('chat')}>💬 Chat unlocks</button>
         <button className="btn" onClick={() => setView('drawings')}>🚩 Drawing reports</button>

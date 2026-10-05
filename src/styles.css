@@ -803,3 +803,6 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 @media (max-height: 480px) and (orientation: landscape) { .studio { display: grid; grid-template-columns: 1fr 1.3fr; gap: 6px 12px; align-content: start; grid-auto-rows: min-content; } .studio > * { min-width: 0; } .studio > .bar, .studio > .chips { grid-column: 1 / -1; } .studio > .look-card { grid-row: 3 / 7; } .studio > .paged, .studio > .check, .studio > .note, .studio > .btn { grid-column: 2; } .look-aura { width: 22vh; } }
 @media (max-height: 480px) and (orientation: landscape) { .profile-actions { grid-template-columns: repeat(5, 1fr); gap: 6px; } .profile-actions .btn { padding: 8px 4px; font-size: .78rem; min-height: 0; } }
 .card.report-row.mine { border-color: var(--cyan, #22d3ee); }
+
+.chips.kind-reasons { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.chips.kind-reasons .chip { font-size: 13px; padding: 8px 6px; text-align: center; line-height: 1.15; }
