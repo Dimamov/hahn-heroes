@@ -20,7 +20,7 @@ import bank from '../../content/questions.json';
 import { RAID_BOSSES, RAID_RULES } from './raid.ts';
 import { EMOTES, type EmoteId, type Pose } from './showcase.ts';
 import {
-  AdultAuthError, HOUSE_COLORS, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
+  AdultAuthError, HOUSE_COLORS, SECRET_PLACES, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
   type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
   type ClassResult, type Hero, type HouseIdentity, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
   type QuestState, type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress, type TeacherCharacter, type TriviaState,
@@ -280,6 +280,7 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  secret?: { week: string; place: string; hint: string; card: string; finds: string[]; winner: { squadId: string; by: string } | null; claims: string[] };
   raid?: { week: string; boss: string; maxHp: number; strikes: { heroId: string; day: string; damage: number }[] };
   showcase?: { heroId: string; title: string; pose: Pose; emote?: string }[];
   eventEdits?: Record<string, { starts: string; ends: string; enabled: boolean }>;
@@ -451,6 +452,19 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     };
   };
   /** Mirrors title_unlocked(): each title is worked out from what the hero actually did. */
+  const secretHint = (place: string) => `Look in the ${place} area of the Nexus.`;
+  const mySquadId = (heroId: string) => (db.squads ?? []).find((q) => !q.disbanded && q.members.some((m) => m.childId === heroId && m.status === 'member'))?.id;
+  /** This week's secret: the place and card follow the week unless the Sensei changes them. */
+  const secretWeek = () => {
+    const week = schoolWeek(now());
+    if (!db.secret || db.secret.week !== week) {
+      const n = Math.floor(new Date(`${week}T00:00:00Z`).getTime() / 604800000);
+      const place = SECRET_PLACES[(n * 7) % SECRET_PLACES.length];
+      const prizes = CARDS.filter((c) => c.rarity === 'rare' || c.rarity === 'epic');
+      db.secret = { week, place, hint: secretHint(place), card: prizes[n % prizes.length].id, finds: [], winner: null, claims: [] };
+    }
+    return db.secret;
+  };
   /** This week's boss, with health fixed the first time anyone looks. */
   const raidWeek = () => {
     const week = schoolWeek(now());
@@ -1534,6 +1548,54 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       award(hero.id, 'xp', RAID_RULES.xp, 'event', key);
       const res = award(hero.id, 'coins', RAID_RULES.coins, 'event', key);
       return { awarded: res.awarded, duplicate: res.duplicate };
+    },
+    async secretState() {
+      const hero = meHero();
+      const w = secretWeek();
+      const mine = mySquadId(hero.id);
+      const card = cardById(w.card)!;
+      return {
+        place: w.place, hint: w.hint, found: w.finds.includes(hero.id), finders: w.finds.length, won: !!w.winner,
+        winnerSquad: w.winner ? (db.squads ?? []).find((q) => q.id === w.winner!.squadId)?.name ?? null : null,
+        mySquadWon: !!w.winner && w.winner.squadId === mine, claimed: w.claims.includes(hero.id),
+        card: { id: card.id, name: card.name, icon: card.icon },
+      };
+    },
+    async secretFind() {
+      const hero = meHero();
+      const w = secretWeek();
+      if (w.finds.includes(hero.id)) return { ok: false };
+      w.finds.push(hero.id);
+      const squad = mySquadId(hero.id);
+      let firstSquad = false;
+      if (squad && !w.winner) { w.winner = { squadId: squad, by: hero.id }; firstSquad = true; }
+      award(hero.id, 'coins', 5, 'event', `secret:${w.week}`);
+      commit();
+      return { ok: true, firstSquad };
+    },
+    async secretClaim() {
+      const hero = meHero();
+      const w = secretWeek();
+      if (!w.winner || w.winner.squadId !== mySquadId(hero.id) || w.claims.includes(hero.id)) return { ok: false };
+      w.claims.push(hero.id);
+      const row = (db.cardInv ??= []).find((c) => c.heroId === hero.id && c.cardId === w.card);
+      if (row) row.qty += 1; else db.cardInv.push({ heroId: hero.id, cardId: w.card, qty: 1 });
+      commit();
+      return { ok: true };
+    },
+    async senseiSecret() {
+      meAdult('sensei');
+      const w = secretWeek();
+      return { place: w.place, hint: w.hint, card: w.card, finders: w.finds.length, winnerSquad: w.winner ? (db.squads ?? []).find((q) => q.id === w.winner!.squadId)?.name ?? null : null };
+    },
+    async senseiSecretSet(place, hint, card) {
+      meAdult('sensei');
+      const w = secretWeek();
+      if (!(SECRET_PLACES as readonly string[]).includes(place)) throw new Error('no such place');
+      if (w.finds.length) throw new Error('someone already found this one');
+      if (!cardById(card)) throw new Error('no such card');
+      w.place = place; w.card = card; w.hint = hint.trim().slice(0, 120) || secretHint(place);
+      commit();
     },
     async houseChallengeClaim() {
       const hero = meHero();

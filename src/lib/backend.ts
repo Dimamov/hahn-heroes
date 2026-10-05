@@ -430,6 +430,20 @@ export interface RaidState {
   claimed: boolean;
   reward: { coins: number; xp: number };
 }
+export const SECRET_PLACES = ['learn', 'arcade', 'cards', 'house', 'hero', 'room', 'nexlings', 'squad', 'quest', 'profile'] as const;
+export interface SecretState {
+  /** The screen where this week's sparkle is hidden. */
+  place: string;
+  hint: string;
+  found: boolean;
+  finders: number;
+  won: boolean;
+  winnerSquad: string | null;
+  mySquadWon: boolean;
+  claimed: boolean;
+  card: { id: string; name: string; icon: string };
+}
+export interface SenseiSecret { place: string; hint: string; card: string; finders: number; winnerSquad: string | null }
 export interface SubjectProgress {
   subject: Subject;
   answered: number;
@@ -551,6 +565,12 @@ export interface Backend {
   raidState(): Promise<RaidState>;
   raidStrike(): Promise<{ ok: boolean; damage?: number; defeated?: boolean; reason?: 'defeated' | 'already_struck' }>;
   raidClaim(): Promise<{ awarded: number; duplicate: boolean }>;
+  /** The weekly secret: a sparkle hidden on one screen. The first squad to find it wins a card. */
+  secretState(): Promise<SecretState>;
+  secretFind(): Promise<{ ok: boolean; firstSquad?: boolean }>;
+  secretClaim(): Promise<{ ok: boolean }>;
+  senseiSecret(): Promise<SenseiSecret>;
+  senseiSecretSet(place: string, hint: string, card: string): Promise<void>;
   houseChallengeClaim(): Promise<{ awarded: number; duplicate: boolean }>;
   houseVote(optionId: number): Promise<void>;
   leaderboard(): Promise<Leaderboard>;

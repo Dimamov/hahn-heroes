@@ -17,6 +17,8 @@ import { Showcase } from './screens/Showcase.tsx';
 import { Guide } from './screens/Guide.tsx';
 import { MyWeek } from './screens/MyWeek.tsx';
 import { Raid } from './screens/Raid.tsx';
+import { Secret, SecretSpot } from './screens/Secret.tsx';
+import type { SecretState } from './lib/backend.ts';
 import { Announcements, ClassMissions, HomeMissions, MissionsHome, ParentCode, Quiz } from './screens/Missions.tsx';
 import { Squad } from './screens/Squad.tsx';
 import { House } from './screens/House.tsx';
@@ -80,12 +82,14 @@ export default function App() {
   const [arcadeDot, setArcadeDot] = useState(false);
   const [questDot, setQuestDot] = useState(false);
 
+  const [secret, setSecret] = useState<SecretState | null>(null);
   const refresh = useCallback(async () => {
     const [b, d] = await Promise.all([backend.balances(), backend.dailyStatus()]);
     setBalances(b);
     try { localStorage.setItem('hh-balances', JSON.stringify(b)); } catch { /* blocked storage */ }
     setDailyAvailable(d.available);
     // The rest is nice to have: a failure here must not hide the balance.
+    backend.secretState().then(setSecret).catch(() => undefined);
     backend.announcements().then((a) => setUnread(a.unread)).catch(() => undefined);
     backend.arcadeStatus().then((a) => setArcadeDot(a.games.some((g) => !a.claimed.includes(g)))).catch(() => undefined);
     backend.questState().then((q) => setQuestDot(q.milestones.some((m) => m.reached && !m.claimed) || (!q.questClaimed && q.tasks.every((t) => t.have >= t.need)))).catch(() => undefined);
@@ -179,6 +183,8 @@ export default function App() {
       {screen === 'guide' && <Guide />}
       {screen === 'myweek' && <MyWeek />}
       {screen === 'raid' && <Raid />}
+      {screen === 'secret' && <Secret />}
+      {secret && !secret.found && secret.place === screen && <SecretSpot week={Math.floor(Date.parse(new Date().toISOString().slice(0, 10)) / 604800000)} onFound={() => backend.secretState().then(setSecret).catch(() => undefined)} />}
       {screen === 'game:pattern-pulse' && <PatternPulse />}
       {screen === 'game:rhythm-tap' && <RhythmTap />}
       {screen === 'game:memory-flip' && <MemoryFlip />}
@@ -194,7 +200,7 @@ export default function App() {
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }

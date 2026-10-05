@@ -16,6 +16,7 @@ export const DESTINATIONS: Destination[] = [
   { id: 'arcade', label: 'Arcade', icon: '🕹️', tint: '#ff3fa4', blurb: 'Pattern Pulse, Memory Flip, Word Builder and more.', milestone: 'Solo arcade' },
   { id: 'adventures', label: 'Adventures', icon: '📖', tint: '#8b5cff', blurb: 'Episode 1, Mystery Lab and Chronicle Quest. Uncover the secret of the Nexus.', milestone: 'Story and events' },
   { id: 'raid', label: 'Boss Raid', icon: '🐲', tint: '#ef4444', blurb: 'The whole school fights a boss together.', milestone: 'Events' },
+  { id: 'secret', label: 'Secret Hunt', icon: '✨', tint: '#fde047', blurb: 'Find the hidden sparkle before other squads.', milestone: 'Events' },
   { id: 'quest', label: 'Daily Quest', icon: '🎯', tint: '#f59e0b', blurb: 'Three tasks a day and a streak that grows.', milestone: 'Rewards' },
   { id: 'missions', label: 'Missions', icon: '📋', tint: '#22d3ee', blurb: 'Home missions from your grown-up and class missions from your teacher.', milestone: 'Parents, teachers and the Sensei' },
   { id: 'hero', label: 'My Hero', icon: '🦸', tint: '#a78bfa', blurb: 'Wardrobe, shop and skills for your hero.', milestone: 'Collections' },

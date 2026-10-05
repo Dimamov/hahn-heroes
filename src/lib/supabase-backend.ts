@@ -444,6 +444,28 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       if (!d.ok) throw new Error(d.reason);
       return { awarded: d.awarded ?? 0, duplicate: !!d.duplicate };
     },
+    async secretState() {
+      const d = await rpc('secret_state');
+      return {
+        place: d.place, hint: d.hint, found: d.found, finders: Number(d.finders), won: d.won, winnerSquad: d.winner_squad,
+        mySquadWon: d.my_squad_won, claimed: d.claimed, card: d.card,
+      };
+    },
+    async secretFind() {
+      const d = await rpc('secret_find');
+      return { ok: !!d.ok, firstSquad: !!d.first_squad };
+    },
+    async secretClaim() {
+      const d = await rpc('secret_claim');
+      return { ok: !!d.ok };
+    },
+    async senseiSecret() {
+      const d = await rpc('sensei_secret_view');
+      return { place: d.place, hint: d.hint, card: d.card, finders: Number(d.finders), winnerSquad: d.winner_squad };
+    },
+    async senseiSecretSet(place, hint, card) {
+      await rpc('sensei_secret_set', { p_place: place, p_hint: hint, p_card: card });
+    },
     async houseChallengeClaim() {
       return rpc('house_challenge_claim');
     },
