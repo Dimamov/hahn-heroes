@@ -1,6 +1,14 @@
 import type { DrawStroke } from './drawing-rules.ts';
 import type { Currency } from '../../supabase/functions/_shared/rewards.ts';
 import type { ShowcaseState } from './showcase.ts';
+import type { StickerBook, StickerDesign } from './stickers.ts';
+import type { Comic, ComicPanels } from './comics.ts';
+import type { ContestState } from './contest.ts';
+import type { MadeCode, RedeemResult } from './codes.ts';
+import type { TreasureState } from './treasure.ts';
+import type { RaceState } from './race.ts';
+import type { KindRow, KindState } from './kindness.ts';
+import type { GalleryLook, Look, LookState } from './look.ts';
 import type { AdvAnswerResult, AdvDone, AdvProgress } from './adventures.ts';
 import type { StoryAnswerResult, StoryChoiceResult, StoryDone, StoryProgress } from './story.ts';
 
@@ -93,6 +101,12 @@ export interface ClassMission {
   /** Set once this student has taken it. */
   result?: ClassResult;
 }
+export interface AiStatus { configured: boolean; limit: number; left: number }
+export interface AiQuiz { title: string; questions: { prompt: string; choices: string[]; answer: number; explanation: string }[]; left: number }
+export type AiError = 'not_set_up' | 'too_short' | 'too_long' | 'daily_limit' | 'ai_unavailable' | 'bad_output' | 'teachers_only';
+export type CharacterStatus = 'none' | 'wish' | 'new' | 'review' | 'changes' | 'approved';
+export interface TeacherCharacter { status: CharacterStatus; wish: string; photo: string | null; art: string | null; artNote: string; changeNote: string }
+export interface CharacterRequest { teacherId: string; name: string; status: 'new' | 'changes'; wish: string; photo: string | null; changeNote: string }
 export interface NewClassMission {
   title: string;
   passage: string;
@@ -238,11 +252,15 @@ export interface DormView {
   mine: boolean;
   name: string;
   starter: string;
+  /** The owner's chosen emote, shown on their hero in the room. */
+  emote: string;
   layout: { item: string; cell: number }[];
   equipped: Record<string, string | null>;
   /** Decorations this hero owns. Only sent for your own room. */
   owned: string[] | null;
 }
+
+export interface BaseView { squad: string | null; items: { cell: number; item: string; by: string; mine: boolean }[]; owned: string[]; limit: number }
 
 export interface NexlingState {
   stages: number[];
@@ -405,6 +423,37 @@ export interface AnswerResult {
   awarded?: { coins: number; xp: number; skillPoints: number; capped: boolean };
   surge?: SurgeView;
 }
+export interface WeekSummary { weekStart: string; daysActive: number; answered: number; correct: number; subjects: { subject: Subject; answered: number; correct: number }[]; points: number; missions: number }
+export interface ClassReportStudent { id: string; name: string; daysActive: number; answered: number; correct: number; points: number; missions: number }
+export interface ClassReport { weekStart: string; className: string; students: ClassReportStudent[] }
+export interface RaidState {
+  boss: { id: string; name: string; icon: string; blurb: string };
+  maxHp: number;
+  damage: number;
+  defeated: boolean;
+  strikers: number;
+  struckToday: boolean;
+  /** How hard this hero's strike would hit today. */
+  power: number;
+  myDamage: number;
+  canClaim: boolean;
+  claimed: boolean;
+  reward: { coins: number; xp: number };
+}
+export const SECRET_PLACES = ['learn', 'arcade', 'cards', 'house', 'hero', 'room', 'nexlings', 'squad', 'quest', 'profile'] as const;
+export interface SecretState {
+  /** The screen where this week's sparkle is hidden. */
+  place: string;
+  hint: string;
+  found: boolean;
+  finders: number;
+  won: boolean;
+  winnerSquad: string | null;
+  mySquadWon: boolean;
+  claimed: boolean;
+  card: { id: string; name: string; icon: string };
+}
+export interface SenseiSecret { place: string; hint: string; card: string; finders: number; winnerSquad: string | null }
 export interface SubjectProgress {
   subject: Subject;
   answered: number;
@@ -433,6 +482,7 @@ export interface Backend {
   classMissions(): Promise<ClassMission[]>;
   submitClassMission(id: string, answers: number[]): Promise<ClassResult>;
   announcements(): Promise<{ items: Announcement[]; unread: number }>;
+  senseiDeleteAnnouncement(id: number): Promise<void>;
   markAnnouncementsRead(): Promise<void>;
   /** The next Trivia Night, and whether this hero said they are coming. */
   triviaState(): Promise<TriviaState>;
@@ -455,11 +505,28 @@ export interface Backend {
   childMissions(childId: string): Promise<HomeMission[]>;
   childProgress(childId: string): Promise<ChildProgress>;
   childLearning(childId: string): Promise<SubjectProgress[]>;
+  childWeek(childId: string, weeksBack?: number): Promise<WeekSummary>;
+  /** This hero's own weekly recap (0 = this week, 1 = last week). */
+  myWeek(weeksBack?: number): Promise<WeekSummary>;
+  /** Teacher progress report for one class and school week (0 = this week, 1 = last week). */
+  classReport(classId: string, weeksBack?: number): Promise<ClassReport>;
   createHomeMission(childId: string, title: string, details: string, coins: number): Promise<void>;
   reviewHomeMission(id: string, approve: boolean): Promise<{ status: string; awarded: number; capped?: boolean }>;
   classes(): Promise<ClassInfo[]>;
   createClass(name: string, grade: 5 | 6): Promise<ClassInfo>;
   createClassMission(classId: string, mission: NewClassMission): Promise<void>;
+  /** AI lesson helper (teachers): is it switched on, and how many drafts are left today. */
+  aiStatus(): Promise<AiStatus>;
+  /** Drafts a quiz from lesson text. Throws an Error whose message is an AiError. */
+  aiDraftQuiz(lesson: string, grade: 5 | 6, count: number): Promise<AiQuiz>;
+  /** Teacher character requests: photo and wish list go to the Sensei; the art comes back for approval. */
+  teacherCharacter(): Promise<TeacherCharacter>;
+  teacherCharacterWish(wish: string): Promise<void>;
+  teacherCharacterSubmit(photo: string, wish: string): Promise<void>;
+  teacherCharacterRespond(approve: boolean, note: string): Promise<void>;
+  teacherCharacterRemovePhoto(): Promise<void>;
+  senseiCharacterQueue(): Promise<CharacterRequest[]>;
+  senseiCharacterDeliver(teacherId: string, art: string, note: string): Promise<void>;
   classResults(classId: string): Promise<ClassMissionResults[]>;
   resetSubmission(missionId: string, childId: string): Promise<void>;
   /** Which reward games are open today and which ones this hero already collected. */
@@ -505,6 +572,58 @@ export interface Backend {
   dormSave(layout: { item: string; cell: number }[]): Promise<void>;
   houseState(): Promise<HouseState>;
   houseChallenge(): Promise<HouseChallenge>;
+  /** The school boss raid: one boss a week, one strike a day, a reward once it falls. */
+  raidState(): Promise<RaidState>;
+  raidStrike(): Promise<{ ok: boolean; damage?: number; defeated?: boolean; reason?: 'defeated' | 'already_struck' }>;
+  raidClaim(): Promise<{ awarded: number; duplicate: boolean }>;
+  /** The weekly secret: a sparkle hidden on one screen. The first squad to find it wins a card. */
+  secretState(): Promise<SecretState>;
+  secretFind(): Promise<{ ok: boolean; firstSquad?: boolean }>;
+  secretClaim(): Promise<{ ok: boolean }>;
+  senseiSecret(): Promise<SenseiSecret>;
+  senseiSecretSet(place: string, hint: string, card: string): Promise<void>;
+  /** Stickers: made from fixed choices, given to squad mates. */
+  stickerList(): Promise<StickerBook>;
+  stickerMake(design: StickerDesign): Promise<{ ok: boolean; reason?: 'daily_limit' | 'full' }>;
+  stickerGive(stickerId: number, toHero: string): Promise<{ ok: boolean; reason?: 'full' }>;
+  /** Kindness points: nominate a squad mate with a preset reason, once a day; a grown-up approves before points are paid. */
+  kindState(): Promise<KindState>;
+  kindNominate(heroId: string, reason: string): Promise<void>;
+  /** Teachers (their students) and the Sensei (everyone): nominations waiting for a decision. */
+  kindReview(): Promise<KindRow[]>;
+  kindDecide(id: number, approve: boolean): Promise<{ awarded: number }>;
+  /** Class vs class race: this month (0) or last month (1), class names only. */
+  raceState(back?: number): Promise<RaceState>;
+  /** Avatar studio: mix hair, makeup, aura, an owned outfit and accessory; pin it for friends to like. */
+  lookGet(): Promise<LookState>;
+  lookSave(look: Look, pinned: boolean): Promise<void>;
+  lookGallery(): Promise<GalleryLook[]>;
+  lookLike(heroId: string): Promise<void>;
+  /** The squad hideout: a shared room the squad decorates together with decorations they own. */
+  baseGet(): Promise<BaseView>;
+  basePlace(cell: number, item: string): Promise<void>;
+  baseRemove(cell: number): Promise<void>;
+  /** The weekly treasure hunt: four clues, each a pin hidden on one screen; the full map pays a card. */
+  treasureState(): Promise<TreasureState>;
+  treasureFind(place: string): Promise<{ ok: boolean; done?: boolean }>;
+  treasureClaim(): Promise<{ ok: boolean }>;
+  /** Ids of the achievement-wall badges this hero has earned. */
+  badgeWall(): Promise<string[]>;
+  /** Secret codes: a teacher (their class) or the Sensei (everyone) makes a code word; kids redeem it once. */
+  codeCreate(classId: string | null, coins: number, xp: number, announce?: boolean): Promise<string>;
+  codeMine(): Promise<MadeCode[]>;
+  codeRedeem(code: string): Promise<RedeemResult>;
+  /** Weekly room contest: enter your room, vote once for a squad or House mate's room. */
+  contestState(): Promise<ContestState>;
+  contestEnter(): Promise<void>;
+  contestVote(heroId: string): Promise<void>;
+  contestClaim(): Promise<{ ok: boolean }>;
+  /** Comics: three panels from fixed lists, shareable with your squad. */
+  comicList(): Promise<Comic[]>;
+  comicSquad(): Promise<Comic[]>;
+  comicMake(panels: ComicPanels): Promise<void>;
+  comicShare(id: number, share: boolean): Promise<void>;
+  comicDelete(id: number): Promise<void>;
   houseChallengeClaim(): Promise<{ awarded: number; duplicate: boolean }>;
   houseVote(optionId: number): Promise<void>;
   leaderboard(): Promise<Leaderboard>;
@@ -562,6 +681,8 @@ export interface Backend {
   senseiSetEvent(id: string, starts: string, ends: string, enabled: boolean): Promise<void>;
   showcaseState(): Promise<ShowcaseState>;
   showcaseSet(title: string, pose: string): Promise<void>;
+  /** Pick an emote you have enough XP for. */
+  emoteSet(emote: string): Promise<void>;
   questState(): Promise<QuestState>;
   questClaim(): Promise<{ awarded: number; duplicate: boolean }>;
   streakClaim(days: number): Promise<{ awarded: number; duplicate: boolean }>;

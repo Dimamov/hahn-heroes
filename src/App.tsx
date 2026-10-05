@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { createBackend } from './lib/index.ts';
 import type { Adult, Backend, Balances, Hero } from './lib/backend.ts';
 import { emptyBalances } from './lib/backend.ts';
+import { flushAnswers } from './lib/offline.ts';
 import { Welcome } from './screens/Welcome.tsx';
 import { Onboarding } from './screens/Onboarding.tsx';
 import { SignIn } from './screens/SignIn.tsx';
@@ -13,6 +14,24 @@ import type { Subject } from './lib/backend.ts';
 import { Adventures } from './screens/Adventures.tsx';
 import { Quest } from './screens/Quest.tsx';
 import { Showcase } from './screens/Showcase.tsx';
+import { Guide } from './screens/Guide.tsx';
+import { MyWeek } from './screens/MyWeek.tsx';
+import { Raid } from './screens/Raid.tsx';
+import { Stickers } from './screens/Stickers.tsx';
+import { Comics } from './screens/Comics.tsx';
+import { Treasure, TreasureSpot } from './screens/Treasure.tsx';
+import { HUNTS } from './lib/treasure.ts';
+import type { TreasureState } from './lib/treasure.ts';
+import { SquadBase } from './screens/SquadBase.tsx';
+import { Studio } from './screens/Studio.tsx';
+import { Kindness } from './screens/Kindness.tsx';
+import { WhackShadow } from './games/WhackShadow.tsx';
+import { Race } from './screens/Race.tsx';
+import { Badges } from './screens/Badges.tsx';
+import { Codes } from './screens/Codes.tsx';
+import { Contest } from './screens/Contest.tsx';
+import { Secret, SecretSpot } from './screens/Secret.tsx';
+import type { SecretState } from './lib/backend.ts';
 import { Announcements, ClassMissions, HomeMissions, MissionsHome, ParentCode, Quiz } from './screens/Missions.tsx';
 import { Squad } from './screens/Squad.tsx';
 import { House } from './screens/House.tsx';
@@ -22,6 +41,8 @@ import { Nexlings } from './screens/Nexlings.tsx';
 import { Cards } from './screens/Cards.tsx';
 import { Arcade } from './screens/Arcade.tsx';
 import { PatternPulse } from './games/PatternPulse.tsx';
+import { Arena } from './games/Arena.tsx';
+import { RhythmTap } from './games/RhythmTap.tsx';
 import { MemoryFlip } from './games/MemoryFlip.tsx';
 import { WordBuilder } from './games/WordBuilder.tsx';
 import { SpotDifference } from './games/SpotDifference.tsx';
@@ -66,18 +87,25 @@ export default function App() {
   const [adult, setAdult] = useState<Adult | null>(null);
   const [screen, setScreen] = useState<Screen>('welcome');
   const [resetting, setResetting] = useState(() => backend.resetPending());
-  const [balances, setBalances] = useState<Balances>(emptyBalances());
+  const [balances, setBalances] = useState<Balances>(() => {
+    try { return { ...emptyBalances(), ...JSON.parse(localStorage.getItem('hh-balances') ?? '{}') }; } catch { return emptyBalances(); }
+  });
   const [dailyAvailable, setDailyAvailable] = useState(false);
   const [unread, setUnread] = useState(0);
   const [missionDot, setMissionDot] = useState(false);
   const [arcadeDot, setArcadeDot] = useState(false);
   const [questDot, setQuestDot] = useState(false);
 
+  const [secret, setSecret] = useState<SecretState | null>(null);
+  const [treasure, setTreasure] = useState<TreasureState | null>(null);
   const refresh = useCallback(async () => {
     const [b, d] = await Promise.all([backend.balances(), backend.dailyStatus()]);
     setBalances(b);
+    try { localStorage.setItem('hh-balances', JSON.stringify(b)); } catch { /* blocked storage */ }
     setDailyAvailable(d.available);
     // The rest is nice to have: a failure here must not hide the balance.
+    backend.secretState().then(setSecret).catch(() => undefined);
+    backend.treasureState().then(setTreasure).catch(() => undefined);
     backend.announcements().then((a) => setUnread(a.unread)).catch(() => undefined);
     backend.arcadeStatus().then((a) => setArcadeDot(a.games.some((g) => !a.claimed.includes(g)))).catch(() => undefined);
     backend.questState().then((q) => setQuestDot(q.milestones.some((m) => m.reached && !m.claimed) || (!q.questClaimed && q.tasks.every((t) => t.have >= t.need)))).catch(() => undefined);
@@ -98,6 +126,15 @@ export default function App() {
     if (hero) refresh().catch(() => undefined);
   }, [hero, refresh]);
 
+  // Practice answers given without Wi-Fi are sent when the app opens and whenever the connection returns.
+  useEffect(() => {
+    if (!hero) return;
+    const sendWaiting = () => { flushAnswers(backend, hero.id).then((r) => { if (r.sent) refresh().catch(() => undefined); }).catch(() => undefined); };
+    sendWaiting();
+    window.addEventListener('online', sendWaiting);
+    return () => window.removeEventListener('online', sendWaiting);
+  }, [hero, backend, refresh]);
+
   // Tell the Sensei this person is here: on every screen change, then about once a minute while visible.
   const who = hero ? 'hero' : adult && adult.role !== 'sensei' ? 'adult' : null;
   useEffect(() => {
@@ -112,6 +149,7 @@ export default function App() {
   const enterHero = (h: Hero) => { setHero(h); setScreen('home'); };
   const signOut = useCallback(async () => {
     await backend.signOut();
+    try { localStorage.removeItem('hh-balances'); } catch { /* blocked storage */ }
     setHero(null);
     setAdult(null);
     setBalances(emptyBalances());
@@ -158,7 +196,25 @@ export default function App() {
       {screen === 'adventures' && <Adventures />}
       {screen === 'quest' && <Quest />}
       {screen === 'showcase' && <Showcase />}
+      {screen === 'guide' && <Guide />}
+      {screen === 'myweek' && <MyWeek />}
+      {screen === 'raid' && <Raid />}
+      {screen === 'stickers' && <Stickers />}
+      {screen === 'comics' && <Comics />}
+      {screen === 'contest' && <Contest />}
+      {screen === 'codes' && <Codes />}
+      {screen === 'badges' && <Badges />}
+      {screen === 'race' && <Race />}
+      {screen === 'kindness' && <Kindness />}
+      {screen === 'studio' && <Studio />}
+      {screen === 'base' && <SquadBase />}
+      {screen === 'treasure' && <Treasure />}
+      {treasure && !treasure.done && HUNTS[treasure.hunt].steps[treasure.step].place === screen && <TreasureSpot step={treasure.step} place={screen} onFound={() => backend.treasureState().then(setTreasure).catch(() => undefined)} />}
+      {screen === 'secret' && <Secret />}
+      {secret && !secret.found && secret.place === screen && <SecretSpot week={Math.floor(Date.parse(new Date().toISOString().slice(0, 10)) / 604800000)} onFound={() => backend.secretState().then(setSecret).catch(() => undefined)} />}
       {screen === 'game:pattern-pulse' && <PatternPulse />}
+      {screen === 'game:rhythm-tap' && <RhythmTap />}
+      {screen === 'game:arena' && <Arena />}
       {screen === 'game:memory-flip' && <MemoryFlip />}
       {screen === 'game:word-builder' && <WordBuilder />}
       {screen === 'game:spot-difference' && <SpotDifference />}
@@ -168,11 +224,12 @@ export default function App() {
       {screen === 'game:shadow-signal' && <ShadowSignal />}
       {screen === 'game:squad-drawing' && <SquadDrawing />}
       {screen === 'game:escape-nexus' && <EscapeNexus />}
+      {screen === 'game:whack-shadow' && <WhackShadow />}
       {screen === 'game:fun-box' && <FunBox />}
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'badges', 'treasure', 'base', 'studio', 'race', 'kindness', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }

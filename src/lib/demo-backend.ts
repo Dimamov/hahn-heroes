@@ -1,5 +1,6 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
+import { KIND_REASONS, KIND_REWARD, KIND_WEEKLY_MAX } from './kindness.ts';
 import { DRAWING_WORDS, isRightGuess, maskWord, scribble, type DrawStroke } from './drawing-rules.ts';
 import { BOT_CLUES, isCaught, newRound, tallyVotes } from './shadow-rules.ts';
 import { botMove, deal, move as odinMoveRule, type OdinGame } from './odin-rules.ts';
@@ -17,12 +18,20 @@ import { CARDS, cardById, fairness as tradeFairness, type OfferItem, type Rarity
 import { SKILLS, dailyBonus, growthMultipliers, surgeRules } from './skills.ts';
 import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
-import type { Pose } from './showcase.ts';
+import { RAID_BOSSES, RAID_RULES } from './raid.ts';
+import { HEROES } from './heroes.ts';
+import { AURAS, HAIR, MAKEUP } from './look.ts';
+import { HUNTS, TREASURE_COIN, huntIndex } from './treasure.ts';
+import { CODE_LIMITS, CODE_WORDS_A, CODE_WORDS_B } from './codes.ts';
+import { CONTEST_POINTS, contestTheme } from './contest.ts';
+import { COMIC_LINES, COMIC_MAX, COMIC_POSES, COMIC_SCENES, type ComicPanels } from './comics.ts';
+import { STICKER_BGS, STICKER_COST, STICKER_DAILY, STICKER_DECOS, STICKER_FRAMES, STICKER_MAX, STICKER_WORDS } from './stickers.ts';
+import { EMOTES, type EmoteId, type Pose } from './showcase.ts';
 import {
-  AdultAuthError, HOUSE_COLORS, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
+  AdultAuthError, HOUSE_COLORS, SECRET_PLACES, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
   type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
   type ClassResult, type Hero, type HouseIdentity, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
-  type QuestState, type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress, type TriviaState,
+  type QuestState, type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress, type TeacherCharacter, type TriviaState,
 } from './backend.ts';
 
 interface BankQuestion {
@@ -275,10 +284,23 @@ interface Db {
   classMissions: ClassMissionRow[];
   submissions: SubmissionRow[];
   announcements: Announcement[];
+  teacherCharacters?: Record<string, TeacherCharacter>;
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
-  showcase?: { heroId: string; title: string; pose: Pose }[];
+  looks?: { heroId: string; hair: string; makeup: string; aura: string; outfit: string | null; accessory: string | null; pinned: boolean; version: number; at: number }[];
+  lookLikes?: { owner: string; liker: string; version: number }[];
+  kind?: { id: number; nominator: string; nominee: string; reason: string; day: string; at: number; status: 'pending' | 'approved' | 'skipped' }[];
+  squadBase?: { squadId: string; cell: number; item: string; by: string }[];
+  treasure?: { week: string; heroId: string; step: number; claimed: boolean }[];
+  codes?: { id: number; code: string; by: string; classId: string | null; coins: number; xp: number; day: string; expires: number; used: string[] }[];
+  codeTries?: { heroId: string; at: number }[];
+  contest?: { entries: { week: string; heroId: string }[]; votes: { week: string; voter: string; entry: string }[]; claims: { week: string; heroId: string }[] };
+  comics?: { id: number; maker: string; panels: ComicPanels; shared: boolean; deleted?: boolean }[];
+  stickers?: { id: number; maker: string; owner: string; hero: string; bg: string; frame: string; deco: string; word: string; day: string }[];
+  secret?: { week: string; place: string; hint: string; card: string; finds: string[]; winner: { squadId: string; by: string } | null; claims: string[] };
+  raid?: { week: string; boss: string; maxHp: number; strikes: { heroId: string; day: string; damage: number }[] };
+  showcase?: { heroId: string; title: string; pose: Pose; emote?: string }[];
   eventEdits?: Record<string, { starts: string; ends: string; enabled: boolean }>;
   challenge?: { week: string; theme: string; goal: number; coins: number } | null;
   adv?: { heroId: string; caseId: string; solved: string[]; done: boolean }[];
@@ -448,6 +470,30 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     };
   };
   /** Mirrors title_unlocked(): each title is worked out from what the hero actually did. */
+  const secretHint = (place: string) => `Look in the ${place} area of the Nexus.`;
+  const mySquadId = (heroId: string) => (db.squads ?? []).find((q) => !q.disbanded && q.members.some((m) => m.childId === heroId && m.status === 'member'))?.id;
+  /** This week's secret: the place and card follow the week unless the Sensei changes them. */
+  const secretWeek = () => {
+    const week = schoolWeek(now());
+    if (!db.secret || db.secret.week !== week) {
+      const n = Math.floor(new Date(`${week}T00:00:00Z`).getTime() / 604800000);
+      const place = SECRET_PLACES[(n * 7) % SECRET_PLACES.length];
+      const prizes = CARDS.filter((c) => c.rarity === 'rare' || c.rarity === 'epic');
+      db.secret = { week, place, hint: secretHint(place), card: prizes[n % prizes.length].id, finds: [], winner: null, claims: [] };
+    }
+    return db.secret;
+  };
+  /** This week's boss, with health fixed the first time anyone looks. */
+  const raidWeek = () => {
+    const week = schoolWeek(now());
+    if (!db.raid || db.raid.week !== week) {
+      const n = Math.floor(new Date(`${week}T00:00:00Z`).getTime() / 604800000);
+      db.raid = { week, boss: RAID_BOSSES[n % RAID_BOSSES.length].id, maxHp: Math.max(RAID_RULES.minHp, RAID_RULES.hpPerHero * Math.max(1, Object.keys(db.accounts).length)), strikes: [] };
+    }
+    return db.raid;
+  };
+  const raidPower = (heroId: string) => 10 + Math.min(60, 3 * db.history.filter((h) => h.childId === heroId && h.correct && schoolDate(new Date(h.servedAt)) === schoolDate(now())).length);
+  const xpOf = (heroId: string) => db.ledger.filter((r) => r.heroId === heroId && r.currency === 'xp').reduce((s, r) => s + r.amount, 0);
   const unlockedTitles = (heroId: string): string[] => {
     const mine = db.ledger.filter((r) => r.heroId === heroId && r.currency === 'coins');
     const xp = db.ledger.filter((r) => r.heroId === heroId && r.currency === 'xp').reduce((s, r) => s + r.amount, 0);
@@ -479,6 +525,16 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       goingCount: rows.filter((r) => r.going && Object.values(db.accounts).find((a) => a.id === r.heroId)?.grade === hero.grade).length,
     };
   };
+  /** Squad mates and class mates (House) of a hero, never the hero. */
+  const contestCircle = (heroId: string) => {
+    const out = new Set<string>();
+    const sq = (db.squads ?? []).find((q) => !q.disbanded && q.members.some((m) => m.childId === heroId && m.status === 'member'));
+    sq?.members.filter((m) => m.status === 'member').forEach((m) => out.add(m.childId));
+    const cls = db.members.find((m) => m.childId === heroId);
+    if (cls) db.members.filter((m) => m.classId === cls.classId).forEach((m) => out.add(m.childId));
+    out.delete(heroId);
+    return [...out];
+  };
   const meHero = (): Account => {
     const acct = Object.values(db.accounts).find((a) => a.id === db.current);
     if (!acct) throw new Error('not signed in as a hero');
@@ -493,6 +549,12 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
   const isParentOf = (childId: string) => {
     const a = meAdult('parent');
     return db.parentLinks.some((l) => l.childId === childId && l.parentId === a.id);
+  };
+  /** A parent of the child, or the teacher of a class the child is in. */
+  const canSeeChild = (childId: string) => {
+    const a = db.adults.find((x) => x.id === db.current);
+    if (a?.role === 'teacher' && a.approved) return db.members.some((m) => m.childId === childId && db.classes.some((c) => c.id === m.classId && c.teacherId === a.id));
+    return isParentOf(childId);
   };
   const teaches = (classId: string) => {
     const t = meAdult('teacher');
@@ -720,13 +782,13 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     },
     async announcements() {
       const userId = db.current ?? '';
-      const items = [...db.announcements].sort((a, b) => b.id - a.id);
+      const items = db.announcements.filter((a) => !(a as { deleted?: boolean }).deleted).sort((a, b) => b.id - a.id);
       const unread = items.filter((a) => !db.reads.some((r) => r.userId === userId && r.announcementId === a.id)).length;
       return { items, unread };
     },
     async markAnnouncementsRead() {
       const userId = db.current ?? '';
-      for (const a of db.announcements) {
+      for (const a of db.announcements.filter((x) => !(x as { deleted?: boolean }).deleted)) {
         if (!db.reads.some((r) => r.userId === userId && r.announcementId === a.id)) db.reads.push({ userId, announcementId: a.id });
       }
       commit();
@@ -840,8 +902,66 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       return learningFor(meHero().id);
     },
     async childLearning(childId) {
-      if (!isParentOf(childId)) throw new Error('not your child');
+      if (!canSeeChild(childId)) throw new Error('not your child');
       return learningFor(childId);
+    },
+    async myWeek(weeksBack = 0) {
+      const id = meHero().id;
+      const week = schoolWeek(new Date(now().getTime() - 7 * 86400000 * Math.max(0, Math.min(12, weeksBack))));
+      const rows = db.history.filter((h) => h.childId === id && h.answered && schoolWeek(new Date(h.servedAt)) === week);
+      const bySubject = new Map<Subject, { answered: number; correct: number }>();
+      for (const h of rows) {
+        const s = QUESTIONS.find((q) => q.id === h.questionId)?.subject;
+        if (!s) continue;
+        const e = bySubject.get(s) ?? { answered: 0, correct: 0 };
+        e.answered += 1; if (h.correct) e.correct += 1;
+        bySubject.set(s, e);
+      }
+      const earned = db.ledger.filter((r) => r.heroId === id && r.currency === 'coins' && r.amount > 0 && r.week === week);
+      return {
+        weekStart: week,
+        daysActive: new Set(rows.map((h) => schoolDate(new Date(h.servedAt)))).size,
+        answered: rows.length, correct: rows.filter((h) => h.correct).length,
+        subjects: [...bySubject].sort(([a], [b]) => a.localeCompare(b)).map(([subject, v]) => ({ subject, ...v })),
+        points: earned.reduce((s, r) => s + r.amount, 0),
+        missions: earned.filter((r) => r.source === 'home_mission' || r.source === 'class_mission').length,
+      };
+    },
+    async classReport(classId, weeksBack = 0) {
+      if (!teaches(classId)) throw new Error('not your class');
+      const cls = db.classes.find((c) => c.id === classId)!;
+      const students = [];
+      for (const m of db.members.filter((x) => x.classId === classId)) {
+        const hero = heroById(m.childId);
+        if (!hero) continue;
+        const w = await this.childWeek(m.childId, weeksBack);
+        students.push({ id: m.childId, name: hero.displayName, daysActive: w.daysActive, answered: w.answered, correct: w.correct, points: w.points, missions: w.missions });
+      }
+      students.sort((a, b) => a.name.localeCompare(b.name));
+      const weekStart = schoolWeek(new Date(now().getTime() - 7 * 86400000 * Math.max(0, Math.min(12, weeksBack))));
+      return { weekStart, className: cls.name, students };
+    },
+    async childWeek(childId, weeksBack = 0) {
+      if (!canSeeChild(childId)) throw new Error('not your child');
+      const week = schoolWeek(new Date(now().getTime() - 7 * 86400000 * Math.max(0, Math.min(12, weeksBack))));
+      const rows = db.history.filter((h) => h.childId === childId && h.answered && schoolWeek(new Date(h.servedAt)) === week);
+      const bySubject = new Map<Subject, { answered: number; correct: number }>();
+      for (const h of rows) {
+        const s = QUESTIONS.find((q) => q.id === h.questionId)?.subject;
+        if (!s) continue;
+        const e = bySubject.get(s) ?? { answered: 0, correct: 0 };
+        e.answered += 1; if (h.correct) e.correct += 1;
+        bySubject.set(s, e);
+      }
+      const earned = db.ledger.filter((r) => r.heroId === childId && r.currency === 'coins' && r.amount > 0 && r.week === week);
+      return {
+        weekStart: week,
+        daysActive: new Set(rows.map((h) => schoolDate(new Date(h.servedAt)))).size,
+        answered: rows.length, correct: rows.filter((h) => h.correct).length,
+        subjects: [...bySubject].sort(([a], [b]) => a.localeCompare(b)).map(([subject, v]) => ({ subject, ...v })),
+        points: earned.reduce((s, r) => s + r.amount, 0),
+        missions: earned.filter((r) => r.source === 'home_mission' || r.source === 'class_mission').length,
+      };
     },
     async childProgress(childId) {
       if (!isParentOf(childId)) throw new Error('not your child');
@@ -1359,6 +1479,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       }
       return {
         mine: owner.id === me.id, name: owner.displayName, starter: owner.starter,
+        emote: (db.showcase ?? []).find((s) => s.heroId === owner.id)?.emote ?? 'wave',
         layout: [...((db.rooms ??= []).find((r) => r.heroId === owner.id)?.layout ?? [])].sort((a, b) => a.cell - b.cell),
         equipped: Object.fromEntries((db.equipped ??= []).filter((e) => e.heroId === owner.id && e.itemId).map((e) => [e.slot, e.itemId])),
         owned: owner.id === me.id ? (db.owned ??= []).filter((o) => o.heroId === me.id && itemById(o.itemId)?.kind === 'decor').map((o) => o.itemId) : null,
@@ -1395,7 +1516,16 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     async showcaseState() {
       const me = meHero().id;
       const row = (db.showcase ?? []).find((s) => s.heroId === me);
-      return { title: row?.title ?? 'rookie', pose: row?.pose ?? 'stand', unlocked: unlockedTitles(me) };
+      return { title: row?.title ?? 'rookie', pose: row?.pose ?? 'stand', emote: (row?.emote ?? 'wave') as EmoteId, xp: xpOf(me), unlocked: unlockedTitles(me) };
+    },
+    async emoteSet(emote) {
+      const me = meHero().id;
+      const e = EMOTES.find((x) => x.id === emote);
+      if (!e || e.xp > xpOf(me)) throw new Error('you have not unlocked that emote yet');
+      const rows = (db.showcase ??= []);
+      const row = rows.find((s) => s.heroId === me);
+      if (row) row.emote = emote; else rows.push({ heroId: me, title: 'rookie', pose: 'stand', emote });
+      commit();
     },
     async showcaseSet(title, pose) {
       const me = meHero().id;
@@ -1418,6 +1548,434 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const mine = Math.min(heroWeekPoints(hero.id), HOUSE_CAP);
       return { state: 'active', theme: c.theme, goal: c.goal, coins: c.coins, progress, reached: progress >= c.goal, myPoints: mine, needMine: 10,
                claimed: db.ledger.some((r) => r.heroId === hero.id && r.currency === 'coins' && r.key === `hchal:${c.week}`) };
+    },
+    async raidState() {
+      const hero = meHero();
+      const r = raidWeek();
+      const damage = r.strikes.reduce((n, x) => n + x.damage, 0);
+      const mine = r.strikes.filter((x) => x.heroId === hero.id);
+      const claimed = db.ledger.some((l) => l.heroId === hero.id && l.currency === 'coins' && l.key === `raid:${r.week}`);
+      const boss = RAID_BOSSES.find((b) => b.id === r.boss)!;
+      return {
+        boss: { id: boss.id, name: boss.name, icon: boss.icon, blurb: boss.blurb },
+        maxHp: r.maxHp, damage: Math.min(damage, r.maxHp), defeated: damage >= r.maxHp,
+        strikers: new Set(r.strikes.map((x) => x.heroId)).size,
+        struckToday: mine.some((x) => x.day === schoolDate(now())),
+        power: raidPower(hero.id), myDamage: mine.reduce((n, x) => n + x.damage, 0),
+        canClaim: damage >= r.maxHp && mine.length > 0 && !claimed, claimed,
+        reward: { coins: RAID_RULES.coins, xp: RAID_RULES.xp },
+      };
+    },
+    async raidStrike() {
+      const hero = meHero();
+      const r = raidWeek();
+      const total = r.strikes.reduce((n, x) => n + x.damage, 0);
+      if (total >= r.maxHp) return { ok: false, reason: 'defeated' as const };
+      if (r.strikes.some((x) => x.heroId === hero.id && x.day === schoolDate(now()))) return { ok: false, reason: 'already_struck' as const };
+      const damage = raidPower(hero.id);
+      r.strikes.push({ heroId: hero.id, day: schoolDate(now()), damage });
+      commit();
+      return { ok: true, damage, defeated: total + damage >= r.maxHp };
+    },
+    async raidClaim() {
+      const hero = meHero();
+      const r = raidWeek();
+      if (r.strikes.reduce((n, x) => n + x.damage, 0) < r.maxHp) throw new Error('not_defeated');
+      if (!r.strikes.some((x) => x.heroId === hero.id)) throw new Error('did_not_strike');
+      const key = `raid:${r.week}`;
+      award(hero.id, 'xp', RAID_RULES.xp, 'event', key);
+      const res = award(hero.id, 'coins', RAID_RULES.coins, 'event', key);
+      return { awarded: res.awarded, duplicate: res.duplicate };
+    },
+    async secretState() {
+      const hero = meHero();
+      const w = secretWeek();
+      const mine = mySquadId(hero.id);
+      const card = cardById(w.card)!;
+      return {
+        place: w.place, hint: w.hint, found: w.finds.includes(hero.id), finders: w.finds.length, won: !!w.winner,
+        winnerSquad: w.winner ? (db.squads ?? []).find((q) => q.id === w.winner!.squadId)?.name ?? null : null,
+        mySquadWon: !!w.winner && w.winner.squadId === mine, claimed: w.claims.includes(hero.id),
+        card: { id: card.id, name: card.name, icon: card.icon },
+      };
+    },
+    async secretFind() {
+      const hero = meHero();
+      const w = secretWeek();
+      if (w.finds.includes(hero.id)) return { ok: false };
+      w.finds.push(hero.id);
+      const squad = mySquadId(hero.id);
+      let firstSquad = false;
+      if (squad && !w.winner) { w.winner = { squadId: squad, by: hero.id }; firstSquad = true; }
+      award(hero.id, 'coins', 5, 'event', `secret:${w.week}`);
+      commit();
+      return { ok: true, firstSquad };
+    },
+    async secretClaim() {
+      const hero = meHero();
+      const w = secretWeek();
+      if (!w.winner || w.winner.squadId !== mySquadId(hero.id) || w.claims.includes(hero.id)) return { ok: false };
+      w.claims.push(hero.id);
+      const row = (db.cardInv ??= []).find((c) => c.heroId === hero.id && c.cardId === w.card);
+      if (row) row.qty += 1; else db.cardInv.push({ heroId: hero.id, cardId: w.card, qty: 1 });
+      commit();
+      return { ok: true };
+    },
+    async senseiSecret() {
+      meAdult('sensei');
+      const w = secretWeek();
+      return { place: w.place, hint: w.hint, card: w.card, finders: w.finds.length, winnerSquad: w.winner ? (db.squads ?? []).find((q) => q.id === w.winner!.squadId)?.name ?? null : null };
+    },
+    async senseiSecretSet(place, hint, card) {
+      meAdult('sensei');
+      const w = secretWeek();
+      if (!(SECRET_PLACES as readonly string[]).includes(place)) throw new Error('no such place');
+      if (w.finds.length) throw new Error('someone already found this one');
+      if (!cardById(card)) throw new Error('no such card');
+      w.place = place; w.card = card; w.hint = hint.trim().slice(0, 120) || secretHint(place);
+      commit();
+    },
+    async stickerList() {
+      const me = meHero().id;
+      const all = (db.stickers ??= []);
+      return {
+        stickers: all.filter((x) => x.owner === me).sort((a, b) => b.id - a.id).map(({ id, hero, bg, frame, deco, word }) => ({ id, hero, bg, frame, deco, word })),
+        madeToday: all.filter((x) => x.maker === me && x.day === schoolDate(now())).length,
+      };
+    },
+    async stickerMake(design) {
+      const me = meHero().id;
+      const all = (db.stickers ??= []);
+      if (!HEROES.some((h) => h.id === design.hero) || !STICKER_BGS.some((b) => b.id === design.bg) || !(STICKER_FRAMES as readonly string[]).includes(design.frame)
+        || !(STICKER_DECOS as readonly string[]).includes(design.deco) || !(STICKER_WORDS as readonly string[]).includes(design.word)) throw new Error('pick from the lists');
+      if (all.filter((x) => x.maker === me && x.day === schoolDate(now())).length >= STICKER_DAILY) return { ok: false, reason: 'daily_limit' as const };
+      if (all.filter((x) => x.owner === me).length >= STICKER_MAX) return { ok: false, reason: 'full' as const };
+      const bal = await this.balances();
+      if (bal.coins < STICKER_COST) throw new Error('not enough points');
+      const id = Math.max(0, ...all.map((x) => x.id)) + 1;
+      db.ledger.push({ heroId: me, currency: 'coins', amount: -STICKER_COST, source: 'purchase', key: `sticker:${id}`, week: schoolWeek(now()) });
+      all.push({ id, maker: me, owner: me, ...design, day: schoolDate(now()) });
+      commit();
+      return { ok: true };
+    },
+    async stickerGive(stickerId, toHero) {
+      const me = meHero().id;
+      const all = (db.stickers ??= []);
+      if (toHero === me || mySquadId(me) === undefined || mySquadId(me) !== mySquadId(toHero)) throw new Error('you can only give stickers to your squad');
+      if (all.filter((x) => x.owner === toHero).length >= STICKER_MAX) return { ok: false, reason: 'full' as const };
+      const s = all.find((x) => x.id === stickerId && x.owner === me);
+      if (!s) throw new Error('that is not your sticker');
+      s.owner = toHero;
+      commit();
+      return { ok: true };
+    },
+    async kindState() {
+      const me = meHero().id;
+      const sq = (db.squads ?? []).find((q) => !q.disbanded && q.members.some((m) => m.childId === me && m.status === 'member'));
+      const list = (db.kind ??= []);
+      return {
+        nominatedToday: list.some((k) => k.nominator === me && k.day === schoolDate(now())),
+        mates: (sq?.members ?? []).filter((m) => m.status === 'member' && m.childId !== me).map((m) => ({ id: m.childId, name: heroById(m.childId)!.displayName })),
+        received: list.filter((k) => k.nominee === me && k.status === 'approved').slice(-10).reverse().map((k) => ({ reason: k.reason, day: k.day })),
+      };
+    },
+    async kindNominate(heroId, reason) {
+      const me = meHero().id;
+      if (!KIND_REASONS.some((r) => r.id === reason)) throw new Error('pick one of the reasons');
+      if (!(await this.kindState()).mates.some((m) => m.id === heroId)) throw new Error('you can nominate a squad mate');
+      const list = (db.kind ??= []);
+      if (list.some((k) => k.nominator === me && k.day === schoolDate(now()))) throw new Error('you already nominated someone today');
+      list.push({ id: list.length + 1, nominator: me, nominee: heroId, reason, day: schoolDate(now()), at: at(), status: 'pending' });
+      commit();
+    },
+    async kindReview() {
+      const a = meAdult();
+      if (a.role !== 'sensei' && a.role !== 'teacher') throw new Error('only teachers and the Sensei can review');
+      const list = (db.kind ??= []);
+      return list.filter((k) => k.status === 'pending' && (a.role === 'sensei' || canSeeChild(k.nominee))).map((k) => ({
+        id: k.id, nominator: heroById(k.nominator)!.displayName, nominee: heroById(k.nominee)!.displayName, reason: k.reason, day: k.day,
+        repeat: list.some((r) => r.nominator === k.nominee && r.nominee === k.nominator && r.at > k.at - 7 * 86400000),
+      }));
+    },
+    async kindDecide(id, approve) {
+      const a = meAdult();
+      const k = (db.kind ??= []).find((x) => x.id === id && x.status === 'pending');
+      if (!k) throw new Error('that nomination is not waiting');
+      if (!(a.role === 'sensei' || (a.role === 'teacher' && canSeeChild(k.nominee)))) throw new Error('that is not your student');
+      k.status = approve ? 'approved' : 'skipped';
+      commit();
+      if (!approve) return { awarded: 0 };
+      const week = schoolWeek(new Date(k.at));
+      const given = db.kind!.filter((x) => x.nominee === k.nominee && x.status === 'approved' && x.id !== k.id && schoolWeek(new Date(x.at)) === week).length;
+      if (given >= KIND_WEEKLY_MAX) return { awarded: 0 };
+      return { awarded: award(k.nominee, 'coins', KIND_REWARD, 'event', `kind:${k.id}`).awarded };
+    },
+    async raceState(back = 0) {
+      const hero = meHero();
+      const d = schoolDate(now());
+      const month = new Date(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1 - Math.min(Math.max(back, 0), 1), 1)).toISOString().slice(0, 10);
+      const link = db.members.find((m) => m.childId === hero.id);
+      const mine = link && db.classes.find((c) => c.id === link.classId);
+      const rows = [
+        { name: 'Room 4', grade: 5, members: 22, total: back ? 1380 : 910, mine: false },
+        { name: 'Room 9', grade: 6, members: 24, total: back ? 1210 : 1040, mine: false },
+        { name: 'Room 12', grade: 5, members: 21, total: back ? 990 : 760, mine: false },
+        ...(mine ? [{ name: mine.name, grade: mine.grade, members: db.members.filter((m) => m.classId === mine.id).length, total: back ? 0 : Math.min(heroSeasonPoints(hero.id), HOUSE_CAP * 4), mine: true }] : []),
+      ];
+      return { month, minMembers: 3, classes: rows.map((r) => ({ ...r, rank: 1 + rows.filter((o) => o.total > r.total).length })).sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name)) };
+    },
+    async lookGet() {
+      const me = meHero().id;
+      const l = (db.looks ??= []).find((x) => x.heroId === me);
+      const owned = (db.owned ??= []).filter((o) => o.heroId === me).map((o) => o.itemId);
+      return {
+        hair: l?.hair ?? 'brown', makeup: l?.makeup ?? 'none', aura: l?.aura ?? 'none', outfit: l?.outfit ?? null, accessory: l?.accessory ?? null, pinned: !!l?.pinned,
+        likes: (db.lookLikes ??= []).filter((k) => k.owner === me && k.version === (l?.version ?? 1)).length,
+        outfits: owned.filter((id) => itemById(id)?.kind === 'outfit'), accessories: owned.filter((id) => itemById(id)?.kind === 'accessory'),
+      };
+    },
+    async lookSave(look, pinned) {
+      const me = meHero().id;
+      if (!HAIR.some((h) => h.id === look.hair) || !MAKEUP.some((m) => m.id === look.makeup) || !AURAS.some((a) => a.id === look.aura)) throw new Error('pick from the lists');
+      const owns = (id: string | null, kind: string) => id === null || ((db.owned ??= []).some((o) => o.heroId === me && o.itemId === id) && itemById(id)?.kind === kind);
+      if (!owns(look.outfit, 'outfit')) throw new Error('you do not own that outfit');
+      if (!owns(look.accessory, 'accessory')) throw new Error('you do not own that accessory');
+      const all = (db.looks ??= []);
+      const l = all.find((x) => x.heroId === me);
+      if (!l) all.push({ heroId: me, ...look, pinned, version: 1, at: now().getTime() });
+      else {
+        const changed = l.hair !== look.hair || l.makeup !== look.makeup || l.aura !== look.aura || l.outfit !== look.outfit || l.accessory !== look.accessory;
+        Object.assign(l, look, { pinned, at: now().getTime(), version: changed ? l.version + 1 : l.version });
+      }
+      commit();
+    },
+    async lookGallery() {
+      const me = meHero().id;
+      const circle = new Set([...contestCircle(me), ...(db.friendships ??= []).filter((f) => f.status === 'accepted' && (f.a === me || f.b === me)).map((f) => (f.a === me ? f.b : f.a))]);
+      return (db.looks ??= []).filter((l) => l.pinned && circle.has(l.heroId)).sort((a, b) => b.at - a.at).slice(0, 30).map((l) => {
+        const h = heroById(l.heroId)!;
+        const likes = (db.lookLikes ??= []).filter((k) => k.owner === l.heroId && k.version === l.version);
+        return { hero: h.id, name: h.displayName, starter: h.starter, hair: l.hair, makeup: l.makeup, aura: l.aura, outfit: l.outfit, accessory: l.accessory, likes: likes.length, liked: likes.some((k) => k.liker === me) };
+      });
+    },
+    async lookLike(heroId) {
+      const me = meHero().id;
+      const l = (db.looks ??= []).find((x) => x.heroId === heroId && x.pinned);
+      const circle = new Set([...contestCircle(me), ...(db.friendships ??= []).filter((f) => f.status === 'accepted' && (f.a === me || f.b === me)).map((f) => (f.a === me ? f.b : f.a))]);
+      if (!l || !circle.has(heroId)) throw new Error('you can only like looks from friends, your squad or your House');
+      const likes = (db.lookLikes ??= []);
+      if (likes.some((k) => k.owner === heroId && k.liker === me && k.version === l.version)) throw new Error('you already liked this look');
+      likes.push({ owner: heroId, liker: me, version: l.version });
+      commit();
+    },
+    async baseGet() {
+      const me = meHero().id;
+      const sq = mySquadId(me);
+      if (sq === undefined) return { squad: null, items: [], owned: [], limit: 6 };
+      return {
+        squad: (db.squads ?? []).find((q) => q.id === sq)!.name,
+        items: (db.squadBase ??= []).filter((b) => b.squadId === sq).sort((a, b) => a.cell - b.cell).map((b) => ({ cell: b.cell, item: b.item, by: heroById(b.by)?.displayName ?? 'Hero', mine: b.by === me })),
+        owned: (db.owned ??= []).filter((o) => o.heroId === me && itemById(o.itemId)?.kind === 'decor').map((o) => o.itemId),
+        limit: 6,
+      };
+    },
+    async basePlace(cell, item) {
+      const me = meHero().id;
+      const sq = mySquadId(me);
+      const all = (db.squadBase ??= []);
+      if (sq === undefined) throw new Error('join a squad first');
+      if (!Number.isInteger(cell) || cell < 0 || cell > 23) throw new Error('pick a spot in the hideout');
+      if (!(db.owned ??= []).some((o) => o.heroId === me && o.itemId === item && itemById(item)?.kind === 'decor')) throw new Error('you do not own that decoration');
+      const there = all.find((b) => b.squadId === sq && b.cell === cell);
+      if (there && there.by !== me) throw new Error('that spot is taken');
+      if (all.some((b) => b.squadId === sq && b.item === item && b.by !== me)) throw new Error('that decoration is already in the hideout');
+      db.squadBase = all.filter((b) => !(b.squadId === sq && b.by === me && (b.item === item || b.cell === cell)));
+      if (db.squadBase.filter((b) => b.squadId === sq && b.by === me).length >= 6) throw new Error('you can place up to 6 decorations');
+      db.squadBase.push({ squadId: sq, cell, item, by: me });
+      commit();
+    },
+    async baseRemove(cell) {
+      const me = meHero().id;
+      const sq = mySquadId(me);
+      const all = (db.squadBase ??= []);
+      if (!all.some((b) => b.squadId === sq && b.cell === cell && b.by === me)) throw new Error('that is not your decoration');
+      db.squadBase = all.filter((b) => !(b.squadId === sq && b.cell === cell));
+      commit();
+    },
+    async treasureState() {
+      const me = meHero().id;
+      const week = schoolWeek(now());
+      const h = huntIndex(week);
+      const p = (db.treasure ??= []).find((x) => x.week === week && x.heroId === me);
+      return { hunt: h, step: p?.step ?? 0, steps: 4, done: (p?.step ?? 0) >= 4, claimed: !!p?.claimed, card: HUNTS[h].card };
+    },
+    async treasureFind(place) {
+      const me = meHero().id;
+      const week = schoolWeek(now());
+      const all = (db.treasure ??= []);
+      let p = all.find((x) => x.week === week && x.heroId === me);
+      if (!p) { p = { week, heroId: me, step: 0, claimed: false }; all.push(p); }
+      if (p.step >= 4 || HUNTS[huntIndex(week)].steps[p.step].place !== place) return { ok: false };
+      award(me, 'coins', TREASURE_COIN, 'event', `treasure:${week}:${p.step}`);
+      p.step += 1;
+      commit();
+      return { ok: true, done: p.step >= 4 };
+    },
+    async treasureClaim() {
+      const me = meHero().id;
+      const week = schoolWeek(now());
+      const p = (db.treasure ??= []).find((x) => x.week === week && x.heroId === me);
+      if (!p || p.step < 4 || p.claimed) return { ok: false };
+      p.claimed = true;
+      const inv = (db.cardInv ??= []);
+      const have = inv.find((c) => c.heroId === me && c.cardId === HUNTS[huntIndex(week)].card);
+      if (have) have.qty += 1; else inv.push({ heroId: me, cardId: HUNTS[huntIndex(week)].card, qty: 1 });
+      commit();
+      return { ok: true };
+    },
+    async badgeWall() {
+      const me = meHero().id;
+      const out: string[] = [];
+      const hist = db.history.filter((h) => h.childId === me);
+      if (hist.length) out.push('first-steps');
+      if (hist.filter((h) => h.correct).length >= 50) out.push('brainiac');
+      if (db.ledger.filter((l) => l.heroId === me && l.source === 'daily').length >= 7) out.push('streak-master');
+      if (mySquadId(me) !== undefined) out.push('squad-up');
+      if ((db.friendships ??= []).filter((f) => f.status === 'accepted' && (f.a === me || f.b === me)).length >= 3) out.push('friendly');
+      if ((db.cardInv ??= []).filter((c) => c.heroId === me && c.qty > 0).length >= 10) out.push('collector');
+      if ((db.owned ??= []).filter((o) => o.heroId === me).length >= 3) out.push('fashionista');
+      if ((db.nexlings ??= []).some((n) => n.heroId === me)) out.push('pet-parent');
+      if ((db.story ??= []).some((x) => x.heroId === me && x.done)) out.push('story-finisher');
+      if (db.raid?.strikes.some((x) => x.heroId === me)) out.push('boss-buster');
+      if (db.secret?.finds.includes(me)) out.push('sparkle-spotter');
+      if ((db.comics ??= []).some((c) => c.maker === me)) out.push('comic-creator');
+      if ((db.stickers ??= []).some((x) => x.maker === me)) out.push('sticker-star');
+      if ((db.codes ??= []).some((c) => c.used.includes(me))) out.push('code-cracker');
+      if ((db.contest ??= { entries: [], votes: [], claims: [] }).entries.some((e) => e.heroId === me)) out.push('room-showoff');
+      if (db.ledger.some((l) => l.heroId === me && l.source === 'purchase')) out.push('big-spender');
+      return out;
+    },
+    async codeCreate(classId, coins, xp, announce = false) {
+      const a = meAdult();
+      if (a.role !== 'sensei' && a.role !== 'teacher') throw new Error('only teachers and the Sensei');
+      const sensei = a.role === 'sensei';
+      const all = (db.codes ??= []);
+      const day = schoolDate(now());
+      const lim = sensei ? CODE_LIMITS.sensei : CODE_LIMITS.teacher;
+      if (!sensei && (!classId || !db.classes.some((c) => c.id === classId && c.teacherId === a.id))) throw new Error('pick one of your classes');
+      if (coins > lim.coins || xp > lim.xp) throw new Error(sensei ? 'too much for one code' : 'teacher codes can give up to 5 diamonds and 25 stars');
+      if (coins < 0 || xp < 0 || coins + xp <= 0) throw new Error('give at least something');
+      const today = all.filter((c) => c.by === a.id && c.day === day).length;
+      if (!sensei && today >= 1) throw new Error('you already made a code today');
+      if (sensei && today >= 5) throw new Error('five codes a day is the limit');
+      let code = '';
+      do { code = `${CODE_WORDS_A[Math.floor(Math.random() * 16)]}-${CODE_WORDS_B[Math.floor(Math.random() * 16)]}-${10 + Math.floor(Math.random() * 90)}`; } while (all.some((c) => c.code === code));
+      all.push({ id: Math.max(0, ...all.map((c) => c.id)) + 1, code, by: a.id, classId: sensei ? null : classId, coins, xp, day, expires: now().getTime() + 7 * 86400000, used: [] });
+      if (sensei && announce) db.announcements.push({ id: Math.max(0, ...db.announcements.map((x) => x.id)) + 1, title: 'Secret code!', body: `Type this code in the Nexus to win a prize: ${code}`, createdAt: now().toISOString() });
+      commit();
+      return code;
+    },
+    async codeMine() {
+      const a = meAdult();
+      return (db.codes ??= []).filter((c) => c.by === a.id).sort((x, y) => y.id - x.id).slice(0, 10)
+        .map((c) => ({ id: c.id, code: c.code, coins: c.coins, xp: c.xp, expiresAt: new Date(c.expires).toISOString(), className: db.classes.find((k) => k.id === c.classId)?.name ?? null, redeemed: c.used.length }));
+    },
+    async codeRedeem(code) {
+      const me = meHero().id;
+      const tries = (db.codeTries ??= []);
+      if (tries.filter((t) => t.heroId === me && t.at > now().getTime() - 3600000).length >= 5) return { ok: false, reason: 'too_many_tries' };
+      const word = code.trim().toUpperCase().replace(/\s+/g, '-');
+      const c = (db.codes ??= []).find((x) => x.code === word && x.expires > now().getTime());
+      if (!c || (c.classId && !db.members.some((m) => m.classId === c.classId && m.childId === me))) { tries.push({ heroId: me, at: now().getTime() }); commit(); return { ok: false, reason: 'not_found' }; }
+      if (c.used.includes(me)) return { ok: false, reason: 'already_used' };
+      c.used.push(me);
+      if (c.coins) award(me, 'coins', c.coins, 'event', `code:${c.id}`);
+      if (c.xp) award(me, 'xp', c.xp, 'event', `code:${c.id}`);
+      commit();
+      return { ok: true, coins: c.coins, xp: c.xp };
+    },
+    async contestState() {
+      const me = meHero().id;
+      const c = (db.contest ??= { entries: [], votes: [], claims: [] });
+      const week = schoolWeek(now());
+      const last = schoolWeek(new Date(now().getTime() - 7 * 86400000));
+      const circle = contestCircle(me);
+      const myLast = c.votes.filter((v) => v.week === last && v.entry === me).length;
+      const best = Math.max(0, ...circle.map((h) => c.votes.filter((v) => v.week === last && v.entry === h).length));
+      return {
+        theme: contestTheme(week), entered: c.entries.some((e) => e.week === week && e.heroId === me),
+        hasRoom: ((db.rooms ??= []).find((r) => r.heroId === me)?.layout.length ?? 0) > 0,
+        voted: c.votes.some((v) => v.week === week && v.voter === me),
+        entries: c.entries.filter((e) => e.week === week && circle.includes(e.heroId)).map((e) => {
+          const h = heroById(e.heroId)!;
+          return { hero: h.id, name: h.displayName, starter: h.starter, layout: (db.rooms ??= []).find((r) => r.heroId === h.id)?.layout ?? [], mineVote: c.votes.some((v) => v.week === week && v.voter === me && v.entry === h.id) };
+        }),
+        last: { theme: contestTheme(last), entered: c.entries.some((e) => e.week === last && e.heroId === me), votes: myLast, won: myLast > 0 && myLast >= best, claimed: c.claims.some((x) => x.week === last && x.heroId === me) },
+      };
+    },
+    async contestEnter() {
+      const hero = meHero();
+      const c = (db.contest ??= { entries: [], votes: [], claims: [] });
+      const week = schoolWeek(now());
+      if (!((db.rooms ??= []).find((r) => r.heroId === hero.id)?.layout.length)) throw new Error('decorate your room first');
+      if (!c.entries.some((e) => e.week === week && e.heroId === hero.id)) c.entries.push({ week, heroId: hero.id });
+      award(hero.id, 'coins', CONTEST_POINTS.enter, 'event', `contest-enter:${week}`);
+      commit();
+    },
+    async contestVote(heroId) {
+      const me = meHero().id;
+      const c = (db.contest ??= { entries: [], votes: [], claims: [] });
+      const week = schoolWeek(now());
+      if (!c.entries.some((e) => e.week === week && e.heroId === heroId) || !contestCircle(me).includes(heroId)) throw new Error('you can only vote for your squad or House');
+      if (c.votes.some((v) => v.week === week && v.voter === me)) throw new Error('you already voted this week');
+      c.votes.push({ week, voter: me, entry: heroId });
+      award(me, 'coins', CONTEST_POINTS.vote, 'event', `contest-vote:${week}`);
+      commit();
+    },
+    async contestClaim() {
+      const me = meHero().id;
+      const s = await this.contestState();
+      if (!s.last.won || s.last.claimed) return { ok: false };
+      const last = schoolWeek(new Date(now().getTime() - 7 * 86400000));
+      db.contest!.claims.push({ week: last, heroId: me });
+      award(me, 'coins', CONTEST_POINTS.win, 'event', `contest-win:${last}`);
+      return { ok: true };
+    },
+    async comicList() {
+      const me = meHero().id;
+      return (db.comics ??= []).filter((c) => c.maker === me && !c.deleted).sort((a, b) => b.id - a.id).map((c) => ({ id: c.id, panels: c.panels, shared: c.shared }));
+    },
+    async comicSquad() {
+      const me = meHero().id;
+      const sq = mySquadId(me);
+      if (sq === undefined) return [];
+      return (db.comics ??= []).filter((c) => c.shared && !c.deleted && c.maker !== me && mySquadId(c.maker) === sq).sort((a, b) => b.id - a.id)
+        .map((c) => ({ id: c.id, panels: c.panels, maker: Object.values(db.accounts).find((a) => a.id === c.maker)?.displayName ?? 'Hero' }));
+    },
+    async comicMake(panels) {
+      const me = meHero().id;
+      const all = (db.comics ??= []);
+      const ok = Array.isArray(panels) && panels.length === 3 && panels.every((p) => HEROES.some((h) => h.id === p.hero) && COMIC_SCENES.some((s) => s.id === p.scene)
+        && (COMIC_POSES as readonly string[]).includes(p.pose) && (COMIC_LINES as readonly string[]).includes(p.line));
+      if (!ok) throw new Error('pick from the lists');
+      if (all.filter((c) => c.maker === me && !c.deleted).length >= COMIC_MAX) throw new Error('your comic shelf is full');
+      all.push({ id: Math.max(0, ...all.map((c) => c.id)) + 1, maker: me, panels: panels.map((p) => ({ hero: p.hero, scene: p.scene, pose: p.pose, line: p.line })) as ComicPanels, shared: false });
+      commit();
+    },
+    async comicShare(id, share) {
+      const me = meHero().id;
+      const c = (db.comics ??= []).find((x) => x.id === id && x.maker === me && !x.deleted);
+      if (!c) throw new Error('that is not your comic');
+      if (share && mySquadId(me) === undefined) throw new Error('join a squad to share');
+      c.shared = share;
+      commit();
+    },
+    async comicDelete(id) {
+      const me = meHero().id;
+      const c = (db.comics ??= []).find((x) => x.id === id && x.maker === me && !x.deleted);
+      if (!c) throw new Error('that is not your comic');
+      c.deleted = true; c.shared = false;
+      commit();
     },
     async houseChallengeClaim() {
       const hero = meHero();
@@ -2048,10 +2606,72 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       else if (!a.approved) db.adults = db.adults.filter((x) => x.id !== id);
       commit();
     },
+    async teacherCharacter() {
+      const a = meAdult('teacher');
+      return { ...(db.teacherCharacters?.[a.id] ?? { status: 'none', wish: '', photo: null, art: null, artNote: '', changeNote: '' }) } as TeacherCharacter;
+    },
+    async teacherCharacterWish(wish) {
+      const a = meAdult('teacher');
+      const all = (db.teacherCharacters ??= {});
+      all[a.id] = { ...(all[a.id] ?? { status: 'wish', photo: null, art: null, artNote: '', changeNote: '' }), wish: wish.trim().slice(0, 600) };
+      commit();
+    },
+    async teacherCharacterSubmit(photo, wish) {
+      const a = meAdult('teacher');
+      const all = (db.teacherCharacters ??= {});
+      if (!photo.startsWith('data:image/')) throw new Error('that photo does not work, try a smaller one');
+      if (all[a.id]?.status === 'review') throw new Error('approve or ask for changes on the character first');
+      all[a.id] = { ...(all[a.id] ?? { art: null, artNote: '' }), status: 'new', wish: wish.trim().slice(0, 600), photo, changeNote: '' } as TeacherCharacter;
+      commit();
+    },
+    async teacherCharacterRespond(approve, note) {
+      const a = meAdult('teacher');
+      const c = db.teacherCharacters?.[a.id];
+      if (!c || c.status !== 'review') throw new Error('there is no character waiting for you');
+      c.status = approve ? 'approved' : 'changes';
+      c.changeNote = approve ? '' : note.trim().slice(0, 300);
+      commit();
+    },
+    async teacherCharacterRemovePhoto() {
+      const a = meAdult('teacher');
+      const c = db.teacherCharacters?.[a.id];
+      if (!c || !c.photo || c.status === 'new') throw new Error('there is no photo to remove right now');
+      c.photo = null;
+      commit();
+    },
+    async senseiCharacterQueue() {
+      meAdult('sensei');
+      return Object.entries(db.teacherCharacters ?? {})
+        .filter(([, c]) => c.status === 'new' || c.status === 'changes')
+        .map(([id, c]) => ({ teacherId: id, name: db.adults.find((x) => x.id === id)?.displayName ?? 'Teacher', status: c.status as 'new' | 'changes', wish: c.wish, photo: c.photo, changeNote: c.changeNote }));
+    },
+    async senseiCharacterDeliver(teacherId, art, note) {
+      meAdult('sensei');
+      const c = db.teacherCharacters?.[teacherId];
+      if (!c || (c.status !== 'new' && c.status !== 'changes')) throw new Error('that request is not waiting for art');
+      if (!art.startsWith('data:image/')) throw new Error('that image does not work, try a smaller one');
+      c.art = art; c.artNote = note.trim().slice(0, 300); c.status = 'review';
+      commit();
+    },
+    async aiStatus() {
+      meAdult('teacher');
+      return { configured: false, limit: 10, left: 10 };
+    },
+    async aiDraftQuiz() {
+      meAdult('teacher');
+      throw new Error('not_set_up');
+    },
+    async senseiDeleteAnnouncement(id) {
+      meAdult('sensei');
+      const a = db.announcements.find((x) => x.id === id && !(x as { deleted?: boolean }).deleted);
+      if (!a) throw new Error('no such announcement');
+      (a as { deleted?: boolean }).deleted = true;
+      commit();
+    },
     async postAnnouncement(title, body) {
       meAdult('sensei');
       if (!title.trim() || !body.trim()) throw new Error('write a title and a message');
-      db.announcements.push({ id: db.announcements.length + 1, title: title.trim().slice(0, 80), body: body.trim().slice(0, 500), createdAt: now().toISOString() });
+      db.announcements.push({ id: Math.max(0, ...db.announcements.map((a) => a.id)) + 1, title: title.trim().slice(0, 80), body: body.trim().slice(0, 500), createdAt: now().toISOString() });
       commit();
     },
     async triviaState() {

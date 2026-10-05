@@ -38,12 +38,22 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     return data ?? [];
   };
 
+  // The hero is remembered on this device so the app can open without Wi-Fi (practice then works offline).
+  const HERO_KEY = 'hh-hero-cache';
+  const saveHero = (h: Hero | null) => { try { if (h) localStorage.setItem(HERO_KEY, JSON.stringify(h)); else localStorage.removeItem(HERO_KEY); } catch { /* blocked storage */ } };
+  const savedHero = (): Hero | null => { try { const v = localStorage.getItem(HERO_KEY); return v ? (JSON.parse(v) as Hero) : null; } catch { return null; } };
+
   async function loadHero(): Promise<Hero | null> {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return null;
     const { data, error } = await sb.from('heroes').select('*').eq('id', session.user.id).maybeSingle();
-    if (error || !data) return null;
-    return { id: data.id, heroCode: data.hero_code, friendCode: data.friend_code, displayName: data.display_name, grade: data.grade, starter: data.starter_hero };
+    if (error || !data) {
+      const saved = savedHero();
+      return saved && saved.id === session.user.id && typeof navigator !== 'undefined' && navigator.onLine === false ? saved : null;
+    }
+    const hero: Hero = { id: data.id, heroCode: data.hero_code, friendCode: data.friend_code, displayName: data.display_name, grade: data.grade, starter: data.starter_hero };
+    saveHero(hero);
+    return hero;
   }
 
   async function loadAdult(): Promise<Adult | null> {
@@ -91,6 +101,7 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       return adult ? { kind: 'adult', adult } : null;
     },
     async signOut() {
+      saveHero(null);
       await sb.auth.signOut();
     },
 
@@ -152,6 +163,45 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
         .map((a) => ({ id: a.id, title: a.title, body: a.body, createdAt: a.created_at }));
       return { items, unread: await rpc('unread_announcements') };
     },
+    async senseiDeleteAnnouncement(id) {
+      await rpc('sensei_delete_announcement', { p_id: id });
+    },
+    async teacherCharacter() {
+      return await rpc('teacher_character_get');
+    },
+    async teacherCharacterWish(wish) {
+      await rpc('teacher_character_wish', { p_wish: wish });
+    },
+    async teacherCharacterSubmit(photo, wish) {
+      await rpc('teacher_character_submit', { p_photo: photo, p_wish: wish });
+    },
+    async teacherCharacterRespond(approve, note) {
+      await rpc('teacher_character_respond', { p_approve: approve, p_note: note });
+    },
+    async teacherCharacterRemovePhoto() {
+      await rpc('teacher_character_remove_photo');
+    },
+    async senseiCharacterQueue() {
+      return (await rpc('sensei_character_queue')) ?? [];
+    },
+    async senseiCharacterDeliver(teacherId, art, note) {
+      await rpc('sensei_character_deliver', { p_teacher: teacherId, p_art: art, p_note: note });
+    },
+    async aiStatus() {
+      const { data, error } = await sb.functions.invoke('lesson-ai', { body: { action: 'status' } });
+      if (error || !data) return { configured: false, limit: 0, left: 0 };
+      return { configured: !!data.configured, limit: data.limit ?? 0, left: data.left ?? 0 };
+    },
+    async aiDraftQuiz(lesson, grade, count) {
+      const { data, error } = await sb.functions.invoke('lesson-ai', { body: { lesson, grade, count } });
+      let code: string | undefined = data?.error;
+      if (!code && error) {
+        const ctx = (error as { context?: Response }).context;
+        code = await ctx?.json?.().then((j: { error?: string }) => j?.error).catch(() => undefined);
+      }
+      if (code || !data?.quiz) throw new Error(code ?? 'ai_unavailable');
+      return { ...data.quiz, left: data.left };
+    },
     async markAnnouncementsRead() {
       await rpc('mark_announcements_read');
     },
@@ -195,6 +245,21 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     },
     async childMissions(childId) {
       return (await rows(sb.from('home_missions').select('*').eq('child_id', childId).order('created_at', { ascending: false }))).map(home);
+    },
+    async childWeek(childId, weeksBack = 0) {
+      const d = await rpc('child_week', { p_child: childId, p_weeks_back: weeksBack });
+      return { weekStart: d.week_start, daysActive: d.days_active, answered: d.answered, correct: d.correct, subjects: d.subjects, points: Number(d.points), missions: d.missions };
+    },
+    async myWeek(weeksBack = 0) {
+      const d = await rpc('my_week', { p_weeks_back: weeksBack });
+      return { weekStart: d.week_start, daysActive: d.days_active, answered: d.answered, correct: d.correct, subjects: d.subjects, points: Number(d.points), missions: d.missions };
+    },
+    async classReport(classId, weeksBack = 0) {
+      const d = await rpc('class_report', { p_class: classId, p_weeks_back: weeksBack });
+      return {
+        weekStart: d.week_start, className: d.class_name,
+        students: (d.students ?? []).map((x: any) => ({ id: x.id, name: x.name, daysActive: x.days_active, answered: x.answered, correct: x.correct, points: Number(x.points), missions: x.missions })),
+      };
     },
     async childProgress(childId) {
       const d = await rpc('child_progress', { p_child: childId });
@@ -353,6 +418,9 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async showcaseState() {
       return rpc('showcase_state');
     },
+    async emoteSet(emote) {
+      await rpc('emote_set', { p_emote: emote });
+    },
     async showcaseSet(title, pose) {
       await rpc('showcase_set', { p_title: title, p_pose: pose });
     },
@@ -360,6 +428,152 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('house_challenge');
       return { state: d.state, theme: d.theme, goal: d.goal, coins: d.coins, progress: d.progress === undefined ? undefined : Number(d.progress), reached: d.reached,
                myPoints: d.my_points, needMine: d.need_mine, claimed: d.claimed };
+    },
+    async raidState() {
+      const d = await rpc('raid_state');
+      return {
+        boss: d.boss, maxHp: d.max_hp, damage: d.damage, defeated: d.defeated, strikers: d.strikers, struckToday: d.struck_today,
+        power: d.power, myDamage: Number(d.my_damage), canClaim: d.can_claim, claimed: d.claimed, reward: d.reward,
+      };
+    },
+    async raidStrike() {
+      return rpc('raid_strike');
+    },
+    async raidClaim() {
+      const d = await rpc('raid_claim');
+      if (!d.ok) throw new Error(d.reason);
+      return { awarded: d.awarded ?? 0, duplicate: !!d.duplicate };
+    },
+    async secretState() {
+      const d = await rpc('secret_state');
+      return {
+        place: d.place, hint: d.hint, found: d.found, finders: Number(d.finders), won: d.won, winnerSquad: d.winner_squad,
+        mySquadWon: d.my_squad_won, claimed: d.claimed, card: d.card,
+      };
+    },
+    async secretFind() {
+      const d = await rpc('secret_find');
+      return { ok: !!d.ok, firstSquad: !!d.first_squad };
+    },
+    async secretClaim() {
+      const d = await rpc('secret_claim');
+      return { ok: !!d.ok };
+    },
+    async senseiSecret() {
+      const d = await rpc('sensei_secret_view');
+      return { place: d.place, hint: d.hint, card: d.card, finders: Number(d.finders), winnerSquad: d.winner_squad };
+    },
+    async senseiSecretSet(place, hint, card) {
+      await rpc('sensei_secret_set', { p_place: place, p_hint: hint, p_card: card });
+    },
+    async stickerList() {
+      const d = await rpc('sticker_list');
+      return { stickers: d.stickers, madeToday: Number(d.made_today) };
+    },
+    async stickerMake(design) {
+      const d = await rpc('sticker_make', { p_hero: design.hero, p_bg: design.bg, p_frame: design.frame, p_deco: design.deco, p_word: design.word });
+      return { ok: !!d.ok, reason: d.reason };
+    },
+    async stickerGive(stickerId, toHero) {
+      const d = await rpc('sticker_give', { p_sticker: stickerId, p_to: toHero });
+      return { ok: !!d.ok, reason: d.reason };
+    },
+    async kindState() {
+      const d = await rpc('kind_state');
+      return { nominatedToday: !!d.nominated_today, mates: d.mates, received: d.received };
+    },
+    async kindNominate(heroId, reason) {
+      await rpc('kind_nominate', { p_hero: heroId, p_reason: reason });
+    },
+    async kindReview() {
+      return (await rpc('kind_review')) as never;
+    },
+    async kindDecide(id, approve) {
+      const d = await rpc('kind_decide', { p_id: id, p_approve: approve });
+      return { awarded: d.awarded };
+    },
+    async raceState(back = 0) {
+      const d = await rpc('class_race', { p_back: back });
+      return { month: d.month, minMembers: d.min_members, classes: d.classes };
+    },
+    async lookGet() {
+      return (await rpc('look_get')) as never;
+    },
+    async lookSave(look, pinned) {
+      await rpc('look_save', { p_hair: look.hair, p_makeup: look.makeup, p_aura: look.aura, p_outfit: look.outfit, p_accessory: look.accessory, p_pinned: pinned });
+    },
+    async lookGallery() {
+      return (await rpc('look_gallery')) as never;
+    },
+    async lookLike(heroId) {
+      await rpc('look_like', { p_hero: heroId });
+    },
+    async baseGet() {
+      return (await rpc('base_get')) as never;
+    },
+    async basePlace(cell, item) {
+      await rpc('base_place', { p_cell: cell, p_item: item });
+    },
+    async baseRemove(cell) {
+      await rpc('base_remove', { p_cell: cell });
+    },
+    async treasureState() {
+      return (await rpc('treasure_state')) as never;
+    },
+    async treasureFind(place) {
+      const d = await rpc('treasure_find', { p_place: place });
+      return { ok: !!d.ok, done: !!d.done };
+    },
+    async treasureClaim() {
+      const d = await rpc('treasure_claim');
+      return { ok: !!d.ok };
+    },
+    async badgeWall() {
+      return (await rpc('badge_wall')) as string[];
+    },
+    async codeCreate(classId, coins, xp, announce = false) {
+      return (await rpc('code_create', { p_class: classId, p_coins: coins, p_xp: xp, p_announce: announce })) as string;
+    },
+    async codeMine() {
+      const d = await rpc('code_mine');
+      return d.map((c: any) => ({ id: c.id, code: c.code, coins: c.coins, xp: c.xp, expiresAt: c.expires_at, className: c.class, redeemed: Number(c.redeemed) }));
+    },
+    async codeRedeem(code) {
+      const d = await rpc('code_redeem', { p_code: code });
+      return d.ok ? { ok: true, coins: d.coins, xp: d.xp } : { ok: false, reason: d.reason };
+    },
+    async contestState() {
+      const d = await rpc('contest_state');
+      return {
+        theme: d.theme, entered: !!d.entered, hasRoom: !!d.has_room, voted: !!d.voted,
+        entries: d.entries.map((e: any) => ({ hero: e.hero, name: e.name, starter: e.starter, layout: e.layout, mineVote: !!e.mine_vote })),
+        last: { theme: d.last.theme, entered: !!d.last.entered, votes: Number(d.last.votes), won: !!d.last.won, claimed: !!d.last.claimed },
+      };
+    },
+    async contestEnter() {
+      await rpc('contest_enter');
+    },
+    async contestVote(heroId) {
+      await rpc('contest_vote', { p_hero: heroId });
+    },
+    async contestClaim() {
+      const d = await rpc('contest_claim');
+      return { ok: !!d.ok };
+    },
+    async comicList() {
+      return (await rpc('comic_list')) as never;
+    },
+    async comicSquad() {
+      return (await rpc('comic_squad')) as never;
+    },
+    async comicMake(panels) {
+      await rpc('comic_make', { p_panels: panels });
+    },
+    async comicShare(id, share) {
+      await rpc('comic_share', { p_id: id, p_share: share });
+    },
+    async comicDelete(id) {
+      await rpc('comic_delete', { p_id: id });
     },
     async houseChallengeClaim() {
       return rpc('house_challenge_claim');

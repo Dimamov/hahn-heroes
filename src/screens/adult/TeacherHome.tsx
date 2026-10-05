@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
-import type { Adult, Backend, ClassInfo, ClassMissionResults, NewClassMission } from '../../lib/backend.ts';
+import type { AiQuiz, AiStatus, Adult, Backend, ClassInfo, ClassMissionResults, NewClassMission } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 import { TeacherHouse } from './TeacherHouse.tsx';
+import { KindReview } from './KindReview.tsx';
+import { CodeMaker } from './CodeMaker.tsx';
+import { ClassReportScreen } from './TeacherReport.tsx';
+import { TeacherCharacter } from './TeacherCharacter.tsx';
 
-type View = { name: 'list' } | { name: 'new-class' } | { name: 'class'; cls: ClassInfo } | { name: 'new-mission'; cls: ClassInfo } | { name: 'house'; cls: ClassInfo };
+type View = { name: 'list' } | { name: 'new-class' } | { name: 'class'; cls: ClassInfo } | { name: 'new-mission'; cls: ClassInfo } | { name: 'house'; cls: ClassInfo } | { name: 'report'; cls: ClassInfo } | { name: 'character' } | { name: 'codes'; cls: ClassInfo } | { name: 'kind' };
 
 export function TeacherHome({ backend, adult, onSignOut }: { backend: Backend; adult: Adult; onSignOut: () => void }) {
   const [view, setView] = useState<View>({ name: 'list' });
@@ -13,8 +17,12 @@ export function TeacherHome({ backend, adult, onSignOut }: { backend: Backend; a
   useEffect(() => { reload(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const toList = () => { reload(); setView({ name: 'list' }); };
 
+  if (view.name === 'character') return <TeacherCharacter backend={backend} onBack={toList} />;
   if (view.name === 'new-class') return <NewClass backend={backend} onBack={toList} onDone={(cls) => { reload(); setView({ name: 'class', cls }); }} />;
-  if (view.name === 'class') return <ClassScreen backend={backend} cls={view.cls} onBack={toList} onNew={() => setView({ name: 'new-mission', cls: view.cls })} onHouse={() => setView({ name: 'house', cls: view.cls })} />;
+  if (view.name === 'class') return <ClassScreen backend={backend} cls={view.cls} onBack={toList} onNew={() => setView({ name: 'new-mission', cls: view.cls })} onHouse={() => setView({ name: 'house', cls: view.cls })} onReport={() => setView({ name: 'report', cls: view.cls })} onCodes={() => setView({ name: 'codes', cls: view.cls })} />;
+  if (view.name === 'kind') return <KindReview backend={backend} onBack={toList} />;
+  if (view.name === 'codes') return <CodeMaker backend={backend} cls={view.cls} onBack={() => setView({ name: 'class', cls: view.cls })} />;
+  if (view.name === 'report') return <ClassReportScreen backend={backend} cls={view.cls} onBack={() => setView({ name: 'class', cls: view.cls })} />;
   if (view.name === 'house') return <TeacherHouse backend={backend} cls={view.cls} onBack={() => setView({ name: 'class', cls: view.cls })} />;
   if (view.name === 'new-mission') return <NewClassMissionScreen backend={backend} cls={view.cls} onBack={() => setView({ name: 'class', cls: view.cls })} />;
 
@@ -30,7 +38,11 @@ export function TeacherHome({ backend, adult, onSignOut }: { backend: Backend; a
             </button>
           )} />
       )}
-      <button className="btn primary" onClick={() => setView({ name: 'new-class' })}>＋ New class</button>
+      <div className="btn-grid">
+        <button className="btn ghost" onClick={() => setView({ name: 'kind' })}>💛 Kindness</button>
+        <button className="btn ghost" onClick={() => setView({ name: 'character' })}>🧙 My character</button>
+        <button className="btn primary" onClick={() => setView({ name: 'new-class' })}>＋ New class</button>
+      </div>
     </main>
   );
 }
@@ -53,7 +65,7 @@ function NewClass({ backend, onBack, onDone }: { backend: Backend; onBack: () =>
   );
 }
 
-function ClassScreen({ backend, cls, onBack, onNew, onHouse }: { backend: Backend; cls: ClassInfo; onBack: () => void; onNew: () => void; onHouse: () => void }) {
+function ClassScreen({ backend, cls, onBack, onNew, onHouse, onReport, onCodes }: { backend: Backend; cls: ClassInfo; onBack: () => void; onNew: () => void; onHouse: () => void; onReport: () => void; onCodes: () => void }) {
   const [results, setResults] = useState<ClassMissionResults[] | null>(null);
   const load = () => backend.classResults(cls.id).then(setResults).catch(() => setResults([]));
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -78,7 +90,11 @@ function ClassScreen({ backend, cls, onBack, onNew, onHouse }: { backend: Backen
             </div>
           )} />
       )}
-      <button className="btn ghost" onClick={onHouse}>🏰 House</button>
+      <div className="btn-grid">
+        <button className="btn ghost" onClick={onReport}>📊 Report</button>
+        <button className="btn ghost" onClick={onHouse}>🏰 House</button>
+        <button className="btn ghost" onClick={onCodes}>🔑 Code</button>
+      </div>
       <button className="btn primary" onClick={onNew}>＋ New mission</button>
     </main>
   );
@@ -96,6 +112,8 @@ function NewClassMissionScreen({ backend, cls, onBack }: { backend: Backend; cls
   const [coins, setCoins] = useState(50);
   const [drafts, setDrafts] = useState<Draft[]>([blank()]);
   const [error, setError] = useState('');
+  const [ai, setAi] = useState(false);
+  const [aiNote, setAiNote] = useState('');
 
   const q = drafts[step - 1];
   const patch = (p: Partial<Draft>) => setDrafts(drafts.map((d, i) => (i === step - 1 ? { ...d, ...p } : d)));
@@ -114,6 +132,21 @@ function NewClassMissionScreen({ backend, cls, onBack }: { backend: Backend; cls
     try { await backend.createClassMission(cls.id, mission); onBack(); } catch { setError("Couldn't send that mission. Please try again."); }
   };
 
+  if (ai) {
+    return (
+      <AiDraft backend={backend} cls={cls} onBack={() => setAi(false)} onDraft={(quiz) => {
+        if (!title.trim()) setTitle(quiz.title);
+        setDrafts(quiz.questions.map((x) => {
+          const choices = [...x.choices, '', '', ''].slice(0, 4);
+          return { prompt: x.prompt, choices, correct: x.answer, why: x.explanation };
+        }));
+        setAiNote('AI draft: read every question and fix anything wrong before you send.');
+        setAi(false);
+        setStep(1);
+      }} />
+    );
+  }
+
   if (step === 0) {
     return (
       <main className="screen">
@@ -123,13 +156,17 @@ function NewClassMissionScreen({ backend, cls, onBack }: { backend: Backend; cls
           <textarea value={passage} maxLength={3000} onChange={(e) => setPassage(e.target.value)} /></label>
         <div className="chips">{[25, 50, 100, 200].map((c) => <button key={c} className={`chip${coins === c ? ' chosen' : ''}`} onClick={() => setCoins(c)}>💎 {c}</button>)}</div>
         <p className="note">Top reward for a perfect score. Students need 80% to pass.</p>
-        <button className="btn primary" disabled={!title.trim()} onClick={() => setStep(1)}>Next: questions</button>
+        <div className="btn-grid">
+          <button className="btn ghost" onClick={() => setAi(true)}>✨ Draft with AI</button>
+          <button className="btn primary" disabled={!title.trim()} onClick={() => setStep(1)}>Next: questions</button>
+        </div>
       </main>
     );
   }
   return (
     <main className="screen">
       <ScreenBar title={`Question ${step} of ${drafts.length}`} onBack={() => setStep(step - 1)} />
+      {aiNote && <p className="note" role="status">{aiNote}</p>}
       <label className="field plain"><span>Question</span><input value={q.prompt} maxLength={160} onChange={(e) => patch({ prompt: e.target.value })} /></label>
       <p className="hint">Tap the circle by the right answer</p>
       {q.choices.map((c, i) => (
@@ -148,6 +185,63 @@ function NewClassMissionScreen({ backend, cls, onBack }: { backend: Backend; cls
         <button className="btn primary" disabled={!ready} onClick={send}>Send ({drafts.length})</button>
       </div>
       <p className="note">Needs at least {MIN_Q} questions, up to {MAX_Q}.</p>
+    </main>
+  );
+}
+
+const AI_ERRORS: Record<string, string> = {
+  not_set_up: 'The AI helper is not set up yet.',
+  too_short: 'Paste a little more lesson text (at least 200 characters).',
+  too_long: 'That is too long. Paste up to 12,000 characters (about 5 pages).',
+  daily_limit: "You've used today's AI drafts. Try again tomorrow.",
+  ai_unavailable: "The AI couldn't be reached. Please try again.",
+  bad_output: "The AI's draft wasn't usable. Please try again.",
+  teachers_only: 'Only approved teachers can use this.',
+};
+
+/** Paste lesson text, get a draft quiz to review. Only the text goes to the AI, never names or student data. */
+function AiDraft({ backend, cls, onBack, onDraft }: { backend: Backend; cls: ClassInfo; onBack: () => void; onDraft: (q: AiQuiz) => void }) {
+  const [status, setStatus] = useState<AiStatus | null>(null);
+  const [lesson, setLesson] = useState('');
+  const [count, setCount] = useState(5);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => { backend.aiStatus().then(setStatus).catch(() => setStatus({ configured: false, limit: 0, left: 0 })); }, [backend]);
+  const load = async (f: File | undefined) => {
+    if (!f) return;
+    if (!/\.(txt|md|csv)$/i.test(f.name) && !f.type.startsWith('text/')) { setError('Upload a .txt file, or paste the text. For PDF or Word, copy the text and paste it.'); return; }
+    setError(''); setLesson((await f.text()).slice(0, 12000));
+  };
+  const go = async () => {
+    setBusy(true); setError('');
+    try { onDraft(await backend.aiDraftQuiz(lesson, cls.grade, count)); }
+    catch (e) { setError(AI_ERRORS[(e as Error).message] ?? AI_ERRORS.ai_unavailable); }
+    setBusy(false);
+  };
+  if (!status) return <main className="screen center"><div className="spinner" /></main>;
+  if (!status.configured) {
+    return (
+      <main className="screen center">
+        <ScreenBar title="Draft with AI" onBack={onBack} />
+        <div className="grow" /><div className="soon-icon" aria-hidden>✨</div>
+        <h3>AI not set up yet</h3>
+        <p className="hint">Once the school turns the AI helper on, you can paste a lesson here and get a draft quiz to review. For now, write your questions by hand.</p>
+        <div className="grow" />
+        <button className="btn primary" onClick={onBack}>Back</button>
+      </main>
+    );
+  }
+  return (
+    <main className="screen">
+      <ScreenBar title="Draft with AI" onBack={onBack} />
+      <p className="hint">Paste your lesson. The AI sees only this text, so leave out student names. You check and edit every question before it goes to your class.</p>
+      <label className="field plain grow-field"><span>Lesson text ({lesson.length}/12000)</span>
+        <textarea value={lesson} maxLength={12000} onChange={(e) => setLesson(e.target.value)} /></label>
+      <input type="file" accept=".txt,.md,.csv,text/plain" onChange={(e) => load(e.target.files?.[0])} aria-label="Upload a text file" />
+      <div className="chips">{[3, 5, 8].map((n) => <button key={n} className={`chip${count === n ? ' chosen' : ''}`} onClick={() => setCount(n)}>{n} questions</button>)}</div>
+      <p className="error" role="alert">{error}</p>
+      <small className="muted">{status.left} of {status.limit} drafts left today</small>
+      <button className="btn primary" disabled={busy || lesson.trim().length < 200 || status.left < 1} onClick={go}>{busy ? 'Writing questions…' : 'Draft questions'}</button>
     </main>
   );
 }

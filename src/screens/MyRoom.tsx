@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSession } from '../App.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
 import { ItemGrid } from '../components/ItemGrid.tsx';
+import { HeroArt } from '../components/HeroArt.tsx';
+import { emoteClass } from '../lib/showcase.ts';
 import { ROOM_COLS, ROOM_ROWS, itemById } from '../lib/shop-catalog.ts';
 import type { DormView, Friends } from '../lib/backend.ts';
 
@@ -57,6 +59,7 @@ export function MyRoom() {
     <main className="screen room-screen">
       <ScreenBar title={room.mine ? 'My Room' : `${room.name}'s Room`} onBack={() => (room.mine ? go('home') : setVisiting(null))}
         right={room.mine ? <button className="btn small ghost" onClick={() => setPicking(true)}>👥 Visit</button> : undefined} />
+      <div className={`room-hero ${emoteClass(room.emote)}`} aria-label={`${room.name} is doing the ${room.emote} emote`}><HeroArt id={room.starter} className="room-hero-art" /></div>
       <div className="dorm" style={{ gridTemplateColumns: `repeat(${ROOM_COLS}, 1fr)`, gridTemplateRows: `repeat(${ROOM_ROWS}, 1fr)` }}>
         {Array.from({ length: ROOM_COLS * ROOM_ROWS }, (_, cell) => {
           const e = layout.find((x) => x.cell === cell);
