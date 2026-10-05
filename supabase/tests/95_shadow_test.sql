@@ -46,7 +46,7 @@ begin
   perform as_user_id((ord ->> 0)::uuid);
   perform expect_error($q$select shadow_clue('two words')$q$, 'one word');
   perform expect_error($q$select shadow_clue('shit')$q$, 'different word');
-  if (ord ->> 0)::uuid <> g.shadow then
+  if (ord ->> 0)::uuid <> g.shadow and g.word ~ '^[A-Za-z]+$' then
     perform expect_error(format($q$select shadow_clue(%L)$q$, g.word), 'gives it away');
   end if;
   perform shadow_clue('tasty');

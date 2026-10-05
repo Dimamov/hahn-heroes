@@ -498,3 +498,11 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 @media (prefers-reduced-motion: reduce) { .nex-body, .evolve { animation: none; } }
 .bar-track { height: 14px; border-radius: 8px; background: var(--panel-2); overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 8px; transition: width .4s; }
+
+/* Nexus Surge and skills */
+.surge { align-self: center; padding: 4px 12px; border-radius: 14px; background: var(--panel-2); font: 800 .9rem 'Baloo 2', 'Nunito', system-ui; color: var(--cyan); }
+.surge.on { background: linear-gradient(90deg, #fbbf24, #ff3fa4); color: #1a0f3a; animation: nex-pop .4s ease-out; }
+.skill-row { display: flex; flex-direction: row; align-items: center; gap: 10px; padding: 8px 12px; border: 2px solid transparent; text-align: left; width: 100%; color: inherit; }
+.skill-row.learned { border-color: #34d399; }
+.skill-row.locked { opacity: .5; }
+.skill-row .item-icon { flex: none; }

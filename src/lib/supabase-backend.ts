@@ -16,6 +16,8 @@ const classResult = (r: any): ClassResult => ({
   review: r.review?.map((x: any) => ({ correct: x.correct, rightChoice: x.right_choice, explanation: x.explanation })),
 });
 
+const surgeOf = (d: any) => ({ active: d.active, secondsLeft: d.seconds_left, streak: d.streak, need: d.need, mult: Number(d.mult), started: d.started });
+
 export function createSupabaseBackend(url: string, publishableKey: string): Backend {
   const sb = createClient(url, publishableKey, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
@@ -207,6 +209,7 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
         correct: d.correct, rightChoice: d.right_choice, explanation: d.explanation, repeat: d.repeat,
         awarded: d.awarded?.xp === undefined ? undefined
           : { coins: Number(d.awarded.coins), xp: d.awarded.xp, skillPoints: d.awarded.skill_points, capped: !!d.awarded.capped },
+        surge: d.surge && surgeOf(d.surge),
       };
     },
     async learning() {
@@ -297,6 +300,14 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     },
     async leaveSquad() {
       await rpc('squad_leave');
+    },
+    async skillState() {
+      const d = await rpc('skill_state');
+      return { points: d.points, surge: surgeOf(d.surge), skills: d.skills };
+    },
+    async skillLearn(skillId) {
+      const d = await rpc('skill_learn', { p_skill: skillId });
+      return d.ok ? { ok: true } : { ok: false, reason: d.reason };
     },
     async nexlingState() {
       const d = await rpc('nexling_state');

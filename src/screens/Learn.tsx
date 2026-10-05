@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from '../App.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
-import type { AnswerResult, PracticeQuestion, Subject, SubjectProgress } from '../lib/backend.ts';
+import type { AnswerResult, PracticeQuestion, Subject, SubjectProgress, SurgeView } from '../lib/backend.ts';
 
 export const SUBJECT_INFO: Record<Subject, { label: string; icon: string; blurb: string }> = {
   math: { label: 'Math', icon: '🔢', blurb: 'Fractions, decimals, ratios and more' },
@@ -53,6 +53,13 @@ export function Practice({ subject }: { subject: Subject }) {
   const [tally, setTally] = useState<Tally>({ right: 0, coins: 0, xp: 0, sp: 0 });
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
+  const [surge, setSurge] = useState<(SurgeView & { endAt: number }) | null>(null);
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (!surge?.active) return;
+    const t = setInterval(() => tick((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, [surge]);
   const info = SUBJECT_INFO[subject];
 
   const load = () => {
@@ -101,6 +108,7 @@ export function Practice({ subject }: { subject: Subject }) {
     try {
       const r = await backend.answerQuestion(q.id, n);
       setResult(r);
+      if (r.surge) setSurge({ ...r.surge, endAt: Date.now() + r.surge.secondsLeft * 1000 });
       if (r.correct && r.awarded) {
         setTally((t) => ({ right: t.right + 1, coins: t.coins + r.awarded!.coins, xp: t.xp + r.awarded!.xp, sp: t.sp + r.awarded!.skillPoints }));
       } else if (r.correct) setTally((t) => ({ ...t, right: t.right + 1 }));
@@ -112,6 +120,9 @@ export function Practice({ subject }: { subject: Subject }) {
   return (
     <main className="screen">
       <ScreenBar title={`${info.label} ${i + 1}/${set.questions.length}`} onBack={back} />
+      {surge && (surge.active && surge.endAt > Date.now()
+        ? <div className="surge on" role="status">⚡ Nexus Surge! Points x{surge.mult} · {Math.floor((surge.endAt - Date.now()) / 60000)}:{String(Math.floor(((surge.endAt - Date.now()) % 60000) / 1000)).padStart(2, '0')} left{surge.started ? ' 🎉 It just started!' : ''}</div>
+        : <div className="surge" role="status">⚡ Surge: {surge.streak}/{surge.need} right in a row</div>)}
       {passage && <div className="passage short"><p className="passage-text">{passage}</p></div>}
       <h3 className="question">{question}</h3>
       <div className="choices">

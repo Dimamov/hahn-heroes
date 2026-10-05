@@ -4,9 +4,10 @@ import { ScreenBar } from '../components/ScreenBar.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
 import { ItemGrid } from '../components/ItemGrid.tsx';
 import { WEAR_SLOTS, itemById } from '../lib/shop-catalog.ts';
-import type { ShopItem, ShopState } from '../lib/backend.ts';
+import { TREES } from '../lib/skills.ts';
+import type { ShopItem, ShopState, SkillState } from '../lib/backend.ts';
 
-type Tab = 'wardrobe' | 'shop';
+type Tab = 'wardrobe' | 'shop' | 'skills';
 type Cat = 'outfit' | 'accessory' | 'decor';
 const CATS: { id: Cat; label: string }[] = [{ id: 'outfit', label: 'Outfits' }, { id: 'accessory', label: 'Accessories' }, { id: 'decor', label: 'Room' }];
 
@@ -18,8 +19,16 @@ export function MyHero() {
   const [state, setState] = useState<ShopState | null>(null);
   const [asking, setAsking] = useState<ShopItem | null>(null);
   const [note, setNote] = useState('');
+  const [skills, setSkills] = useState<SkillState | null>(null);
+  const [tree, setTree] = useState<string>('scholar');
   const load = useCallback(() => backend.shopState().then(setState).catch(() => setNote("Couldn't load the shop. Please try again.")), [backend]);
-  useEffect(() => { load(); }, [load]);
+  const loadSkills = useCallback(() => backend.skillState().then(setSkills).catch(() => setNote("Couldn't load skills.")), [backend]);
+  useEffect(() => { load(); loadSkills(); }, [load, loadSkills]);
+  const learn = async (id: string, name: string) => {
+    const r = await backend.skillLearn(id).catch(() => null);
+    setNote(!r ? "That didn't work." : r.ok ? `You learned ${name}! 🎉` : r.reason === 'not_enough_points' ? 'Not enough skill points yet. Right answers in Learn earn them.' : 'Learn the one before it first.');
+    loadSkills();
+  };
 
   const wear = async (id: string | null) => { setNote(''); await backend.heroEquip(slot, id).catch(() => setNote("That didn't work.")); load(); };
   const buy = async (item: ShopItem) => {
@@ -48,8 +57,21 @@ export function MyHero() {
       <div className="chips">
         <button className={`chip${tab === 'wardrobe' ? ' chosen' : ''}`} onClick={() => setTab('wardrobe')}>Wardrobe</button>
         <button className={`chip${tab === 'shop' ? ' chosen' : ''}`} onClick={() => setTab('shop')}>Shop</button>
+        <button className={`chip${tab === 'skills' ? ' chosen' : ''}`} onClick={() => setTab('skills')}>Skills</button>
       </div>
-      {tab === 'wardrobe' ? (
+      {tab === 'skills' ? (
+        <>
+          <div className="chips">{TREES.map((t) => <button key={t.id} className={`chip${tree === t.id ? ' chosen' : ''}`} onClick={() => setTree(t.id)}>{t.icon} {t.label}</button>)}</div>
+          <p className="note">{TREES.find((t) => t.id === tree)?.about} · Skill points: ⭐ {skills?.points ?? 0}</p>
+          {skills?.skills.filter((k) => k.tree === tree).map((k) => (
+            <button key={k.id} className={`card skill-row${k.learned ? ' learned' : ''}${!k.ready && !k.learned ? ' locked' : ''}`} disabled={k.learned || !k.ready} onClick={() => learn(k.id, k.name)}>
+              <span className="item-icon">{k.icon}</span>
+              <span className="grow"><b>{k.name}</b><br /><small className="muted">{k.blurb}</small></span>
+              <b>{k.learned ? '✓' : `⭐ ${k.cost}`}</b>
+            </button>
+          ))}
+        </>
+      ) : tab === 'wardrobe' ? (
         <>
           <div className="chips">{WEAR_SLOTS.map((s) => <button key={s.id} className={`chip${slot === s.id ? ' chosen' : ''}`} onClick={() => setSlot(s.id)}>{s.label}</button>)}</div>
           <ItemGrid items={[null, ...wearable]} empty="" render={(i) => i === null

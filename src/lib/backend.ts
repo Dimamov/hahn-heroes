@@ -208,6 +208,12 @@ export interface NexlingState {
   stages: number[];
   mine: { type: string; nickname: string; color: string; growth: number; stage: number; nextAt: number | null } | null;
 }
+export interface SurgeView { active: boolean; secondsLeft: number; streak: number; need: number; mult: number; started?: boolean }
+export interface SkillState {
+  points: number;
+  surge: SurgeView;
+  skills: { id: string; tree: string; tier: number; name: string; icon: string; cost: number; blurb: string; learned: boolean; ready: boolean }[];
+}
 export interface SquadMember { heroId: string; name: string; starter: string; status: 'member' | 'invited'; isLeader: boolean }
 export interface SquadView {
   squad: { id: string; name: string; leader: boolean; members: SquadMember[] } | null;
@@ -341,6 +347,7 @@ export interface AnswerResult {
   /** True when this question was already answered; nothing more is paid. */
   repeat: boolean;
   awarded?: { coins: number; xp: number; skillPoints: number; capped: boolean };
+  surge?: SurgeView;
 }
 export interface SubjectProgress {
   subject: Subject;
@@ -410,6 +417,8 @@ export interface Backend {
   inviteToSquad(friendHeroId: string): Promise<void>;
   respondSquadInvite(squadId: string, accept: boolean): Promise<void>;
   leaveSquad(): Promise<void>;
+  skillState(): Promise<SkillState>;
+  skillLearn(skillId: string): Promise<{ ok: true } | { ok: false; reason: 'locked' | 'already_learned' | 'not_enough_points' }>;
   nexlingState(): Promise<NexlingState>;
   /** Pick a Nexling, or change the name and colour of the one you have. A different type starts growing from zero. */
   nexlingAdopt(type: string, nickname: string, color: string): Promise<void>;
