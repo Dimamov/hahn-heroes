@@ -155,6 +155,21 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiDeleteAnnouncement(id) {
       await rpc('sensei_delete_announcement', { p_id: id });
     },
+    async aiStatus() {
+      const { data, error } = await sb.functions.invoke('lesson-ai', { body: { action: 'status' } });
+      if (error || !data) return { configured: false, limit: 0, left: 0 };
+      return { configured: !!data.configured, limit: data.limit ?? 0, left: data.left ?? 0 };
+    },
+    async aiDraftQuiz(lesson, grade, count) {
+      const { data, error } = await sb.functions.invoke('lesson-ai', { body: { lesson, grade, count } });
+      let code: string | undefined = data?.error;
+      if (!code && error) {
+        const ctx = (error as { context?: Response }).context;
+        code = await ctx?.json?.().then((j: { error?: string }) => j?.error).catch(() => undefined);
+      }
+      if (code || !data?.quiz) throw new Error(code ?? 'ai_unavailable');
+      return { ...data.quiz, left: data.left };
+    },
     async markAnnouncementsRead() {
       await rpc('mark_announcements_read');
     },

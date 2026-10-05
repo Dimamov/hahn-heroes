@@ -93,6 +93,9 @@ export interface ClassMission {
   /** Set once this student has taken it. */
   result?: ClassResult;
 }
+export interface AiStatus { configured: boolean; limit: number; left: number }
+export interface AiQuiz { title: string; questions: { prompt: string; choices: string[]; answer: number; explanation: string }[]; left: number }
+export type AiError = 'not_set_up' | 'too_short' | 'too_long' | 'daily_limit' | 'ai_unavailable' | 'bad_output' | 'teachers_only';
 export interface NewClassMission {
   title: string;
   passage: string;
@@ -463,6 +466,10 @@ export interface Backend {
   classes(): Promise<ClassInfo[]>;
   createClass(name: string, grade: 5 | 6): Promise<ClassInfo>;
   createClassMission(classId: string, mission: NewClassMission): Promise<void>;
+  /** AI lesson helper (teachers): is it switched on, and how many drafts are left today. */
+  aiStatus(): Promise<AiStatus>;
+  /** Drafts a quiz from lesson text. Throws an Error whose message is an AiError. */
+  aiDraftQuiz(lesson: string, grade: 5 | 6, count: number): Promise<AiQuiz>;
   classResults(classId: string): Promise<ClassMissionResults[]>;
   resetSubmission(missionId: string, childId: string): Promise<void>;
   /** Which reward games are open today and which ones this hero already collected. */
