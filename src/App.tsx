@@ -21,6 +21,7 @@ import { WordRush } from './games/WordRush.tsx';
 import { FunBox } from './games/FunBox.tsx';
 import { TriviaClash } from './games/TriviaClash.tsx';
 import { Odin } from './games/Odin.tsx';
+import { ShadowSignal } from './games/ShadowSignal.tsx';
 import { DoNotPress } from './games/DoNotPress.tsx';
 import { AdultAuth } from './screens/adult/AdultAuth.tsx';
 import { NewPassword } from './screens/adult/NewPassword.tsx';
@@ -142,6 +143,7 @@ export default function App() {
       {screen === 'game:word-rush' && <WordRush />}
       {screen === 'game:trivia-clash' && <TriviaClash />}
       {screen === 'game:odin' && <Odin />}
+      {screen === 'game:shadow-signal' && <ShadowSignal />}
       {screen === 'game:fun-box' && <FunBox />}
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}

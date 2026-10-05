@@ -408,3 +408,17 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .opicker .card { width: min(320px, 100%); display: flex; flex-direction: column; gap: 10px; text-align: center; }
 .opick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .opick-grid .ocolor { padding: 18px 10px; font-size: 1rem; }
+
+/* Shadow Signal */
+.rolecard { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 16px; background: var(--panel); border: 2px solid var(--cyan); text-align: center; }
+.rolecard b { font: 800 1.2rem 'Baloo 2', 'Nunito', system-ui; }
+.rolecard span { color: var(--muted); font-size: .85rem; }
+.rolecard.shadow { border-color: var(--magenta); background: #ff3fa41a; }
+.sslist { gap: 6px; }
+.sslist .card.member { display: flex; align-items: center; gap: 8px; padding: 6px 10px; }
+.sslist .card.member span { flex: 0 0 auto; }
+.card.member.speaking { border-color: var(--gold); }
+.sclue { flex: 1; text-align: right; font-style: normal; font-weight: 800; color: var(--gold); }
+.vote-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.vote-grid .chip { min-height: 52px; }
+.stepper-n { font: 800 1.5rem 'Baloo 2', 'Nunito', system-ui; }

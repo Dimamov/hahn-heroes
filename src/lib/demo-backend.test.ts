@@ -443,6 +443,45 @@ describe('demo backend: grown-ups and missions', () => {
     });
   });
 
+  describe('shadow signal', () => {
+    it('plays a round with practice buddies and keeps the word from the Shadow', async () => {
+      const b = make();
+      await b.signUp(input);
+      const code = await b.createRoom('shadow-signal');
+      await b.addPracticeBuddy!();
+      await expect(b.startRoom()).rejects.toThrow('at least 3');
+      await b.addPracticeBuddy!();
+      await b.startRoom();
+      let v = await b.shadowView(code);
+      expect(v.phase).toBe('clue');
+      expect(v.players).toHaveLength(3);
+      expect(v.category).toBeTruthy();
+      expect(v.isShadow ? v.word : 'x').toBeNull();
+      for (let turns = 0; turns < 200 && v.phase !== 'done'; turns++) {
+        const me = v.players.find((p) => p.me)!;
+        if (v.phase === 'clue' && me.speaking) await b.shadowClue('shiny');
+        else if (v.phase === 'vote' && v.myVote === null) await b.shadowVote(v.players.find((p) => !p.me)!.i);
+        else if (v.phase === 'guess' && v.options) await b.shadowGuess(v.options[0]);
+        else clock = new Date(clock.getTime() + 2_000);
+        v = await b.shadowView(code);
+      }
+      expect(v.phase).toBe('done');
+      expect(v.result?.word).toBeTruthy();
+      expect(v.players.some((p) => p.shadow)).toBe(true);
+    });
+    it('rejects bad clues', async () => {
+      const b = make();
+      await b.signUp(input);
+      const code = await b.createRoom('shadow-signal');
+      await b.addPracticeBuddy!(); await b.addPracticeBuddy!();
+      await b.startRoom();
+      const v = await b.shadowView(code);
+      if (!v.players.find((p) => p.me)!.speaking) { await expect(b.shadowClue('hello')).rejects.toThrow('not your turn'); return; }
+      await expect(b.shadowClue('two words')).rejects.toThrow('one word');
+      await expect(b.shadowClue('sh1t')).rejects.toThrow();
+    });
+  });
+
   describe('chat', () => {
     it('warns once, pauses on the second swear, and lets the Sensei unlock after a parent asks', async () => {
       const b = make();
