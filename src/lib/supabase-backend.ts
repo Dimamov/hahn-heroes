@@ -127,6 +127,9 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('claim_daily_reward');
       return { awarded: d.awarded, duplicate: d.duplicate };
     },
+    async parentCount() {
+      return (await rows(sb.from('parent_links').select('parent_id'))).length;
+    },
     async linkCode() {
       const d = await rpc('create_link_code');
       return { code: d.code, expiresAt: d.expires_at };

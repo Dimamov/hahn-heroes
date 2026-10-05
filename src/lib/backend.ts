@@ -510,6 +510,8 @@ export interface Backend {
   balances(): Promise<Balances>;
   dailyStatus(): Promise<{ available: boolean; amount: number }>;
   claimDaily(): Promise<{ awarded: number; duplicate: boolean }>;
+  /** How many parent accounts are linked to this hero. */
+  parentCount(): Promise<number>;
   linkCode(): Promise<{ code: string; expiresAt: string }>;
   homeMissions(): Promise<HomeMission[]>;
   submitHomeMission(id: string): Promise<void>;
