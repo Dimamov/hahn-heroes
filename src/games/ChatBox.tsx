@@ -7,7 +7,7 @@ const NOTES = {
   banned: 'Chat is paused. A grown-up can ask the Sensei to unlock it.',
   private: 'Keep names, numbers and links to yourself.',
   slow: 'Slow down a little!',
-  no_class: 'Chat opens when you join your teacher\'s class. Ask your teacher for the class code.',
+  no_class: 'Chat opens when only your friends and squad mates are in the room, or when you join your teacher\'s class.',
 } as const;
 
 /** A small chat for a game room. A button opens a sheet; the server filters every message. */

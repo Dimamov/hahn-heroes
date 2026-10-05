@@ -591,6 +591,12 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     1 + Math.floor(db.history.filter((h) => h.childId === heroId && h.correct).length / 15)
     + db.homeMissions.filter((m) => m.childId === heroId && m.status === 'approved').length
     + db.submissions.filter((x) => x.childId === heroId && x.scorePct >= 80).length - metaOf(heroId).opened;
+  /** In a class: chat as before. No class: chat only when everyone else in the room is a friend or squad mate. */
+  const chatOpen = (me: string) => {
+    if (db.members.some((m) => m.childId === me)) return true;
+    const sq = mySquadId(me);
+    return (db.room?.players ?? []).every((p) => p.id === me || areFriends(me, p.id) || (sq !== undefined && mySquadId(p.id) === sq));
+  };
   const areFriends = (x: string, y: string) => (db.friendships ??= []).some((f) => f.status === 'accepted' && ((f.a === x && f.b === y) || (f.a === y && f.b === x)));
   const tradeFor = (id: string) => {
     const me = meHero().id;
@@ -2581,7 +2587,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const chat = (db.chat ??= { messages: [], status: {} });
       const st = (chat.status[me.id] ??= { strikes: 0, banned: false, requested: false });
       const body = text.trim().replace(/\s+/g, ' ');
-      if (!db.members.some((m) => m.childId === me.id)) return { ok: false, reason: 'no_class' };
+      if (!chatOpen(me.id)) return { ok: false, reason: 'no_class' };
       if (!body || body.length > 80) throw new Error('messages are 1 to 80 letters');
       if (st.banned) return { ok: false, reason: 'banned' };
       const mine = chat.messages.filter((m) => m.childId === me.id).pop();
@@ -2602,8 +2608,8 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const chat = (db.chat ??= { messages: [], status: {} });
       return {
         banned: !!chat.status[me]?.banned,
-        canChat: db.members.some((m) => m.childId === me),
-        messages: chat.messages.slice(-25).map((m) => ({ id: m.id, name: m.name, me: m.childId === me, body: m.body })),
+        canChat: chatOpen(me),
+        messages: !chatOpen(me) ? [] : chat.messages.slice(-25).map((m) => ({ id: m.id, name: m.name, me: m.childId === me, body: m.body })),
       };
     },
     async senseiChatLog() {
