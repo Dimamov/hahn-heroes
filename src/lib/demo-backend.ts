@@ -274,6 +274,7 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  story?: { heroId: string; episode: string; panel: number; done: boolean; choices: Record<string, string>; solved: string[] }[];
   history: HistoryRow[];
   stats: { childId: string; subject: Subject; skill: string; attempts: number; correct: number }[];
   ledger: LedgerRow[];
@@ -376,6 +377,26 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
 
   const strip = ({ picture: _p, failures: _f, ...hero }: Account): Hero => hero;
   const toAdult = ({ email: _e, password: _w, ...adult }: DemoAdult): Adult => adult;
+  // Mirrors story_keys and story_choice_rewards. Answers live here only because demo mode is not secure.
+  const STORY_KEYS: Record<string, { answer: number; choices: number; explanation: string }> = {
+    'ep1:cp1': { answer: 1, choices: 3, explanation: '5 heroes times 12 crystals is 60 crystals.' },
+    'ep1:cp2': { answer: 0, choices: 3, explanation: 'A keeper looks after something and keeps it safe.' },
+    'ep1:cp3': { answer: 2, choices: 3, explanation: 'Reflection is light bouncing off a surface, like a mirror or a crystal.' },
+  };
+  const STORY_CHOICES: Record<string, { currency: Currency; amount: number }> = {
+    'ep1:touch:ana': { currency: 'coins', amount: 5 },
+    'ep1:touch:isabella': { currency: 'xp', amount: 5 },
+    'ep1:touch:together': { currency: 'skill_points', amount: 1 },
+  };
+  const storyRow = (heroId: string, episode: string) => {
+    const rows = (db.story ??= []);
+    let row = rows.find((r) => r.heroId === heroId && r.episode === episode);
+    if (!row) { row = { heroId, episode, panel: 0, done: false, choices: {}, solved: [] }; rows.push(row); }
+    return row;
+  };
+  const storyEpisode = (episode: string) => {
+    if (episode !== 'ep1') throw new Error('no such episode');
+  };
   const nextTriviaDate = (): string => {
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const [y, m, d] = schoolDate(now()).split('-').map(Number);
@@ -1040,6 +1061,56 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     async tradeCancel(tradeId) {
       const { t } = tradeFor(tradeId);
       if (t.status === 'open') { t.status = 'cancelled'; commit(); }
+    },
+    async storyState() {
+      const me = meHero().id;
+      const r = storyRow(me, 'ep1');
+      return [{ episode: 'ep1', panel: r.panel, completed: r.done, choices: { ...r.choices }, solved: [...r.solved] }];
+    },
+    async storySave(episode, panel) {
+      storyEpisode(episode);
+      const r = storyRow(meHero().id, episode);
+      r.panel = Math.max(r.panel, Math.min(Math.max(panel, 0), 200));
+      commit();
+    },
+    async storyChoose(episode, panelId, option) {
+      const me = meHero().id;
+      const reward = STORY_CHOICES[`${episode}:${panelId}:${option}`];
+      if (!reward) throw new Error('no such choice');
+      const r = storyRow(me, episode);
+      if (r.choices[panelId]) return { repeat: true, option: r.choices[panelId] };
+      r.choices[panelId] = option;
+      award(me, reward.currency, reward.amount, 'event', `story:${episode}:${panelId}`);
+      return { repeat: false, option, currency: reward.currency, amount: reward.amount };
+    },
+    async storyAnswer(episode, checkpoint, choice) {
+      const me = meHero().id;
+      const key = STORY_KEYS[`${episode}:${checkpoint}`];
+      if (!key) throw new Error('no such checkpoint');
+      if (!Number.isInteger(choice) || choice < 0 || choice >= key.choices) throw new Error('pick one of the choices');
+      if (choice !== key.answer) return { correct: false };
+      const r = storyRow(me, episode);
+      const first = !r.solved.includes(checkpoint);
+      if (first) {
+        r.solved.push(checkpoint);
+        award(me, 'coins', 5, 'event', `story:${episode}:${checkpoint}`);
+        award(me, 'xp', 5, 'event', `story:${episode}:${checkpoint}`);
+      }
+      commit();
+      return { correct: true, rightChoice: key.answer, explanation: key.explanation, first };
+    },
+    async storyComplete(episode) {
+      const me = meHero().id;
+      storyEpisode(episode);
+      const r = storyRow(me, episode);
+      if (r.solved.length < 3) throw new Error('answer every checkpoint first');
+      if (r.done) return { repeat: true, card: 'e-keeper' };
+      r.done = true;
+      r.panel = 200;
+      award(me, 'coins', 20, 'event', `story:${episode}:done`);
+      addCard(me, 'e-keeper', 1);
+      commit();
+      return { repeat: false, card: 'e-keeper', coins: 20 };
     },
     async senseiGiveCard(heroCode, cardId) {
       meAdult('sensei');

@@ -345,6 +345,22 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiTriviaPrize(coins) {
       return rpc('sensei_trivia_prize', { p_coins: coins });
     },
+    async storyState() {
+      return rpc('story_state');
+    },
+    async storySave(episode, panel) {
+      await rpc('story_save', { p_episode: episode, p_panel: panel });
+    },
+    async storyChoose(episode, panelId, option) {
+      return rpc('story_choose', { p_episode: episode, p_panel: panelId, p_option: option });
+    },
+    async storyAnswer(episode, checkpoint, choice) {
+      const d = await rpc('story_answer', { p_episode: episode, p_checkpoint: checkpoint, p_choice: choice });
+      return { correct: d.correct, rightChoice: d.right_choice, explanation: d.explanation, first: d.first };
+    },
+    async storyComplete(episode) {
+      return rpc('story_complete', { p_episode: episode });
+    },
     async senseiGiveCard(heroCode, cardId) {
       return rpc('sensei_give_card', { p_hero_code: heroCode, p_card: cardId });
     },
