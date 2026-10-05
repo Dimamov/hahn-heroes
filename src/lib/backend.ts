@@ -257,6 +257,8 @@ export interface DormView {
   owned: string[] | null;
 }
 
+export interface BaseView { squad: string | null; items: { cell: number; item: string; by: string; mine: boolean }[]; owned: string[]; limit: number }
+
 export interface NexlingState {
   stages: number[];
   mine: { type: string; nickname: string; color: string; growth: number; stage: number; nextAt: number | null } | null;
@@ -580,6 +582,10 @@ export interface Backend {
   stickerList(): Promise<StickerBook>;
   stickerMake(design: StickerDesign): Promise<{ ok: boolean; reason?: 'daily_limit' | 'full' }>;
   stickerGive(stickerId: number, toHero: string): Promise<{ ok: boolean; reason?: 'full' }>;
+  /** The squad hideout: a shared room the squad decorates together with decorations they own. */
+  baseGet(): Promise<BaseView>;
+  basePlace(cell: number, item: string): Promise<void>;
+  baseRemove(cell: number): Promise<void>;
   /** The weekly treasure hunt: four clues, each a pin hidden on one screen; the full map pays a card. */
   treasureState(): Promise<TreasureState>;
   treasureFind(place: string): Promise<{ ok: boolean; done?: boolean }>;

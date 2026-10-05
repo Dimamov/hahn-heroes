@@ -286,6 +286,7 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  squadBase?: { squadId: string; cell: number; item: string; by: string }[];
   treasure?: { week: string; heroId: string; step: number; claimed: boolean }[];
   codes?: { id: number; code: string; by: string; classId: string | null; coins: number; xp: number; day: string; expires: number; used: string[] }[];
   codeTries?: { heroId: string; at: number }[];
@@ -1652,6 +1653,40 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       s.owner = toHero;
       commit();
       return { ok: true };
+    },
+    async baseGet() {
+      const me = meHero().id;
+      const sq = mySquadId(me);
+      if (sq === undefined) return { squad: null, items: [], owned: [], limit: 6 };
+      return {
+        squad: (db.squads ?? []).find((q) => q.id === sq)!.name,
+        items: (db.squadBase ??= []).filter((b) => b.squadId === sq).sort((a, b) => a.cell - b.cell).map((b) => ({ cell: b.cell, item: b.item, by: heroById(b.by)?.displayName ?? 'Hero', mine: b.by === me })),
+        owned: (db.owned ??= []).filter((o) => o.heroId === me && itemById(o.itemId)?.kind === 'decor').map((o) => o.itemId),
+        limit: 6,
+      };
+    },
+    async basePlace(cell, item) {
+      const me = meHero().id;
+      const sq = mySquadId(me);
+      const all = (db.squadBase ??= []);
+      if (sq === undefined) throw new Error('join a squad first');
+      if (!Number.isInteger(cell) || cell < 0 || cell > 23) throw new Error('pick a spot in the hideout');
+      if (!(db.owned ??= []).some((o) => o.heroId === me && o.itemId === item && itemById(item)?.kind === 'decor')) throw new Error('you do not own that decoration');
+      const there = all.find((b) => b.squadId === sq && b.cell === cell);
+      if (there && there.by !== me) throw new Error('that spot is taken');
+      if (all.some((b) => b.squadId === sq && b.item === item && b.by !== me)) throw new Error('that decoration is already in the hideout');
+      db.squadBase = all.filter((b) => !(b.squadId === sq && b.by === me && (b.item === item || b.cell === cell)));
+      if (db.squadBase.filter((b) => b.squadId === sq && b.by === me).length >= 6) throw new Error('you can place up to 6 decorations');
+      db.squadBase.push({ squadId: sq, cell, item, by: me });
+      commit();
+    },
+    async baseRemove(cell) {
+      const me = meHero().id;
+      const sq = mySquadId(me);
+      const all = (db.squadBase ??= []);
+      if (!all.some((b) => b.squadId === sq && b.cell === cell && b.by === me)) throw new Error('that is not your decoration');
+      db.squadBase = all.filter((b) => !(b.squadId === sq && b.cell === cell));
+      commit();
     },
     async treasureState() {
       const me = meHero().id;
