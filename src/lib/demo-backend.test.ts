@@ -11,7 +11,7 @@ const memoryStorage = () => {
   const m = new Map<string, string>();
   return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v) };
 };
-const input = { grade: 5 as const, hero: 'ana', nameAdjective: 'Brave', nameNoun: 'Comet', picture: [0, 4, 8] };
+const input = { grade: 5 as const, hero: 'ana', nameAdjective: 'Brave', nameNoun: 'Comet', picture: [0, 4, 8, 2] };
 
 describe('demo backend', () => {
   let storage: ReturnType<typeof memoryStorage>;
@@ -30,13 +30,13 @@ describe('demo backend', () => {
 
     await a.signOut();
     expect(await make().restore()).toBeNull();
-    const again = await make().signIn(hero.heroCode.toLowerCase(), [0, 4, 8]);
+    const again = await make().signIn(hero.heroCode.toLowerCase(), [0, 4, 8, 2]);
     expect(again.id).toBe(hero.id);
   });
 
   it('rejects bad sign-up details', async () => {
     await expect(make().signUp({ ...input, nameNoun: 'Hax' })).rejects.toThrow();
-    await expect(make().signUp({ ...input, picture: [1, 1, 1] })).rejects.toThrow();
+    await expect(make().signUp({ ...input, picture: [1, 1, 1, 1] })).rejects.toThrow();
     await expect(make().signUp({ ...input, hero: 'nobody' })).rejects.toThrow();
   });
 
@@ -47,9 +47,9 @@ describe('demo backend', () => {
       await expect(b.signIn(hero.heroCode, [8, 4, 0])).rejects.toMatchObject({ kind: 'wrong' });
     }
     // Even the right pictures wait while the hero is resting.
-    await expect(b.signIn(hero.heroCode, [0, 4, 8])).rejects.toMatchObject({ kind: 'resting' });
+    await expect(b.signIn(hero.heroCode, [0, 4, 8, 2])).rejects.toMatchObject({ kind: 'resting' });
     clock = new Date(clock.getTime() + 16 * 60_000);
-    expect((await b.signIn(hero.heroCode, [0, 4, 8])).id).toBe(hero.id);
+    expect((await b.signIn(hero.heroCode, [0, 4, 8, 2])).id).toBe(hero.id);
   });
 
   it('does not reveal whether a code exists', async () => {
@@ -79,7 +79,7 @@ describe('demo backend', () => {
     await first.claimDaily();
     await first.signOut();
     const second = make();
-    await second.signUp({ ...input, picture: [1, 2, 3] });
+    await second.signUp({ ...input, picture: [1, 2, 3, 4] });
     expect((await second.balances()).coins).toBe(0);
   });
 });
@@ -116,7 +116,7 @@ describe('demo backend: grown-ups and missions', () => {
 
   it('runs a class House vote, then shows the House on the leaderboard', async () => {
     const { b, hero, cls } = await setup();
-    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
     expect((await b.houseState()).state).toBe('no_class');
     expect(await b.joinClass(cls.joinCode!)).toMatchObject({ ok: true });
     expect((await b.houseState()).state).toBe('none');
@@ -133,7 +133,7 @@ describe('demo backend: grown-ups and missions', () => {
     await expect(b.houseCloseVote(cls.id)).rejects.toThrow(/one vote/);
     await b.signOut();
 
-    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
     const voting = await b.houseState();
     expect(voting.state).toBe('voting');
     await b.houseVote(voting.options![1].id);
@@ -145,7 +145,7 @@ describe('demo backend: grown-ups and missions', () => {
     await b.houseCloseVote(cls.id);
     await b.signOut();
 
-    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
     expect(await b.houseState()).toMatchObject({ state: 'active', house: { name: 'Tide Titans' } });
     const board = await b.leaderboard();
     expect(board.houses.some((h) => h.mine && h.name === 'Tide Titans')).toBe(true);
@@ -168,7 +168,7 @@ describe('demo backend: grown-ups and missions', () => {
 
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
-    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
     await b.joinClass(cls.joinCode!);
     await b.signOut();
     await b.adultSignIn('tess@example.com', 'secret1');
@@ -177,7 +177,7 @@ describe('demo backend: grown-ups and missions', () => {
       questions: [1, 2, 3].map((n) => ({ prompt: `Question ${n}?`, choices: ['a', 'b'] })), answers: [0, 0, 0], explanations: ['x', 'x', 'x'],
     });
     await b.signOut();
-    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
     const [m] = await b.classMissions();
     expect(m.title).toBe('Fractions quiz');
     expect(m.passage).toBe('');
@@ -185,7 +185,7 @@ describe('demo backend: grown-ups and missions', () => {
 
   it('runs the weekly House challenge: Sensei sets it, the House reaches it, a helper collects once', async () => {
     const { b, hero, cls } = await setup();
-    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
     await b.joinClass(cls.joinCode!);
     expect(await b.houseChallenge()).toEqual({ state: 'none' });
     await b.signOut();
@@ -195,7 +195,7 @@ describe('demo backend: grown-ups and missions', () => {
       { name: 'Tide Titans', color: '#06b6d4', power: 'tide', motto: '' },
     ]);
     await b.signOut();
-    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
     await b.houseVote((await b.houseState()).options![0].id);
     await b.signOut();
     await b.adultSignIn('tess@example.com', 'secret1');
@@ -206,7 +206,7 @@ describe('demo backend: grown-ups and missions', () => {
     await b.senseiSetChallenge('Reading Week', 8, 15);
     expect((await b.senseiChallenge()).theme).toBe('Reading Week');
     await b.signOut();
-    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
     expect(await b.houseChallenge()).toMatchObject({ state: 'active', theme: 'Reading Week', progress: 0, reached: false });
     await expect(b.houseChallengeClaim()).rejects.toThrow('not reached');
     for (const q of (await b.startPractice('math')).questions) await b.answerQuestion(q.id, keyOf(q.id));
@@ -301,11 +301,11 @@ describe('demo backend: grown-ups and missions', () => {
     await expect(a.openPack()).rejects.toThrow();
     expect((await a.cardsState()).cards.reduce((n, c) => n + c.qty, 0)).toBe(3);
     await a.signOut();
-    const heroB = await a.signUp({ ...input, nameNoun: 'Nova', picture: [1, 5, 7] });
+    const heroB = await a.signUp({ ...input, nameNoun: 'Nova', picture: [1, 5, 7, 3] });
     await a.openPack();
-    await a.requestFriend(heroA.heroCode);
+    await a.requestFriend(heroA.friendCode);
     await a.signOut();
-    await a.signIn(heroA.heroCode, [0, 4, 8]);
+    await a.signIn(heroA.heroCode, [0, 4, 8, 2]);
     const [req] = (await a.friends()).incoming;
     await a.respondFriend(req.id, true);
     await expect(a.tradeOpen('stranger')).rejects.toThrow();
@@ -342,7 +342,7 @@ describe('demo backend: grown-ups and missions', () => {
     await expect(b.reviewHomeMission(mission.id, true)).rejects.toThrow('not waiting');
 
     await b.signOut();
-    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
     await expect(b.reviewHomeMission(mission.id, true)).rejects.toThrow();   // a child can't approve
     await b.submitHomeMission(mission.id);
     await b.signOut();
@@ -357,7 +357,7 @@ describe('demo backend: grown-ups and missions', () => {
     for (let i = 0; i < 5; i++) {
       await b.createHomeMission(hero.id, `Chore ${i}`, '', 100);
       [mission] = (await b.childMissions(hero.id)).filter((m) => m.status === 'assigned');
-      await b.signOut(); await b.signIn(hero.heroCode, [0, 4, 8]); await b.submitHomeMission(mission.id); await b.signOut();
+      await b.signOut(); await b.signIn(hero.heroCode, [0, 4, 8, 2]); await b.submitHomeMission(mission.id); await b.signOut();
       await b.adultSignIn('pat@example.com', 'secret1');
       awarded += (await b.reviewHomeMission(mission.id, true)).awarded;
     }
@@ -368,7 +368,7 @@ describe('demo backend: grown-ups and missions', () => {
   it('does not let a parent touch someone else\'s child', async () => {
     const { b } = await setup();
     const other = make();
-    const h2 = await other.signUp({ ...input, picture: [1, 2, 3] });
+    const h2 = await other.signUp({ ...input, picture: [1, 2, 3, 4] });
     await other.signOut();
     await other.adultSignIn('pat@example.com', 'secret1');
     await expect(other.createHomeMission(h2.id, 'Hack', '', 10)).rejects.toThrow('not your child');
@@ -390,7 +390,7 @@ describe('demo backend: grown-ups and missions', () => {
     await b.createClassMission(cls.id, { title: 'Reading', passage: 'The fox ran home.', questions, answers: [0, 1, 2, 0, 1], explanations: ['a', 'b', 'c', 'd', 'e'], maxCoins: 40 });
     await b.signOut();
 
-    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
     expect(await b.joinClass('NOPE12')).toEqual({ ok: false, error: 'invalid_code' });
     expect(await b.joinClass(cls.joinCode!.toLowerCase())).toEqual({ ok: true, name: 'Room 12' });
     const [mission] = await b.classMissions();
@@ -408,14 +408,14 @@ describe('demo backend: grown-ups and missions', () => {
     expect((await b.classResults(cls.id))[0].submissions).toHaveLength(1);
     await b.resetSubmission(mission.id, hero.id);
     await b.signOut();
-    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
     expect(await b.submitClassMission(mission.id, [0, 1, 2, 0, 1])).toMatchObject({ scorePct: 100, coins: 0 });
     expect((await b.balances()).coins).toBe(24);
   });
 
   it('only lets a hero join a class of their own grade', async () => {
     const { b, cls } = await setup();
-    await b.signUp({ ...input, grade: 6, picture: [1, 2, 3] });
+    await b.signUp({ ...input, grade: 6, picture: [1, 2, 3, 4] });
     expect(await b.joinClass(cls.joinCode!)).toEqual({ ok: false, error: 'wrong_grade' });
   });
 
@@ -425,7 +425,7 @@ describe('demo backend: grown-ups and missions', () => {
     await b.postAnnouncement('Trivia Night', 'Thursday at 6:30');
     expect((await b.senseiOverview()).triviaNight).toEqual({ weekday: 'thursday', time: '18:30' });
     await b.signOut();
-    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
     expect((await b.announcements()).unread).toBe(1);
     await b.markAnnouncementsRead();
     expect((await b.announcements()).unread).toBe(0);
@@ -544,11 +544,11 @@ describe('demo backend: grown-ups and missions', () => {
       const a = await b.signUp(input);
       await b.signOut();
       const c = await b.signUp({ ...input, nameNoun: 'Owl' });
-      await expect(b.requestFriend(c.heroCode)).rejects.toThrow('own code');
-      await b.requestFriend(a.heroCode);
-      await expect(b.requestFriend(a.heroCode)).rejects.toThrow('already');
+      await expect(b.requestFriend(c.friendCode)).rejects.toThrow('own code');
+      await b.requestFriend(a.friendCode);
+      await expect(b.requestFriend(a.friendCode)).rejects.toThrow('already');
       await b.signOut();
-      await b.signIn(a.heroCode, [0, 4, 8]);
+      await b.signIn(a.heroCode, [0, 4, 8, 2]);
       const incoming = (await b.friends()).incoming;
       expect(incoming.map((r) => r.name)).toEqual([c.displayName]);
       await b.respondFriend(incoming[0].id, true);
@@ -557,7 +557,7 @@ describe('demo backend: grown-ups and missions', () => {
       await b.createSquad('Brave', 'Wolves');
       await b.inviteToSquad(c.id);
       await b.signOut();
-      await b.signIn(c.heroCode, [0, 4, 8]);
+      await b.signIn(c.heroCode, [0, 4, 8, 2]);
       const view = await b.mySquad();
       expect(view.squad).toBeNull();
       await b.respondSquadInvite(view.invites[0].squadId, true);
@@ -797,7 +797,7 @@ describe('demo backend: grown-ups and missions', () => {
   describe('chat', () => {
     it('warns once, pauses on the second swear, and lets the Sensei unlock after a parent asks', async () => {
       const { b, hero, cls } = await setup();
-      await b.signIn(hero.heroCode, [0, 4, 8]);
+      await b.signIn(hero.heroCode, [0, 4, 8, 2]);
       await b.createRoom('trivia-clash');
       expect(await b.chatSend('good luck!')).toEqual({ ok: false, reason: 'no_class' });
       expect((await b.chatRead()).canChat).toBe(false);

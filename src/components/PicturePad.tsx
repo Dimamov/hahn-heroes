@@ -1,7 +1,7 @@
 import { PICTURES } from '../lib/heroes.ts';
 import { PICTURE_LENGTH } from '../../supabase/functions/_shared/kid-auth.ts';
 
-/** 3x3 grid of pictures; tap three different ones, in order. Tap a chosen one to undo it. */
+/** 3x3 grid of pictures; tap four different ones, in order. Tap a chosen one to undo it. */
 export function PicturePad({ value, onChange }: { value: number[]; onChange: (v: number[]) => void }) {
   const tap = (i: number) => {
     if (value.includes(i)) onChange(value.filter((v) => v !== i));

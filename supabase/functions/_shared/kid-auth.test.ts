@@ -26,11 +26,13 @@ describe('hero codes', () => {
 });
 
 describe('picture password', () => {
-  it('needs 3 different pictures from 0 to 8', () => {
-    expect(isValidPicture([0, 4, 8])).toBe(true);
-    expect(isValidPicture([0, 0, 8])).toBe(false);
+  it('needs 4 different pictures from 0 to 8 (sign-in also takes the older 3)', () => {
+    expect(isValidPicture([0, 4, 8, 2])).toBe(true);
+    expect(isValidPicture([0, 4, 8])).toBe(false);
+    expect(isValidPicture([0, 4, 8], [3, 4])).toBe(true);
+    expect(isValidPicture([0, 0, 8, 2])).toBe(false);
     expect(isValidPicture([0, 4])).toBe(false);
-    expect(isValidPicture([0, 4, 9])).toBe(false);
+    expect(isValidPicture([0, 4, 9, 2])).toBe(false);
     expect(isValidPicture('012')).toBe(false);
   });
   it('derives a stable password that depends on the code, pictures and secret', async () => {

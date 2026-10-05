@@ -2,14 +2,23 @@
 \set ON_ERROR_STOP on
 
 do $$
-declare r jsonb; v_squad uuid; ids uuid;
+declare r jsonb; v_squad uuid; ids uuid; i int; v_new text;
 begin
+  -- friends use a separate friend code, never the sign-in code
+  update heroes set friend_code = 'FRAAAA' where hero_code = 'QKAAAAA2';
+  update heroes set friend_code = 'FRBBBB' where hero_code = 'QKBBBBB2';
   -- 11 asks 12 by code
   perform as_user(11);
-  perform friend_request('QKBBBBB2');
-  perform expect_error($q$select friend_request('QKBBBBB2')$q$, 'already friends or waiting');
-  perform expect_error($q$select friend_request('QKAAAAA2')$q$, 'your own code');
-  perform expect_error($q$select friend_request('ZZZZZZZ9')$q$, 'no hero has that code');
+  assert (friend_request('QKBBBBB2')->>'name') is null, 'the sign-in code finds nobody';
+  perform friend_request('FRBBBB');
+  perform expect_error($q$select friend_request('FRBBBB')$q$, 'already friends or waiting');
+  perform expect_error($q$select friend_request('FRAAAA')$q$, 'your own code');
+  assert (friend_request('ZZZZZ9')->>'name') is null, 'unknown friend code';
+  for i in 1..8 loop perform friend_request('ZZZZZ9'); end loop;
+  perform expect_error($q$select friend_request('ZZZZZ9')$q$, 'too many tries');
+  perform as_admin();
+  delete from friend_misses;
+  perform as_user(11);
   assert jsonb_array_length(my_friends()->'outgoing') = 1, 'outgoing request';
   -- 12 sees and accepts it; 11 cannot accept their own request
   perform as_user(12);
@@ -47,6 +56,13 @@ begin
   -- friends can be removed and re-requested
   perform friend_remove((my_friends()->'friends'->0->>'id')::uuid);
   assert jsonb_array_length(my_friends()->'friends') = 0, 'removed';
-  perform friend_request('QKBBBBB2');
+  perform friend_request('FRBBBB');
+  -- changing a friend code keeps friends and retires the old code
+  perform as_user(12);
+  v_new := friend_code_reset();
+  assert v_new ~ '^[A-HJKMNP-Z2-9]{6}$' and v_new <> 'FRBBBB', 'new code';
+  perform as_user(13);
+  assert (friend_request('FRBBBB')->>'name') is null, 'the old code no longer works';
   perform as_admin();
+  delete from friend_misses;
 end $$;

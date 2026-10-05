@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { SignInError, type Backend, type Hero } from '../lib/backend.ts';
-import { formatHeroCode, HERO_CODE_LENGTH, normalizeHeroCode } from '../../supabase/functions/_shared/kid-auth.ts';
+import { formatHeroCode, HERO_CODE_LENGTH, LEGACY_PICTURE_LENGTH, normalizeHeroCode } from '../../supabase/functions/_shared/kid-auth.ts';
 import { PicturePad } from '../components/PicturePad.tsx';
 
 function message(e: unknown): string {
@@ -20,7 +20,7 @@ export function SignIn({ backend, onDone, onBack }: { backend: Backend; onDone: 
   const [picture, setPicture] = useState<number[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const ready = code.length === HERO_CODE_LENGTH && picture.length === 3 && !busy;
+  const ready = code.length === HERO_CODE_LENGTH && picture.length >= LEGACY_PICTURE_LENGTH && !busy;
 
   const submit = async () => {
     setBusy(true);
@@ -46,7 +46,7 @@ export function SignIn({ backend, onDone, onBack }: { backend: Backend; onDone: 
           onChange={(e) => setCode(normalizeHeroCode(e.target.value).slice(0, HERO_CODE_LENGTH))}
         />
       </label>
-      <p className="hint">Tap your 3 secret pictures in order.</p>
+      <p className="hint">Tap your secret pictures in order (4, or 3 if you made them earlier).</p>
       <PicturePad value={picture} onChange={setPicture} />
       <p className="error" role="alert">{error}</p>
       <div className="grow" />

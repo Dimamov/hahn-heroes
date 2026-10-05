@@ -94,6 +94,19 @@ begin
   perform record_sign_in('JKMNPQRS', '10.0.0.2', true);
   r := check_sign_in('JKMNPQRS', '10.0.0.2');
   assert (r->>'remaining')::int = 5, 'success resets the count';
+
+  -- repeated wrong tries rest the code for longer: an hour after 10, a day after 15
+  for i in 1..9 loop perform record_sign_in('LONGLOCK', '10.0.0.3', false); end loop;
+  r := check_sign_in('LONGLOCK', '10.0.0.3');
+  assert (r->>'locked')::boolean and (r->>'retry_after')::int <= 900, 'first rest is 15 minutes';
+  perform record_sign_in('LONGLOCK', '10.0.0.3', false);
+  r := check_sign_in('LONGLOCK', '10.0.0.3');
+  assert (r->>'locked')::boolean and (r->>'retry_after')::int between 901 and 3600, 'tenth wrong try rests an hour';
+  for i in 1..5 loop perform record_sign_in('LONGLOCK', '10.0.0.3', false); end loop;
+  r := check_sign_in('LONGLOCK', '10.0.0.3');
+  assert (r->>'locked')::boolean and (r->>'retry_after')::int between 3601 and 86400, 'fifteenth rests a day';
+  perform record_sign_in('LONGLOCK', '10.0.0.3', true);
+  assert not (check_sign_in('LONGLOCK', '10.0.0.3')->>'locked')::boolean, 'a correct sign-in clears it';
 end $$;
 
 -- Students: read only their own rows, write nothing, call only the student functions.
