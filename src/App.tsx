@@ -17,6 +17,7 @@ import { Showcase } from './screens/Showcase.tsx';
 import { Guide } from './screens/Guide.tsx';
 import { MyWeek } from './screens/MyWeek.tsx';
 import { Raid } from './screens/Raid.tsx';
+import { Stickers } from './screens/Stickers.tsx';
 import { Secret, SecretSpot } from './screens/Secret.tsx';
 import type { SecretState } from './lib/backend.ts';
 import { Announcements, ClassMissions, HomeMissions, MissionsHome, ParentCode, Quiz } from './screens/Missions.tsx';
@@ -183,6 +184,7 @@ export default function App() {
       {screen === 'guide' && <Guide />}
       {screen === 'myweek' && <MyWeek />}
       {screen === 'raid' && <Raid />}
+      {screen === 'stickers' && <Stickers />}
       {screen === 'secret' && <Secret />}
       {secret && !secret.found && secret.place === screen && <SecretSpot week={Math.floor(Date.parse(new Date().toISOString().slice(0, 10)) / 604800000)} onFound={() => backend.secretState().then(setSecret).catch(() => undefined)} />}
       {screen === 'game:pattern-pulse' && <PatternPulse />}
@@ -200,7 +202,7 @@ export default function App() {
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }

@@ -711,3 +711,16 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .race-lane span { position: absolute; top: 50%; transform: translateY(-50%); font-size: min(7vh, 2rem); transition: left .12s linear; }
 .big-tap { min-height: min(14vh, 90px); font-size: 1.3rem; touch-action: manipulation; }
 @media (max-height: 480px) and (orientation: landscape) { .hide-grid { grid-template-columns: repeat(6, 1fr); } .treat { font-size: 3rem; } }
+
+/* Stickers */
+.sticker { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: min(46vw, 22vh); aspect-ratio: 1; margin: 0 auto; border-radius: 22px; overflow: hidden; color: #fff; border: 4px solid #fff; box-shadow: 0 3px 10px #0007; }
+.sticker.small { width: 100%; }
+.sticker.selected { outline: 3px solid var(--cyan, #22d3ee); }
+.sticker-hero { position: absolute; inset: 6% 0 14% 0; width: 100%; height: 80%; object-fit: contain; object-position: top; }
+.sticker-deco { position: absolute; top: 6px; right: 8px; font-size: 1.5rem; }
+.sticker-word { position: relative; z-index: 1; width: 100%; padding: 2px 4px; text-align: center; font-size: .8rem; background: #000a; }
+.frame-star { border-style: double; border-color: #fde047; }
+.frame-dots { border-style: dotted; border-color: #f9a8d4; }
+.frame-neon { border-color: #22d3ee; box-shadow: 0 0 12px #22d3ee; }
+@media (max-height: 480px) and (orientation: landscape) { .sticker:not(.small) { width: 22vh; } }
+@media (max-height: 480px) and (orientation: landscape) { .sticker-make { display: grid; grid-template-columns: 1fr 1.3fr; gap: 6px 12px; align-content: start; grid-auto-rows: min-content; } .sticker-make > * { min-width: 0; } .sticker-make > .bar { grid-column: 1 / -1; } .sticker-make .sticker { grid-row: 2 / 5; } .sticker-make .paged { grid-column: 2; min-height: 0; } .sticker-make > .note, .sticker-make > .btn { grid-column: 2; } }
