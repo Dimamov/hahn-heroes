@@ -203,6 +203,14 @@ export interface SenseiOverview {
 }
 export interface TrafficDay { day: string; heroes: number; adults: number; minutes: number; newHeroes: number }
 export interface ActivePlayer { name: string; grade: number; screen: string; secondsAgo: number }
+export interface UsageReport {
+  month: string; since: string | null; heroesTotal: number; activeKids: number; hidden: string[];
+  screens: { screen: string; opens: number; players: number; cameBack: number; minutes: number; prevOpens: number }[];
+  weeks: { week: string; kids: number }[];
+  hours: { hour: number; minutes: number }[];
+  subjects: { subject: string; answered: number; correct: number }[];
+}
+
 export interface SenseiTraffic {
   totalHeroes: number;
   nowHeroes: number;
@@ -688,6 +696,11 @@ export interface Backend {
   /** Tells the Sensei this person is here. Safe to call often; the server throttles it. */
   ping(screen: string): Promise<void>;
   senseiTraffic(): Promise<SenseiTraffic>;
+  /** Monthly counts for the Sensei: which screens and games get used. back = 0 this month, 1 last month. */
+  senseiUsageReport(back: number): Promise<UsageReport>;
+  /** Games the Sensei has hidden from the Arcade (nothing is deleted). */
+  hiddenGames(): Promise<string[]>;
+  senseiHideGame(id: string, hidden: boolean): Promise<void>;
   pendingTeachers(): Promise<PendingTeacher[]>;
   approveTeacher(id: string, approve: boolean): Promise<void>;
   postAnnouncement(title: string, body: string): Promise<void>;

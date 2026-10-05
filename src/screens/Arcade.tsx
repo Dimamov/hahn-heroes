@@ -34,9 +34,12 @@ const TAGLINES: Record<string, string> = {
 export function Arcade() {
   const { backend, go } = useSession();
   const [status, setStatus] = useState<ArcadeStatus | null>(null);
+  const [hidden, setHidden] = useState<string[]>([]);
+  useEffect(() => { backend.hiddenGames().then(setHidden).catch(() => undefined); }, [backend]);
+  const games = GAMES.filter((g) => !hidden.includes(g.id));
   useEffect(() => { backend.arcadeStatus().then(setStatus).catch(() => setStatus({ coins: 5, games: [], claimed: [] })); }, [backend]);
   const isOpen = (g: (typeof GAMES)[number]) => !!(g.reward && status && status.games.includes(g.id) && !status.claimed.includes(g.id));
-  const pages = Array.from({ length: Math.ceil(GAMES.length / 6) }, (_, i) => GAMES.slice(i * 6, i * 6 + 6));
+  const pages = Array.from({ length: Math.ceil(games.length / 6) }, (_, i) => games.slice(i * 6, i * 6 + 6));
   return (
     <main className="screen">
       <ScreenBar title="Arcade" onBack={() => go('home')} />

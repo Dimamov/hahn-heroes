@@ -853,6 +853,20 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async ping(screen) {
       await rpc('ping', { p_screen: screen });
     },
+    async senseiUsageReport(back) {
+      const d = await rpc('sensei_usage_report', { p_back: back });
+      return {
+        month: d.month, since: d.since, heroesTotal: d.heroes_total, activeKids: d.active_kids, hidden: d.hidden ?? [],
+        screens: d.screens.map((x: any) => ({ screen: x.screen, opens: x.opens, players: x.players, cameBack: x.came_back, minutes: x.minutes, prevOpens: x.prev_opens })),
+        weeks: d.weeks, hours: d.hours, subjects: d.subjects,
+      };
+    },
+    async hiddenGames() {
+      return ((await rpc('hidden_games')) as string[] | null) ?? [];
+    },
+    async senseiHideGame(id, hidden) {
+      await rpc('sensei_hide_game', { p_id: id, p_hidden: hidden });
+    },
     async senseiTraffic() {
       const d = await rpc('sensei_traffic');
       return {

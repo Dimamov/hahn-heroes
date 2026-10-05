@@ -328,6 +328,7 @@ interface Db {
   room?: DemoRoom | null;
   drawingReports?: { artist: string; reporter: string; word: string; at: string }[];
   chat?: { messages: { id: number; childId: string; name: string; body: string; at: number }[]; status: Record<string, { strikes: number; banned: boolean; requested: boolean }> };
+  hiddenGames?: string[];
   pings?: { userId: string; role: 'hero' | 'parent' | 'teacher' | 'sensei'; screen: string; at: number }[];
   current: string | null; // hero id or adult id
 }
@@ -2581,6 +2582,18 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (last && last.screen === clean && at() - last.at < 45_000) return;
       list.push({ userId: who.id, role: who.role, screen: clean, at: at() });
       if (list.length > 5000) list.splice(0, list.length - 5000);
+      commit();
+    },
+    async senseiUsageReport() {
+      meAdult('sensei');
+      return { month: schoolDate(now()).slice(0, 7) + '-01', since: null, heroesTotal: Object.keys(db.accounts).length, activeKids: 0, hidden: db.hiddenGames ?? [], screens: [], weeks: [], hours: [], subjects: [] };
+    },
+    async hiddenGames() { return db.hiddenGames ?? []; },
+    async senseiHideGame(id, hidden) {
+      meAdult('sensei');
+      const list = new Set(db.hiddenGames ?? []);
+      if (hidden) list.add(id); else list.delete(id);
+      db.hiddenGames = [...list];
       commit();
     },
     async senseiTraffic() {
