@@ -44,6 +44,10 @@ export type Identity = { kind: 'hero'; hero: Hero } | { kind: 'adult'; adult: Ad
 
 export type Balances = Record<Currency, number>;
 
+/** Why creating a hero failed: the server's error code, plus the hero code if the hero was made but sign-in did not finish. */
+export class SignUpError extends Error {
+  constructor(public code: string, public retryAfter?: number, public heroCode?: string) { super(code); }
+}
 export class SignInError extends Error {
   constructor(
     public kind: 'wrong' | 'resting' | 'network',

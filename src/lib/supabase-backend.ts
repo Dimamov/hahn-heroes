@@ -2,7 +2,7 @@ import { fallbackHint } from './hints.ts';
 import { GOOFY } from './goofy.ts';
 import { createClient } from '@supabase/supabase-js';
 import {
-  AdultAuthError, SignInError, emptyBalances,
+  AdultAuthError, SignInError, SignUpError, emptyBalances,
   type Adult, type Backend, type ClassMission, type ClassResult, type Hero, type HomeMission, type Identity,
   type NewClassMission, type PushPrefs, type QuizQuestion, type SignUpInput, type SubjectProgress, type TriviaState,
 } from './backend.ts';
@@ -110,8 +110,17 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     // ---- Heroes -----------------------------------------------------------------------
     async signUp(input: SignUpInput) {
       const { data, error } = await sb.functions.invoke('kid-signup', { body: input });
-      if (error || !data?.heroCode) throw new Error('signup_failed');
-      return signInWithFunction(data.heroCode, input.picture);
+      if (error || !data?.heroCode) {
+        const res = (error as { context?: Response } | null)?.context;
+        const body = res && typeof res.json === 'function' ? await res.json().catch(() => null) : null;
+        throw new SignUpError(body?.error ?? (error ? 'network' : 'server_error'), body?.retryAfter);
+      }
+      try {
+        return await signInWithFunction(data.heroCode, input.picture);
+      } catch {
+        // The hero exists, so never lose its code.
+        throw new SignUpError('signin_after_create', undefined, data.heroCode);
+      }
     },
     signIn: signInWithFunction,
     async balances() {

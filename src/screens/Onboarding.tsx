@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import QRCode from 'qrcode';
-import type { Backend, Hero } from '../lib/backend.ts';
+import { SignUpError, type Backend, type Hero } from '../lib/backend.ts';
 import { HEROES } from '../lib/heroes.ts';
 import { HeroArt } from '../components/HeroArt.tsx';
 import { Pager } from '../components/Pager.tsx';
@@ -12,6 +12,17 @@ const STEPS: Step[] = ['grade', 'hero', 'name', 'picture', 'confirm'];
 
 const pick = <T,>(list: readonly T[], n: number): T[] => [...list].sort(() => Math.random() - 0.5).slice(0, n);
 const chunk = <T,>(list: T[], n: number): T[][] => Array.from({ length: Math.ceil(list.length / n) }, (_, i) => list.slice(i * n, i * n + n));
+
+function signUpMessage(e: unknown): string {
+  if (!(e instanceof SignUpError)) return "Couldn't make your hero. Please try again.";
+  switch (e.code) {
+    case 'network': return "Couldn't reach the Nexus. Check your connection and try again.";
+    case 'too_many_signups': return `Lots of heroes were made on this network just now. Try again in about ${Math.max(1, Math.round((e.retryAfter ?? 600) / 60))} minutes.`;
+    case 'invalid_request': return 'Something in your choices was not accepted. Go back and pick again, or reload the app to get the newest version.';
+    case 'signin_after_create': return `Your hero was made! Your secret code is ${formatHeroCode(e.heroCode ?? '')}. Write it down, then use "Switch hero" to sign in with your pictures.`;
+    default: return 'The Nexus had a problem making your hero. Please try again in a minute.';
+  }
+}
 
 export function Onboarding({ backend, onDone, onBack }: { backend: Backend; onDone: (h: Hero) => void; onBack: () => void }) {
   const [step, setStep] = useState<Step>('grade');
@@ -42,8 +53,8 @@ export function Onboarding({ backend, onDone, onBack }: { backend: Backend; onDo
       const h = await backend.signUp({ grade: grade!, hero: heroId, nameAdjective: adjective, nameNoun: noun, picture });
       setHero(h);
       setStep('card');
-    } catch {
-      setError("Couldn't make your hero. Check your connection and try again.");
+    } catch (e) {
+      setError(signUpMessage(e));
     } finally {
       setBusy(false);
     }
