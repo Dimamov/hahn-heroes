@@ -188,6 +188,19 @@ export interface RoomState {
   explanation?: string;
   myPoints?: number;
 }
+export interface OdinPlayer { name: string; starter: string; cards: number; turn: boolean; me: boolean; left: boolean }
+export interface OdinView {
+  state: 'lobby' | 'playing' | 'done' | 'closed';
+  color: 'R' | 'B' | 'G' | 'Y';
+  dir: 1 | -1;
+  top: string;
+  deck: number;
+  myTurn: boolean;
+  secondsLeft: number;
+  hand: string[];
+  winner: string | null;
+  players: OdinPlayer[];
+}
 export interface ChatMessage { id: number; name: string; me: boolean; body: string }
 export type ChatResult = { ok: true } | { ok: false; reason: 'warning' | 'banned' | 'slow' | 'private' };
 export interface ChatChild { banned: boolean; requested: boolean }
@@ -299,6 +312,10 @@ export interface Backend {
   startRoom(): Promise<void>;
   roomAnswer(choice: number): Promise<void>;
   roomState(code: string): Promise<RoomState>;
+  /** ODIN: what this hero can see. Passing the room code also nudges a stalled turn along. */
+  odinView(code: string): Promise<OdinView>;
+  /** ODIN: play a card (with a colour for wilds), or pass null to draw one card and end the turn. */
+  odinMove(card: string | null, color?: string): Promise<void>;
   chatSend(text: string): Promise<ChatResult>;
   chatRead(): Promise<{ banned: boolean; messages: ChatMessage[] }>;
   childChat(childId: string): Promise<ChatChild>;
