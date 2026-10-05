@@ -38,12 +38,22 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     return data ?? [];
   };
 
+  // The hero is remembered on this device so the app can open without Wi-Fi (practice then works offline).
+  const HERO_KEY = 'hh-hero-cache';
+  const saveHero = (h: Hero | null) => { try { if (h) localStorage.setItem(HERO_KEY, JSON.stringify(h)); else localStorage.removeItem(HERO_KEY); } catch { /* blocked storage */ } };
+  const savedHero = (): Hero | null => { try { const v = localStorage.getItem(HERO_KEY); return v ? (JSON.parse(v) as Hero) : null; } catch { return null; } };
+
   async function loadHero(): Promise<Hero | null> {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return null;
     const { data, error } = await sb.from('heroes').select('*').eq('id', session.user.id).maybeSingle();
-    if (error || !data) return null;
-    return { id: data.id, heroCode: data.hero_code, friendCode: data.friend_code, displayName: data.display_name, grade: data.grade, starter: data.starter_hero };
+    if (error || !data) {
+      const saved = savedHero();
+      return saved && saved.id === session.user.id && typeof navigator !== 'undefined' && navigator.onLine === false ? saved : null;
+    }
+    const hero: Hero = { id: data.id, heroCode: data.hero_code, friendCode: data.friend_code, displayName: data.display_name, grade: data.grade, starter: data.starter_hero };
+    saveHero(hero);
+    return hero;
   }
 
   async function loadAdult(): Promise<Adult | null> {
@@ -91,6 +101,7 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       return adult ? { kind: 'adult', adult } : null;
     },
     async signOut() {
+      saveHero(null);
       await sb.auth.signOut();
     },
 
