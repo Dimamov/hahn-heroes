@@ -1,6 +1,8 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
 import { fallbackHint } from './hints.ts';
+import { GOOFY, GOOFY_REWARD } from './goofy.ts';
+import { isSpyEmoji } from './spy.ts';
 import { KIND_REASONS, KIND_REWARD, KIND_WEEKLY_MAX } from './kindness.ts';
 import { DRAWING_WORDS, isRightGuess, maskWord, scribble, type DrawStroke } from './drawing-rules.ts';
 import { BOT_CLUES, isCaught, newRound, tallyVotes } from './shadow-rules.ts';
@@ -291,6 +293,7 @@ interface Db {
   trivia?: { date: string; heroId: string; going: boolean }[];
   looks?: { heroId: string; hair: string; makeup: string; aura: string; outfit: string | null; accessory: string | null; pinned: boolean; version: number; at: number }[];
   lookLikes?: { owner: string; liker: string; version: number }[];
+  goofy?: { heroId: string; day: string; prompt: number; status: 'accepted' | 'done' | 'skipped' }[];
   kind?: { id: number; nominator: string; nominee: string; reason: string; day: string; at: number; status: 'pending' | 'approved' | 'skipped' }[];
   squadBase?: { squadId: string; cell: number; item: string; by: string }[];
   treasure?: { week: string; heroId: string; step: number; claimed: boolean }[];
@@ -1368,6 +1371,16 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       commit();
       return { repeat: false, card: 'e-keeper', coins: 20 };
     },
+    async senseiDeleteHero(heroCode) {
+      meAdult('sensei');
+      const code = normalizeHeroCode(heroCode);
+      const acct = db.accounts[code];
+      if (!acct) throw new Error('no hero has that code');
+      delete db.accounts[code];
+      if (db.current === acct.id) db.current = null;
+      commit();
+      return acct.displayName;
+    },
     async senseiGiveCard(heroCode, cardId) {
       meAdult('sensei');
       const acct = db.accounts[normalizeHeroCode(heroCode)];
@@ -1703,6 +1716,25 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     },
     async hintFor(questionId, subject) {
       return { hint: fallbackHint(subject, questionId), ai: false, left: null };
+    },
+    async goofyState() {
+      const me = meHero().id, day = schoolDate(now());
+      const g = (db.goofy ??= []).find((x) => x.heroId === me && x.day === day);
+      return { status: g?.status ?? null, prompt: g?.prompt ?? null, doneToday: db.goofy!.filter((x) => x.day === day && x.status === 'done').length };
+    },
+    async goofyAccept() {
+      const me = meHero().id, day = schoolDate(now());
+      const list = (db.goofy ??= []);
+      if (!list.some((x) => x.heroId === me && x.day === day)) { list.push({ heroId: me, day, prompt: Math.floor(Math.random() * GOOFY.length), status: 'accepted' }); commit(); }
+      return this.goofyState();
+    },
+    async goofyFinish(done) {
+      const me = meHero().id, day = schoolDate(now());
+      const g = (db.goofy ??= []).find((x) => x.heroId === me && x.day === day);
+      if (!g || g.status !== 'accepted') throw new Error('no challenge waiting');
+      g.status = done ? 'done' : 'skipped';
+      commit();
+      return { awarded: done ? award(me, 'coins', GOOFY_REWARD, 'event', `goofy:${day}`).awarded : 0 };
     },
     async raceState(back = 0) {
       const hero = meHero();
@@ -2276,9 +2308,11 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       demoShadowTick(r, at());
       if (sh.phase !== 'clue' || sh.order[sh.turn] !== me) throw new Error('it is not your turn');
       const clue = text.trim().toLowerCase();
-      if (!/^[a-z][a-z'-]{0,15}$/.test(clue)) throw new Error('one word, letters only');
-      if (chatFlagged(clue)) throw new Error('pick a different word');
-      if (me !== sh.shadowId && clue.replace(/-/g, '').includes(sh.word.replace(/ /g, ''))) throw new Error('that gives it away');
+      if (!isSpyEmoji(clue)) {
+        if (!/^[a-z][a-z'-]{0,15}$/.test(clue)) throw new Error('one word, letters only');
+        if (chatFlagged(clue)) throw new Error('pick a different word');
+        if (me !== sh.shadowId && clue.replace(/-/g, '').includes(sh.word.replace(/ /g, ''))) throw new Error('that gives it away');
+      }
       sh.clues.push({ i: sh.turn, text: clue }); sh.turn += 1; sh.phaseStart = at();
       demoShadowTick(r, at());
       commit();
