@@ -50,7 +50,13 @@ export function MyHero() {
     <main className="screen hero-screen">
       <ScreenBar title="My Hero" onBack={() => go('home')} right={<span className="coins" aria-label="Your points">💎 {state.coins}</span>} />
       <div className="hero-stage">
-        <HeroArt id={hero.starter} className="stage-hero" />
+        <div className="hero-wrap">
+          {worn.back && <span className="hw hw-back" aria-hidden>{itemById(worn.back)?.icon}</span>}
+          <HeroArt id={hero.starter} className="stage-hero" />
+          {worn.outfit && <span className="hw hw-outfit" aria-hidden>{itemById(worn.outfit)?.icon}</span>}
+          {worn.face && <span className="hw hw-face" aria-hidden>{itemById(worn.face)?.icon}</span>}
+          {worn.hat && <span className="hw hw-hat" aria-hidden>{itemById(worn.hat)?.icon}</span>}
+        </div>
         <div className="worn" aria-label="Wearing">
           {WEAR_SLOTS.map((s) => <span key={s.id} className="worn-slot" title={s.label}>{worn[s.id] ? itemById(worn[s.id]!)?.icon : <i>{s.icon}</i>}</span>)}
         </div>

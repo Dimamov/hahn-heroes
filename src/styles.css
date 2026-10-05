@@ -930,3 +930,13 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .fetch-zone { position: absolute; top: 0; bottom: 0; background: #22d3ee55; border: 2px solid #22d3ee; border-radius: 20px; }
 .fetch-ball { position: absolute; top: 0.4rem; font-size: 1.6rem; }
 @media (orientation: landscape) and (max-height: 500px) { .park-pet { font-size: 4rem; } .park-hat-row .chip { padding: 4px 8px; } }
+
+/* What your hero wears shows on the hero until layered outfit art exists */
+.hero-wrap { position: relative; height: 100%; max-height: 28vh; display: flex; justify-content: center; font-size: min(5.2vh, 2.2rem); }
+.hw { position: absolute; left: 50%; transform: translateX(-50%); line-height: 1; filter: drop-shadow(0 2px 4px #000a); pointer-events: none; }
+.hw-hat { top: -2%; font-size: 1.5em; }
+.hw-face { top: 12%; font-size: 1.1em; }
+.hw-outfit { top: 34%; font-size: 1.7em; text-shadow: 0 0 14px var(--cyan); }
+.hw-back { top: 30%; left: 4%; transform: translateX(-30%) rotate(-12deg); font-size: 1.9em; opacity: .9; z-index: 0; }
+.hero-wrap .stage-hero { position: relative; z-index: 1; }
+.hw-hat, .hw-face, .hw-outfit { z-index: 2; }
