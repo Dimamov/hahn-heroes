@@ -31,6 +31,7 @@ export function Profile() {
       {backend.mode === 'demo' && <p className="note">Demo mode: this hero lives on this device only.</p>}
       <div className="grow" />
       <div className="btn-grid">
+        <button className="btn ghost" onClick={() => go('myweek')}>📊 My week</button>
         <button className="btn ghost" onClick={() => go('showcase')}>⭐ Showcase</button>
         <button className="btn ghost" onClick={() => go('parentcode')}>👪 Grown-up code</button>
         <button className="btn ghost" onClick={signOut}>Switch hero</button>
