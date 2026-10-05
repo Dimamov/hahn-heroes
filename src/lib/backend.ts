@@ -1,5 +1,6 @@
 import type { DrawStroke } from './drawing-rules.ts';
 import type { Currency } from '../../supabase/functions/_shared/rewards.ts';
+import type { ShowcaseState } from './showcase.ts';
 import type { AdvAnswerResult, AdvDone, AdvProgress } from './adventures.ts';
 import type { StoryAnswerResult, StoryChoiceResult, StoryDone, StoryProgress } from './story.ts';
 
@@ -550,6 +551,8 @@ export interface Backend {
   senseiTriviaRoster(): Promise<TriviaRoster>;
   senseiChallenge(): Promise<SenseiChallenge>;
   senseiSetChallenge(theme: string, goal: number, coins: number): Promise<void>;
+  showcaseState(): Promise<ShowcaseState>;
+  showcaseSet(title: string, pose: string): Promise<void>;
   questState(): Promise<QuestState>;
   questClaim(): Promise<{ awarded: number; duplicate: boolean }>;
   streakClaim(days: number): Promise<{ awarded: number; duplicate: boolean }>;

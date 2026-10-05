@@ -16,6 +16,7 @@ import { CARDS, cardById, fairness as tradeFairness, type OfferItem, type Rarity
 import { SKILLS, dailyBonus, growthMultipliers, surgeRules } from './skills.ts';
 import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
+import type { Pose } from './showcase.ts';
 import {
   AdultAuthError, HOUSE_COLORS, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
   type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
@@ -275,6 +276,7 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  showcase?: { heroId: string; title: string; pose: Pose }[];
   challenge?: { week: string; theme: string; goal: number; coins: number } | null;
   adv?: { heroId: string; caseId: string; solved: string[]; done: boolean }[];
   story?: { heroId: string; episode: string; panel: number; done: boolean; choices: Record<string, string>; solved: string[] }[];
@@ -440,6 +442,22 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       questCoins: 10,
       questClaimed: mine.some((r) => r.key === `quest:${today}`),
     };
+  };
+  /** Mirrors title_unlocked(): each title is worked out from what the hero actually did. */
+  const unlockedTitles = (heroId: string): string[] => {
+    const mine = db.ledger.filter((r) => r.heroId === heroId && r.currency === 'coins');
+    const xp = db.ledger.filter((r) => r.heroId === heroId && r.currency === 'xp').reduce((s, r) => s + r.amount, 0);
+    const adv = (db.adv ?? []).filter((a) => a.heroId === heroId && a.done).map((a) => a.caseId);
+    return [
+      'rookie',
+      ...((db.story ?? []).some((s) => s.heroId === heroId && s.done) ? ['keeper'] : []),
+      ...(adv.some((c) => c.startsWith('lab')) ? ['detective'] : []),
+      ...(adv.includes('chron1') ? ['chronicler'] : []),
+      ...(mine.some((r) => /^streak:.*:7$/.test(r.key)) ? ['streak'] : []),
+      ...((db.cardInv ?? []).filter((c) => c.heroId === heroId && c.qty > 0).length >= 20 ? ['collector'] : []),
+      ...(mine.some((r) => r.key.startsWith('hchal:')) ? ['helper'] : []),
+      ...(xp >= 500 ? ['scholar'] : []),
+    ];
   };
   const nextTriviaDate = (): string => {
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -1346,6 +1364,20 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const vote = (db.houseOptions ??= []).find((v) => v.classId === link.classId && v.open);
       if (vote) return { state: 'voting', weekPoints, cap: HOUSE_CAP, options: vote.options, myVote: vote.votes[hero.id] ?? null };
       return { state: 'none', weekPoints, cap: HOUSE_CAP };
+    },
+    async showcaseState() {
+      const me = meHero().id;
+      const row = (db.showcase ?? []).find((s) => s.heroId === me);
+      return { title: row?.title ?? 'rookie', pose: row?.pose ?? 'stand', unlocked: unlockedTitles(me) };
+    },
+    async showcaseSet(title, pose) {
+      const me = meHero().id;
+      if (!['stand', 'cheer', 'cool', 'power'].includes(pose)) throw new Error('no such pose');
+      if (!unlockedTitles(me).includes(title)) throw new Error('you have not earned that title yet');
+      const rows = (db.showcase ??= []);
+      const row = rows.find((s) => s.heroId === me);
+      if (row) { row.title = title; row.pose = pose as Pose; } else rows.push({ heroId: me, title, pose: pose as Pose });
+      commit();
     },
     async houseChallenge() {
       const hero = meHero();

@@ -152,6 +152,20 @@ describe('demo backend: grown-ups and missions', () => {
     expect(board.heroes.find((h) => h.me)).toBeUndefined();
   });
 
+  it('only lets a hero show titles they have earned', async () => {
+    const b = make();
+    await b.signUp(input);
+    expect(await b.showcaseState()).toEqual({ title: 'rookie', pose: 'stand', unlocked: ['rookie'] });
+    await expect(b.showcaseSet('detective', 'stand')).rejects.toThrow('earned');
+    await expect(b.showcaseSet('rookie', 'dance')).rejects.toThrow('pose');
+    await b.showcaseSet('rookie', 'cheer');
+    for (const [step, pick] of [['q1', 1], ['q2', 0], ['q3', 2]] as const) await b.advAnswer('lab1', step, pick);
+    await b.advComplete('lab1');
+    expect((await b.showcaseState()).unlocked).toEqual(['rookie', 'detective']);
+    await b.showcaseSet('detective', 'power');
+    expect(await b.showcaseState()).toMatchObject({ title: 'detective', pose: 'power' });
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8]);
