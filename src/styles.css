@@ -615,3 +615,17 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .btn-grid .btn { padding-inline: 8px; font-size: .9rem; }
 @media (max-height: 480px) and (orientation: landscape) { .btn-grid { grid-template-columns: repeat(4, 1fr); } .btn-grid .btn { padding-block: 8px; font-size: .8rem; } }
+
+/* Showcase poses (placeholder until pose art arrives) */
+@keyframes poseBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.pose-cheer { animation: poseBounce 1s ease-in-out infinite; }
+.pose-cool { transform: rotate(-5deg) skewX(-3deg); }
+.pose-power { transform: scale(1.06); filter: drop-shadow(0 0 14px #a78bfa); }
+.title-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; background: #fbbf2422; border: 1px solid #fbbf2455; font-size: .85rem; font-weight: 800; }
+.showcase-stage { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.showcase-stage .profile-hero { height: min(24vh, 200px); width: auto; }
+.title-chip { flex-direction: column; align-items: flex-start; text-align: left; border-radius: 14px; }
+.title-chip small { display: block; font-size: .7rem; opacity: .75; }
+@media (max-height: 480px) and (orientation: landscape) { .showcase { display: grid; grid-template-columns: 1fr 1.3fr; gap: 8px 12px; align-content: start; } .showcase > * { min-width: 0; } .showcase > .bar { grid-column: 1 / -1; } .showcase .paged { min-height: 0; } .showcase-stage .profile-hero { height: 110px; } }
+.title-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-height: 480px) and (orientation: landscape) { .title-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; } .title-chip { padding: 6px 8px; font-size: .8rem; } }

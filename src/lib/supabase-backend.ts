@@ -345,6 +345,12 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiTriviaPrize(coins) {
       return rpc('sensei_trivia_prize', { p_coins: coins });
     },
+    async showcaseState() {
+      return rpc('showcase_state');
+    },
+    async showcaseSet(title, pose) {
+      await rpc('showcase_set', { p_title: title, p_pose: pose });
+    },
     async houseChallenge() {
       const d = await rpc('house_challenge');
       return { state: d.state, theme: d.theme, goal: d.goal, coins: d.coins, progress: d.progress === undefined ? undefined : Number(d.progress), reached: d.reached,
