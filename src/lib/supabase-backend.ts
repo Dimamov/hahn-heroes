@@ -358,6 +358,16 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('story_answer', { p_episode: episode, p_checkpoint: checkpoint, p_choice: choice });
       return { correct: d.correct, rightChoice: d.right_choice, explanation: d.explanation, first: d.first };
     },
+    async advState() {
+      return rpc('adv_state');
+    },
+    async advAnswer(caseId, step, choice) {
+      const d = await rpc('adv_answer', { p_case: caseId, p_step: step, p_choice: choice });
+      return { correct: d.correct, rightChoice: d.right_choice, explanation: d.explanation, first: d.first };
+    },
+    async advComplete(caseId) {
+      return rpc('adv_complete', { p_case: caseId });
+    },
     async storyComplete(episode) {
       return rpc('story_complete', { p_episode: episode });
     },

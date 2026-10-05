@@ -590,3 +590,7 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
   .panel-emoji { font-size: 2.6rem; }
   .panel-text { font-size: .95rem; flex: 1 1 45%; }
 }
+.clue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: min(100%, 420px); }
+.clue.seen { outline: 2px solid var(--gold, #fbbf24); }
+.clue-text { min-height: 3.2em; }
+@media (max-height: 480px) and (orientation: landscape) { .clue-grid { grid-template-columns: repeat(4, 1fr); } .clue { padding: 6px; font-size: .8rem; } }

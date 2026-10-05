@@ -1,0 +1,45 @@
+{
+  "lab": [
+    {
+      "id": "lab1", "title": "The Missing Crystals", "icon": "💎",
+      "intro": "Four boxes of Nexus crystals were left in the hall, 12 crystals in each box. This morning, one box was empty and some crystals have vanished. Time to investigate, detective!",
+      "clues": [
+        { "icon": "📦", "name": "The empty box", "text": "The empty box has a sticky blue smear on the lid." },
+        { "icon": "📝", "name": "A note", "text": "A note on the shelf says: 'The crystals vanished right after the 2 o'clock bell.'" },
+        { "icon": "🎨", "name": "The art room door", "text": "The art room door handle has fresh blue ink on it. It is the only blue ink in the hall." },
+        { "icon": "🔢", "name": "The count", "text": "The other boxes are full. Only 45 crystals can be found in all." }
+      ],
+      "steps": [
+        { "id": "q1", "q": "Which clues point to the art room?", "choices": ["The note about the bell", "The blue smear and the blue ink on the door", "The number of boxes"] },
+        { "id": "q2", "q": "Who could NOT have taken the crystals after the 2 o'clock bell?", "choices": ["Students who were in math class then", "A student in the art room", "Someone walking in the hall"] },
+        { "id": "q3", "q": "There should be 4 boxes of 12 crystals, but only 45 are found. How many are missing?", "choices": ["1", "2", "3"] }
+      ]
+    },
+    {
+      "id": "lab2", "title": "The Silent Bell", "icon": "🔔",
+      "intro": "The school bell used to ring every 45 minutes, starting at 8:00. Today it rings so quietly that nobody can hear it. Someone must have tampered with it.",
+      "clues": [
+        { "icon": "🧵", "name": "Inside the bell", "text": "A wad of white cotton fluff is stuffed inside the bell." },
+        { "icon": "⏰", "name": "The schedule", "text": "The bell rings every 45 minutes: 8:00, 8:45, 9:30 and so on." },
+        { "icon": "🧽", "name": "The fluff", "text": "The fluff is the same as the cotton in the janitor's cleaning rags." },
+        { "icon": "🚪", "name": "The closet", "text": "The rag closet door was left open a crack." }
+      ],
+      "steps": [
+        { "id": "q1", "q": "Why is the bell so quiet?", "choices": ["It is broken", "It was turned off", "Cotton is stuffed inside it"] },
+        { "id": "q2", "q": "The bell rings at 8:00, 8:45 and 9:30. When does it ring next?", "choices": ["10:00", "10:15", "10:30"] },
+        { "id": "q3", "q": "Where does the trail of clues end?", "choices": ["The rag closet", "The gym", "The library"] }
+      ]
+    }
+  ],
+  "chronicle": {
+    "id": "chron1", "title": "The Academy's First Days", "icon": "🗺️",
+    "intro": "Hidden around the Nexus are old stories about the academy. Solve each question to unlock the next piece of the Chronicle.",
+    "steps": [
+      { "id": "s1", "lore": "Long ago, the academy was only a plan on paper. A school needs more than a plan, though. It began the day the very first doors opened.", "q": "When did the academy truly begin?", "choices": ["Before anyone drew a plan", "When the first doors opened", "Last Tuesday"] },
+      { "id": "s2", "lore": "Above the entrance, the founders hung an emblem. It glowed softly, because it was made of light that crystals had stored up.", "q": "What was the emblem made of?", "choices": ["Crystal light", "Wood", "Paper"] },
+      { "id": "s3", "lore": "The First Keeper never walked alone. Two gray wolves guarded the gates day and night.", "q": "Who guarded the gates?", "choices": ["Pigeons", "Goldfish", "Two gray wolves"] },
+      { "id": "s4", "lore": "The academy had 7 great doors, and every door had 3 locks. Each lock needed a different kind of key: knowledge, kindness or courage.", "q": "How many locks were there in all?", "choices": ["18", "21", "24"] },
+      { "id": "s5", "lore": "At last the Keeper wrote the academy's oldest rule on the wall for every hero to read.", "q": "What keeps the Nexus strong?", "choices": ["Learning, kindness and effort", "Skipping class", "Shouting"] }
+    ]
+  }
+}

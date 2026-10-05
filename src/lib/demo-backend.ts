@@ -274,6 +274,7 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  adv?: { heroId: string; caseId: string; solved: string[]; done: boolean }[];
   story?: { heroId: string; episode: string; panel: number; done: boolean; choices: Record<string, string>; solved: string[] }[];
   history: HistoryRow[];
   stats: { childId: string; subject: Subject; skill: string; attempts: number; correct: number }[];
@@ -387,6 +388,18 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     'ep1:touch:ana': { currency: 'coins', amount: 5 },
     'ep1:touch:isabella': { currency: 'xp', amount: 5 },
     'ep1:touch:together': { currency: 'skill_points', amount: 1 },
+  };
+  // Mirrors adv_cases and adv_keys. Answers live here only because demo mode is not secure.
+  const ADV: Record<string, { kind: 'lab' | 'chronicle'; coins: number; card: string; keys: [string, number, string][] }> = {
+    lab1: { kind: 'lab', coins: 15, card: 'u-key', keys: [['q1', 1, 'The blue smear matches the blue ink on the art room door.'], ['q2', 0, 'Anyone in math class then could not have taken them.'], ['q3', 2, '12 times 4 is 48. Only 45 were found, so 3 are missing.']] },
+    lab2: { kind: 'lab', coins: 15, card: 'u-cloak', keys: [['q1', 2, 'Cotton was found inside the bell.'], ['q2', 1, 'The next ring after 9:30 is 10:15.'], ['q3', 0, 'The fluff matches the rags in the rag closet.']] },
+    chron1: { kind: 'chronicle', coins: 30, card: 'r-crystal', keys: [['s1', 1, 'The academy began when the first doors opened.'], ['s2', 0, 'The emblem was made of crystal light.'], ['s3', 2, 'Two gray wolves guarded the gates.'], ['s4', 1, '7 doors times 3 locks is 21 locks.'], ['s5', 0, 'Learning, kindness and effort keep the Nexus strong.']] },
+  };
+  const advRow = (heroId: string, caseId: string) => {
+    const rows = (db.adv ??= []);
+    let row = rows.find((r) => r.heroId === heroId && r.caseId === caseId);
+    if (!row) { row = { heroId, caseId, solved: [], done: false }; rows.push(row); }
+    return row;
   };
   const storyRow = (heroId: string, episode: string) => {
     const rows = (db.story ??= []);
@@ -1098,6 +1111,45 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       }
       commit();
       return { correct: true, rightChoice: key.answer, explanation: key.explanation, first };
+    },
+    async advState() {
+      const me = meHero().id;
+      return Object.entries(ADV).map(([caseId, c]) => {
+        const r = advRow(me, caseId);
+        return { case: caseId, kind: c.kind, solved: [...r.solved], done: r.done };
+      });
+    },
+    async advAnswer(caseId, step, choice) {
+      const me = meHero().id;
+      const c = ADV[caseId];
+      const idx = c?.keys.findIndex((k) => k[0] === step) ?? -1;
+      if (!c || idx < 0) throw new Error('no such step');
+      if (!Number.isInteger(choice) || choice < 0 || choice > 2) throw new Error('pick one of the choices');
+      const r = advRow(me, caseId);
+      if (c.kind === 'chronicle' && idx > 0 && !r.solved.includes(c.keys[idx - 1][0])) throw new Error('that clue is still sealed');
+      const [, answer, explanation] = c.keys[idx];
+      if (choice !== answer) return { correct: false };
+      const first = !r.solved.includes(step);
+      if (first) {
+        r.solved.push(step);
+        award(me, 'coins', 5, 'event', `adv:${caseId}:${step}`);
+        award(me, 'xp', 5, 'event', `adv:${caseId}:${step}`);
+      }
+      commit();
+      return { correct: true, rightChoice: answer, explanation, first };
+    },
+    async advComplete(caseId) {
+      const me = meHero().id;
+      const c = ADV[caseId];
+      if (!c) throw new Error('no such case');
+      const r = advRow(me, caseId);
+      if (r.solved.length < c.keys.length) throw new Error('answer every question first');
+      if (r.done) return { repeat: true, card: c.card };
+      r.done = true;
+      award(me, 'coins', c.coins, 'event', `adv:${caseId}:done`);
+      addCard(me, c.card, 1);
+      commit();
+      return { repeat: false, card: c.card, coins: c.coins };
     },
     async storyComplete(episode) {
       const me = meHero().id;
