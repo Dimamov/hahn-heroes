@@ -324,6 +324,16 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
         rightChoice: d.right_choice, explanation: d.explanation, myPoints: d.my_points,
       };
     },
+    async odinView(code) {
+      const d = await rpc('odin_view', { p_code: code });
+      return {
+        state: d.state, color: d.color, dir: d.dir, top: d.top, deck: d.deck, myTurn: !!d.my_turn, secondsLeft: d.seconds_left ?? 0,
+        hand: d.hand ?? [], winner: d.winner ?? null, players: d.players ?? [],
+      };
+    },
+    async odinMove(card, color) {
+      await rpc('odin_move', { p_card: card, p_color: color ?? null });
+    },
     async chatSend(text) {
       const d = await rpc('chat_send', { p_text: text });
       if (d.ok) return { ok: true };

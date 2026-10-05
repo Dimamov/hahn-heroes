@@ -122,7 +122,7 @@ export function TriviaClash() {
   );
 }
 
-function PlayerList({ room }: { room: RoomState }) {
+export function PlayerList({ room }: { room: RoomState }) {
   return (
     <div className="players">
       {room.players.map((p) => (

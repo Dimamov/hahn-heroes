@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createDemoBackend } from './demo-backend.ts';
 import { SignInError } from './backend.ts';
+import { isWild, playable } from './odin-rules.ts';
 import bank from '../../content/questions.json';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -401,6 +402,44 @@ describe('demo backend: grown-ups and missions', () => {
       expect(end.state).toBe('done');
       expect(end.players[0].score).toBeGreaterThanOrEqual(800);
       expect(await b.currentRoom()).toBeNull();
+    });
+  });
+
+  describe('odin', () => {
+    it('plays ODIN against a practice buddy until someone empties their hand', async () => {
+      const b = make();
+      await b.signUp(input);
+      const code = await b.createRoom('odin');
+      await b.addPracticeBuddy!();
+      await b.startRoom();
+      expect((await b.roomState(code)).state).toBe('playing');
+      let v = await b.odinView(code);
+      expect(v.hand).toHaveLength(7);
+      expect(v.players.map((p) => p.cards)).toEqual([7, 7]);
+      for (let turns = 0; turns < 400 && v.state === 'playing'; turns++) {
+        if (v.myTurn) {
+          const card = v.hand.find((c) => playable(c, v.top, v.color));
+          if (card) await b.odinMove(card, isWild(card) ? 'R' : undefined);
+          else await b.odinMove(null);
+        } else {
+          clock = new Date(clock.getTime() + 2_000);
+        }
+        v = await b.odinView(code);
+      }
+      expect(v.state).toBe('done');
+      expect(v.winner).toBeTruthy();
+    });
+
+    it('refuses plays out of turn, unmatched cards and wilds without a colour', async () => {
+      const b = make();
+      await b.signUp(input);
+      const code = await b.createRoom('odin');
+      await b.addPracticeBuddy!();
+      await b.startRoom();
+      const v = await b.odinView(code);
+      await expect(b.odinMove('Z9')).rejects.toThrow();
+      const bad = v.hand.find((c) => !playable(c, v.top, v.color));
+      if (bad) await expect(b.odinMove(bad)).rejects.toThrow('does not match');
     });
   });
 

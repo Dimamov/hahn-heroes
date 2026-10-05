@@ -1,5 +1,6 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
+import { botMove, deal, move as odinMoveRule, type OdinGame } from './odin-rules.ts';
 import {
   ARCADE_REWARDS, CLASS_PASS_PERCENT, DAILY_LOGIN_COINS, LEARNING_REWARDS, WEEKLY_CAPS, classMissionCoins, schoolDate, schoolWeek,
   type Currency, type RewardSource,
@@ -89,6 +90,8 @@ function chatFlagged(text: string): boolean {
 
 interface DemoRoom {
   code: string;
+  game: string;
+  odin?: OdinGame;
   hostId: string;
   state: 'lobby' | 'playing' | 'done' | 'closed';
   phase: 'question' | 'reveal';
@@ -138,8 +141,28 @@ const fresh = (): Db => ({
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
 
+const ODIN_TURN_MS = 45_000;
+const ODIN_BOT_MS = 1_500;
+
+/** Lets bots (and stalled humans) take their turns, one at a time, as if the clock had run continuously. */
+function demoOdinTick(r: DemoRoom, now: number) {
+  const g = r.odin;
+  if (!g || r.state !== 'playing') return;
+  const bots = new Set(r.players.filter((p) => p.bot).map((p) => p.id));
+  const active = (id: string) => r.players.some((p) => p.id === id);
+  for (let guard = 0; guard < 40 && !g.winner; guard++) {
+    const id = g.order[g.turn];
+    const wait = bots.has(id) ? ODIN_BOT_MS : ODIN_TURN_MS;
+    if (now < g.turnStart + wait) break;
+    const at = g.turnStart + wait;
+    if (bots.has(id)) botMove(g, id, at, active); else odinMoveRule(g, id, null, null, at, active);
+  }
+  if (g.winner) r.state = 'done';
+}
+
 /** Moves a demo room along: practice buddies answer on their own, then the question closes and the next one opens. */
 function demoRoomTick(r: DemoRoom, now = Date.now()) {
+  if (r.game !== 'trivia-clash') return;
   for (let guard = 0; guard < 50 && r.state === 'playing'; guard++) {
     const rq = r.questions[r.idx];
     if (r.phase === 'question') {
@@ -166,7 +189,11 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
   const load = (): Db => {
     try {
       const raw = storage.getItem(KEY);
-      if (raw) return JSON.parse(raw) as Db;
+      if (raw) {
+        const parsed = JSON.parse(raw) as Db;
+        if (parsed.room) parsed.room.game ??= 'trivia-clash';
+        return parsed;
+      }
     } catch { /* corrupted or blocked storage: start fresh */ }
     return fresh();
   };
@@ -700,10 +727,10 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     },
     async createRoom(game) {
       const me = meHero();
-      if (game !== 'trivia-clash') throw new Error('unknown game');
+      if (game !== 'trivia-clash' && game !== 'odin') throw new Error('unknown game');
       if (await this.currentRoom!()) throw new Error('leave your room first');
       const code = generateCode(4).replace(/[^A-Z]/g, 'K');
-      db.room = { code, hostId: me.id, state: 'lobby', phase: 'question', idx: 0, phaseStart: at(), questions: [], players: [{ id: me.id, name: me.displayName, starter: me.starter, score: 0, bot: false, answers: {} }] };
+      db.room = { code, game, hostId: me.id, state: 'lobby', phase: 'question', idx: 0, phaseStart: at(), questions: [], players: [{ id: me.id, name: me.displayName, starter: me.starter, score: 0, bot: false, answers: {} }] };
       commit();
       return code;
     },
@@ -734,6 +761,13 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const r = db.room;
       if (!r || r.hostId !== me.id || r.state !== 'lobby') throw new Error('you are not hosting a room');
       if (r.players.length < ROOM_RULES.min) throw new Error('you need at least 2 players');
+      if (r.game === 'odin') {
+        r.odin = deal(r.players.map((p) => p.id));
+        r.odin.turnStart = at();
+        r.state = 'playing'; r.phase = 'question'; r.idx = 0; r.phaseStart = at();
+        commit();
+        return;
+      }
       const seen = new Set(db.history.filter((h) => h.childId === me.id).map((h) => h.questionId));
       const pool = QUESTIONS.filter((q) => q.grade === me.grade && !seen.has(q.id)).sort(() => Math.random() - 0.5).slice(0, ROOM_RULES.questions);
       if (pool.length < ROOM_RULES.questions) throw new Error('not enough fresh questions');
@@ -766,11 +800,11 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       demoRoomTick(r, at());
       commit();
       const out: RoomState = {
-        code: r.code, game: 'trivia-clash', state: r.state, phase: r.phase, idx: r.idx, total: r.questions.length, host: r.hostId === me,
+        code: r.code, game: r.game, state: r.state, phase: r.phase, idx: r.idx, total: r.questions.length, host: r.hostId === me,
         minPlayers: ROOM_RULES.min,
         players: [...r.players].sort((a, b) => b.score - a.score).map((p) => ({ name: p.name, starter: p.starter, score: p.score, me: p.id === me, host: p.id === r.hostId, answered: !!p.answers[r.idx] })),
       };
-      if (r.state === 'playing') {
+      if (r.state === 'playing' && r.game === 'trivia-clash') {
         const rq = r.questions[r.idx];
         const q = QUESTIONS.find((x) => x.id === rq.id)!;
         const wait = r.phase === 'question' ? rq.seconds : ROOM_RULES.revealSeconds;
@@ -784,6 +818,36 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
         }
       }
       return out;
+    },
+    async odinView(code) {
+      const me = meHero().id;
+      const r = db.room;
+      if (!r || r.game !== 'odin' || r.code !== code.trim().toUpperCase() || !r.players.some((p) => p.id === me)) throw new Error('you are not in that room');
+      if (!r.odin) return { state: r.state, color: 'R', dir: 1, top: '', deck: 0, myTurn: false, secondsLeft: 0, hand: [], winner: null, players: [] };
+      demoOdinTick(r, at());
+      commit();
+      const g = r.odin;
+      const cur = g.order[g.turn];
+      const botsWait = r.players.find((p) => p.id === cur)?.bot ? ODIN_BOT_MS : ODIN_TURN_MS;
+      return {
+        state: r.state, color: g.color, dir: g.dir, top: g.discard[g.discard.length - 1], deck: g.deck.length,
+        myTurn: cur === me && r.state === 'playing', secondsLeft: Math.max(0, Math.ceil((g.turnStart + botsWait - at()) / 1000)),
+        hand: [...g.hands[me]], winner: g.winner ? r.players.find((p) => p.id === g.winner)!.name : null,
+        players: g.order.map((id) => {
+          const p = r.players.find((x) => x.id === id)!;
+          return { name: p.name, starter: p.starter, cards: g.hands[id].length, turn: id === cur && r.state === 'playing', me: id === me, left: false };
+        }),
+      };
+    },
+    async odinMove(card, color) {
+      const me = meHero().id;
+      const r = db.room;
+      if (!r || r.game !== 'odin' || r.state !== 'playing' || !r.odin) throw new Error('you are not in a game');
+      demoOdinTick(r, at());
+      odinMoveRule(r.odin, me, card, color ?? null, at());
+      if (r.odin.winner) r.state = 'done';
+      demoOdinTick(r, at());
+      commit();
     },
     async chatSend(text) {
       const me = meHero();
