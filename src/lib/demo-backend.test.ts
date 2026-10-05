@@ -166,6 +166,23 @@ describe('demo backend: grown-ups and missions', () => {
     expect(await b.showcaseState()).toMatchObject({ title: 'detective', pose: 'power' });
   });
 
+  it('gives a teacher a class report and student details, and no one else', async () => {
+    const { b, hero, cls } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    await b.joinClass(cls.joinCode!);
+    const set = await b.startPractice('math');
+    await b.answerQuestion(set.questions[0].id, 0);
+    await b.signOut();
+    await expect(b.classReport(cls.id)).rejects.toThrow();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    const r = await b.classReport(cls.id);
+    expect(r.className).toBe('Room 12');
+    expect(r.students).toHaveLength(1);
+    expect(r.students[0]).toMatchObject({ name: 'Brave Comet', answered: 1, daysActive: 1 });
+    expect((await b.childWeek(r.students[0].id)).answered).toBe(1);
+    expect((await b.classReport(cls.id, 1)).students[0].answered).toBe(0);
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);

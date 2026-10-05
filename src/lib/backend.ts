@@ -412,6 +412,8 @@ export interface AnswerResult {
   surge?: SurgeView;
 }
 export interface WeekSummary { weekStart: string; daysActive: number; answered: number; correct: number; subjects: { subject: Subject; answered: number; correct: number }[]; points: number; missions: number }
+export interface ClassReportStudent { id: string; name: string; daysActive: number; answered: number; correct: number; points: number; missions: number }
+export interface ClassReport { weekStart: string; className: string; students: ClassReportStudent[] }
 export interface SubjectProgress {
   subject: Subject;
   answered: number;
@@ -464,6 +466,8 @@ export interface Backend {
   childProgress(childId: string): Promise<ChildProgress>;
   childLearning(childId: string): Promise<SubjectProgress[]>;
   childWeek(childId: string, weeksBack?: number): Promise<WeekSummary>;
+  /** Teacher progress report for one class and school week (0 = this week, 1 = last week). */
+  classReport(classId: string, weeksBack?: number): Promise<ClassReport>;
   createHomeMission(childId: string, title: string, details: string, coins: number): Promise<void>;
   reviewHomeMission(id: string, approve: boolean): Promise<{ status: string; awarded: number; capped?: boolean }>;
   classes(): Promise<ClassInfo[]>;

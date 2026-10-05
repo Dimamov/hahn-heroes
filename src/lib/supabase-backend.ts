@@ -250,6 +250,13 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('child_week', { p_child: childId, p_weeks_back: weeksBack });
       return { weekStart: d.week_start, daysActive: d.days_active, answered: d.answered, correct: d.correct, subjects: d.subjects, points: Number(d.points), missions: d.missions };
     },
+    async classReport(classId, weeksBack = 0) {
+      const d = await rpc('class_report', { p_class: classId, p_weeks_back: weeksBack });
+      return {
+        weekStart: d.week_start, className: d.class_name,
+        students: (d.students ?? []).map((x: any) => ({ id: x.id, name: x.name, daysActive: x.days_active, answered: x.answered, correct: x.correct, points: Number(x.points), missions: x.missions })),
+      };
+    },
     async childProgress(childId) {
       const d = await rpc('child_progress', { p_child: childId });
       return { coins: d.coins, xp: d.xp, homeWeek: d.home_week, classWeek: d.class_week, homeCap: d.home_cap, classCap: d.class_cap };
