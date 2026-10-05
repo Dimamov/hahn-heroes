@@ -786,3 +786,19 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .treasure-pins { display: flex; justify-content: center; gap: 14px; font-size: 1.8rem; }
 .treasure-pins span:not(.found) { opacity: .5; }
 .dorm.base { border-color: #3b82f6; background: linear-gradient(180deg, #16315c, #0c1633); }
+
+/* Avatar studio */
+.look-card { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 0 auto; }
+.look-aura { position: relative; display: grid; place-items: end center; width: min(40vw, 20vh); aspect-ratio: 3 / 4; border-radius: 22px; background: radial-gradient(circle at 50% 70%, color-mix(in srgb, var(--aura) 55%, transparent), transparent 70%), #ffffff0d; box-shadow: 0 0 18px 2px var(--aura); }
+.look-aura.aura-none { box-shadow: none; }
+.look-aura.aura-rainbow { box-shadow: 0 0 18px 2px #f472b6, 0 0 30px 6px #22d3ee66; }
+.look-card.small .look-aura { width: min(28vw, 14vh); }
+.look-hero { height: 100%; width: auto; max-width: 100%; object-fit: contain; }
+.look-badges { display: flex; align-items: center; gap: 6px; font-size: 1.2rem; }
+.look-hair { display: inline-block; width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; }
+.look-name { font-size: .9rem; }
+.look-gallery { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; align-items: center; width: 100%; align-self: start; }
+.item-grid:has(.look-gallery) { grid-template-columns: 1fr; grid-auto-rows: auto; }
+.look-gallery .btn { width: min(100%, 280px); }
+@media (max-height: 480px) and (orientation: landscape) { .studio { display: grid; grid-template-columns: 1fr 1.3fr; gap: 6px 12px; align-content: start; grid-auto-rows: min-content; } .studio > * { min-width: 0; } .studio > .bar, .studio > .chips { grid-column: 1 / -1; } .studio > .look-card { grid-row: 3 / 7; } .studio > .paged, .studio > .check, .studio > .note, .studio > .btn { grid-column: 2; } .look-aura { width: 22vh; } }
+@media (max-height: 480px) and (orientation: landscape) { .profile-actions { grid-template-columns: repeat(5, 1fr); gap: 6px; } .profile-actions .btn { padding: 8px 4px; font-size: .78rem; min-height: 0; } }

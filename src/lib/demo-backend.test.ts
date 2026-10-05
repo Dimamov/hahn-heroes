@@ -327,6 +327,17 @@ describe('demo backend: grown-ups and missions', () => {
     await expect(b.basePlace(0, 'd-lamp')).rejects.toThrow('join a squad');
   });
 
+  it('saves looks from fixed lists and owned items, and likes stay inside the circle', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    await expect(b.lookSave({ hair: 'rainbow-hair', makeup: 'none', aura: 'none', outfit: null, accessory: null }, true)).rejects.toThrow('lists');
+    await expect(b.lookSave({ hair: 'blue', makeup: 'none', aura: 'none', outfit: 'o-nexus-hoodie', accessory: null }, true)).rejects.toThrow('own that outfit');
+    await b.lookSave({ hair: 'blue', makeup: 'sparkle', aura: 'flame', outfit: null, accessory: null }, true);
+    expect(await b.lookGet()).toMatchObject({ hair: 'blue', pinned: true, likes: 0 });
+    await expect(b.lookLike('someone-else')).rejects.toThrow('only like looks');
+    expect(await b.lookGallery()).toEqual([]);
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);

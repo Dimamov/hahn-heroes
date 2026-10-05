@@ -19,6 +19,7 @@ import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
 import { RAID_BOSSES, RAID_RULES } from './raid.ts';
 import { HEROES } from './heroes.ts';
+import { AURAS, HAIR, MAKEUP } from './look.ts';
 import { HUNTS, TREASURE_COIN, huntIndex } from './treasure.ts';
 import { CODE_LIMITS, CODE_WORDS_A, CODE_WORDS_B } from './codes.ts';
 import { CONTEST_POINTS, contestTheme } from './contest.ts';
@@ -286,6 +287,8 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  looks?: { heroId: string; hair: string; makeup: string; aura: string; outfit: string | null; accessory: string | null; pinned: boolean; version: number; at: number }[];
+  lookLikes?: { owner: string; liker: string; version: number }[];
   squadBase?: { squadId: string; cell: number; item: string; by: string }[];
   treasure?: { week: string; heroId: string; step: number; claimed: boolean }[];
   codes?: { id: number; code: string; by: string; classId: string | null; coins: number; xp: number; day: string; expires: number; used: string[] }[];
@@ -1653,6 +1656,50 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       s.owner = toHero;
       commit();
       return { ok: true };
+    },
+    async lookGet() {
+      const me = meHero().id;
+      const l = (db.looks ??= []).find((x) => x.heroId === me);
+      const owned = (db.owned ??= []).filter((o) => o.heroId === me).map((o) => o.itemId);
+      return {
+        hair: l?.hair ?? 'brown', makeup: l?.makeup ?? 'none', aura: l?.aura ?? 'none', outfit: l?.outfit ?? null, accessory: l?.accessory ?? null, pinned: !!l?.pinned,
+        likes: (db.lookLikes ??= []).filter((k) => k.owner === me && k.version === (l?.version ?? 1)).length,
+        outfits: owned.filter((id) => itemById(id)?.kind === 'outfit'), accessories: owned.filter((id) => itemById(id)?.kind === 'accessory'),
+      };
+    },
+    async lookSave(look, pinned) {
+      const me = meHero().id;
+      if (!HAIR.some((h) => h.id === look.hair) || !MAKEUP.some((m) => m.id === look.makeup) || !AURAS.some((a) => a.id === look.aura)) throw new Error('pick from the lists');
+      const owns = (id: string | null, kind: string) => id === null || ((db.owned ??= []).some((o) => o.heroId === me && o.itemId === id) && itemById(id)?.kind === kind);
+      if (!owns(look.outfit, 'outfit')) throw new Error('you do not own that outfit');
+      if (!owns(look.accessory, 'accessory')) throw new Error('you do not own that accessory');
+      const all = (db.looks ??= []);
+      const l = all.find((x) => x.heroId === me);
+      if (!l) all.push({ heroId: me, ...look, pinned, version: 1, at: now().getTime() });
+      else {
+        const changed = l.hair !== look.hair || l.makeup !== look.makeup || l.aura !== look.aura || l.outfit !== look.outfit || l.accessory !== look.accessory;
+        Object.assign(l, look, { pinned, at: now().getTime(), version: changed ? l.version + 1 : l.version });
+      }
+      commit();
+    },
+    async lookGallery() {
+      const me = meHero().id;
+      const circle = new Set([...contestCircle(me), ...(db.friendships ??= []).filter((f) => f.status === 'accepted' && (f.a === me || f.b === me)).map((f) => (f.a === me ? f.b : f.a))]);
+      return (db.looks ??= []).filter((l) => l.pinned && circle.has(l.heroId)).sort((a, b) => b.at - a.at).slice(0, 30).map((l) => {
+        const h = heroById(l.heroId)!;
+        const likes = (db.lookLikes ??= []).filter((k) => k.owner === l.heroId && k.version === l.version);
+        return { hero: h.id, name: h.displayName, starter: h.starter, hair: l.hair, makeup: l.makeup, aura: l.aura, outfit: l.outfit, accessory: l.accessory, likes: likes.length, liked: likes.some((k) => k.liker === me) };
+      });
+    },
+    async lookLike(heroId) {
+      const me = meHero().id;
+      const l = (db.looks ??= []).find((x) => x.heroId === heroId && x.pinned);
+      const circle = new Set([...contestCircle(me), ...(db.friendships ??= []).filter((f) => f.status === 'accepted' && (f.a === me || f.b === me)).map((f) => (f.a === me ? f.b : f.a))]);
+      if (!l || !circle.has(heroId)) throw new Error('you can only like looks from friends, your squad or your House');
+      const likes = (db.lookLikes ??= []);
+      if (likes.some((k) => k.owner === heroId && k.liker === me && k.version === l.version)) throw new Error('you already liked this look');
+      likes.push({ owner: heroId, liker: me, version: l.version });
+      commit();
     },
     async baseGet() {
       const me = meHero().id;
