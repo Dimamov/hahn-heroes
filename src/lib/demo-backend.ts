@@ -12,9 +12,10 @@ import {
   isValidPicture, normalizeHeroCode,
 } from '../../supabase/functions/_shared/kid-auth.ts';
 import { SHOP_ITEMS, itemById } from './shop-catalog.ts';
+import { NEXLING_BONUS, NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
 import {
-  AdultAuthError, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
+  AdultAuthError, HOUSE_COLORS, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
   type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
   type ClassResult, type Hero, type HouseIdentity, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
   type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress,
@@ -275,6 +276,7 @@ interface Db {
   ledger: LedgerRow[];
   friendships?: { id: string; a: string; b: string; status: 'pending' | 'accepted' | 'declined' | 'removed' }[];
   squads?: { id: string; leader: string; name: string; disbanded: boolean; members: { childId: string; status: 'invited' | 'member' | 'declined' | 'left' }[] }[];
+  nexlings?: { heroId: string; type: string; nickname: string; color: string; fromLedger: number }[];
   owned?: { heroId: string; itemId: string }[];
   equipped?: { heroId: string; slot: string; itemId: string | null }[];
   rooms?: { heroId: string; layout: { item: string; cell: number }[] }[];
@@ -883,6 +885,27 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (!squad) return;
       if (squad.leader === me) squad.disbanded = true;
       else squad.members.find((m) => m.childId === me)!.status = 'left';
+      commit();
+    },
+    async nexlingState() {
+      const hero = meHero();
+      const n = (db.nexlings ??= []).find((x) => x.heroId === hero.id);
+      if (!n) return { stages: NEXLING_STAGES, mine: null };
+      const bonus = nexlingType(n.type)!.bonus;
+      const growth = Math.floor(db.ledger.slice(n.fromLedger).filter((r) => r.heroId === hero.id && r.currency === 'coins' && r.amount > 0)
+        .reduce((sum, r) => sum + (r.source === bonus ? r.amount * NEXLING_BONUS : r.amount), 0));
+      const stage = NEXLING_STAGES.filter((t) => t <= growth).length;
+      return { stages: NEXLING_STAGES, mine: { type: n.type, nickname: n.nickname, color: n.color, growth, stage, nextAt: NEXLING_STAGES.find((t) => t > growth) ?? null } };
+    },
+    async nexlingAdopt(type, nickname, color) {
+      const hero = meHero();
+      if (!nexlingType(type)) throw new Error('no such Nexling');
+      const name = nickname.trim().replace(/\s+/g, ' ');
+      if (!/^[A-Za-z][A-Za-z '-]{1,15}$/.test(name)) throw new Error('names are 2 to 16 letters');
+      if (!HOUSE_COLORS.includes(color)) throw new Error('pick a colour');
+      const row = (db.nexlings ??= []).find((x) => x.heroId === hero.id);
+      if (!row) db.nexlings.push({ heroId: hero.id, type, nickname: name, color, fromLedger: db.ledger.length });
+      else { if (row.type !== type) row.fromLedger = db.ledger.length; row.type = type; row.nickname = name; row.color = color; }
       commit();
     },
     async shopState() {

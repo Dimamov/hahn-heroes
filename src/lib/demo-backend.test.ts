@@ -173,6 +173,24 @@ describe('demo backend: grown-ups and missions', () => {
     await expect(b.dormGet('someone-else')).rejects.toThrow();
   });
 
+  it('adopts a Nexling that grows with coins earned afterwards', async () => {
+    const b = make();
+    await b.signUp(input);
+    await b.claimDaily(); // earned before adopting: does not count
+    expect((await b.nexlingState()).mine).toBeNull();
+    await expect(b.nexlingAdopt('dragon', 'Sparky', '#3b82f6')).rejects.toThrow();
+    await expect(b.nexlingAdopt('sparkling', 'S', '#3b82f6')).rejects.toThrow();
+    await b.nexlingAdopt('sparkling', 'Sparky', '#3b82f6');
+    expect((await b.nexlingState()).mine).toMatchObject({ type: 'sparkling', nickname: 'Sparky', growth: 0, stage: 1, nextAt: 100 });
+    clock = new Date(clock.getTime() + DAY_MS);
+    await b.claimDaily(); // 10 coins from the daily check-in: Sparkling's specialty, 1.5x
+    expect((await b.nexlingState()).mine).toMatchObject({ growth: 15 });
+    await b.nexlingAdopt('sparkling', 'Zap', '#ef4444');
+    expect((await b.nexlingState()).mine).toMatchObject({ nickname: 'Zap', growth: 15 });
+    await b.nexlingAdopt('tideling', 'Drip', '#06b6d4');
+    expect((await b.nexlingState()).mine).toMatchObject({ type: 'tideling', growth: 0 });
+  });
+
   it('links a parent with a one-time code and limits wrong guesses', async () => {
     const b = make();
     await b.signUp(input);

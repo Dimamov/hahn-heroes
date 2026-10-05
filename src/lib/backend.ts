@@ -204,6 +204,10 @@ export interface DormView {
   owned: string[] | null;
 }
 
+export interface NexlingState {
+  stages: number[];
+  mine: { type: string; nickname: string; color: string; growth: number; stage: number; nextAt: number | null } | null;
+}
 export interface SquadMember { heroId: string; name: string; starter: string; status: 'member' | 'invited'; isLeader: boolean }
 export interface SquadView {
   squad: { id: string; name: string; leader: boolean; members: SquadMember[] } | null;
@@ -406,6 +410,9 @@ export interface Backend {
   inviteToSquad(friendHeroId: string): Promise<void>;
   respondSquadInvite(squadId: string, accept: boolean): Promise<void>;
   leaveSquad(): Promise<void>;
+  nexlingState(): Promise<NexlingState>;
+  /** Pick a Nexling, or change the name and colour of the one you have. A different type starts growing from zero. */
+  nexlingAdopt(type: string, nickname: string, color: string): Promise<void>;
   shopState(): Promise<ShopState>;
   shopBuy(itemId: string): Promise<ShopBuyResult>;
   /** Wear an owned item in its slot, or pass null to take the slot off. */

@@ -298,6 +298,13 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async leaveSquad() {
       await rpc('squad_leave');
     },
+    async nexlingState() {
+      const d = await rpc('nexling_state');
+      return { stages: d.stages, mine: d.mine && { type: d.mine.type, nickname: d.mine.nickname, color: d.mine.color, growth: d.mine.growth, stage: d.mine.stage, nextAt: d.mine.next_at } };
+    },
+    async nexlingAdopt(type, nickname, color) {
+      await rpc('nexling_adopt', { p_type: type, p_nickname: nickname, p_color: color });
+    },
     async shopState() {
       const d = await rpc('shop_state');
       return { coins: d.coins, xp: d.xp, equipped: d.equipped, items: d.items.map((i: any) => ({ ...i, unlockXp: i.unlock_xp })) };
