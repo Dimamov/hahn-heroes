@@ -245,6 +245,8 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
         if (error.code === 'weak_password') throw new AdultAuthError('weak');
         throw new AdultAuthError('network');
       }
+      // An email that already has an account looks like a success but sends nothing and has no identities.
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) throw new AdultAuthError('taken');
       // Email confirmation on: no session yet. The profile is created on first sign-in.
       if (!data.session) return 'confirm_email';
       return ensureAdultProfile();
