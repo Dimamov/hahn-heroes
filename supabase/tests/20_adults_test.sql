@@ -238,6 +238,27 @@ end $$;
 select as_user(13);
 do $$ begin assert unread_announcements() = 1, 'read marks are per person'; end $$;
 
+-- The Sensei can remove an old announcement; it disappears for everyone and from the unread count.
+select as_user(4);
+select post_announcement('Old news', 'Remove me');
+select as_user(13);
+do $$ begin assert unread_announcements() = 2, 'new one counts'; end $$;
+select as_user(11);
+do $$ begin
+  perform expect_error($q$select sensei_delete_announcement(1)$q$, 'only the Sensei');
+end $$;
+select as_user(4);
+do $$
+declare v_id bigint;
+begin
+  select id into v_id from announcements where title = 'Old news';
+  perform sensei_delete_announcement(v_id);
+  perform expect_error(format($q$select sensei_delete_announcement(%s)$q$, v_id), 'no such announcement');
+  assert (select count(*) from announcements) = 1, 'removed announcement is hidden';
+end $$;
+select as_user(13);
+do $$ begin assert unread_announcements() = 1, 'back to one unread'; end $$;
+
 -- Sensei settings.
 select as_user(4);
 do $$ begin

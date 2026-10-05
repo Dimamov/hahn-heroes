@@ -431,6 +431,22 @@ describe('demo backend: grown-ups and missions', () => {
     expect((await b.announcements()).unread).toBe(0);
   });
 
+  it('lets the Sensei remove an old announcement for everyone', async () => {
+    const { b, hero } = await setup();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    await b.postAnnouncement('Old news', 'Remove me');
+    await b.postAnnouncement('New news', 'Keep me');
+    const [newest, oldest] = (await b.announcements()).items;
+    await b.senseiDeleteAnnouncement(oldest.id);
+    await expect(b.senseiDeleteAnnouncement(oldest.id)).rejects.toThrow();
+    await b.signOut();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    const seen = await b.announcements();
+    expect(seen.items.map((x) => x.title)).toEqual([newest.title]);
+    expect(seen.unread).toBe(1);
+    await expect(b.senseiDeleteAnnouncement(newest.id)).rejects.toThrow();
+  });
+
   describe('learning', () => {
     it('hands out unseen questions for the hero grade and never repeats one', async () => {
       const b = make();
