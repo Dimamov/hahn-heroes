@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import {
   AdultAuthError, SignInError, emptyBalances,
   type Adult, type Backend, type ClassMission, type ClassResult, type Hero, type HomeMission, type Identity,
-  type NewClassMission, type QuizQuestion, type SignUpInput,
+  type NewClassMission, type QuizQuestion, type SignUpInput, type SubjectProgress,
 } from './backend.ts';
 import type { Currency } from '../../supabase/functions/_shared/rewards.ts';
 
@@ -21,6 +21,9 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
   });
 
+  const subjectProgress = (d: any[]): SubjectProgress[] => d.map((x) => ({
+    subject: x.subject, answered: x.answered, correct: x.correct, left: x.left, skills: x.skills,
+  }));
   const rpc = async (fn: string, args?: Record<string, unknown>): Promise<any> => {
     const { data, error } = await sb.rpc(fn, args);
     if (error) throw new Error(error.message);
@@ -182,6 +185,24 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async childProgress(childId) {
       const d = await rpc('child_progress', { p_child: childId });
       return { coins: d.coins, xp: d.xp, homeWeek: d.home_week, classWeek: d.class_week, homeCap: d.home_cap, classCap: d.class_cap };
+    },
+    async startPractice(subject) {
+      const d = await rpc('start_practice', { p_subject: subject });
+      return { questions: d.questions, remaining: d.remaining };
+    },
+    async answerQuestion(questionId, choice) {
+      const d = await rpc('answer_question', { p_question: questionId, p_choice: choice });
+      return {
+        correct: d.correct, rightChoice: d.right_choice, explanation: d.explanation, repeat: d.repeat,
+        awarded: d.awarded?.xp === undefined ? undefined
+          : { coins: Number(d.awarded.coins), xp: d.awarded.xp, skillPoints: d.awarded.skill_points, capped: !!d.awarded.capped },
+      };
+    },
+    async learning() {
+      return subjectProgress(await rpc('my_learning'));
+    },
+    async childLearning(childId) {
+      return subjectProgress(await rpc('child_learning', { p_child: childId }));
     },
     async createHomeMission(childId, title, details, coins) {
       await rpc('create_home_mission', { p_child: childId, p_title: title, p_details: details, p_coins: coins });

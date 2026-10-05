@@ -8,6 +8,8 @@ import { SignIn } from './screens/SignIn.tsx';
 import { Home } from './screens/Home.tsx';
 import { Destination } from './screens/Destination.tsx';
 import { Profile } from './screens/Profile.tsx';
+import { LearnHome, Practice } from './screens/Learn.tsx';
+import type { Subject } from './lib/backend.ts';
 import { Announcements, ClassMissions, HomeMissions, MissionsHome, ParentCode, Quiz } from './screens/Missions.tsx';
 import { AdultAuth } from './screens/adult/AdultAuth.tsx';
 import { AdultApp } from './screens/adult/AdultApp.tsx';
@@ -90,6 +92,7 @@ export default function App() {
 
   const session: Session = { backend, hero, balances, dailyAvailable, unread, missionDot, refresh, signOut, go: setScreen };
   const quizId = screen.startsWith('quiz:') ? screen.slice(5) : null;
+  const practiceSubject = screen.startsWith('practice:') ? (screen.slice(9) as Subject) : null;
   return (
     <SessionContext.Provider value={session}>
       {screen === 'home' && <Home />}
@@ -98,9 +101,11 @@ export default function App() {
       {screen === 'missions-home' && <HomeMissions />}
       {screen === 'missions-class' && <ClassMissions />}
       {quizId && <Quiz id={quizId} />}
+      {screen === 'learn' && <LearnHome />}
+      {practiceSubject && <Practice subject={practiceSubject} />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode'].includes(screen) && !quizId && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn'].includes(screen) && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }

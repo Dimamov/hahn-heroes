@@ -148,6 +148,38 @@ export interface PendingTeacher {
   email: string;
 }
 
+// ---- Learning ------------------------------------------------------------------------------
+
+export const SUBJECTS = ['math', 'vocab', 'reading', 'science'] as const;
+export type Subject = (typeof SUBJECTS)[number];
+export interface PracticeQuestion {
+  id: string;
+  subject: Subject;
+  skill: string;
+  prompt: string;
+  choices: string[];
+}
+export interface PracticeSet {
+  questions: PracticeQuestion[];
+  /** Unseen questions still waiting after this set. */
+  remaining: number;
+}
+export interface AnswerResult {
+  correct: boolean;
+  rightChoice: number;
+  explanation: string;
+  /** True when this question was already answered; nothing more is paid. */
+  repeat: boolean;
+  awarded?: { coins: number; xp: number; skillPoints: number; capped: boolean };
+}
+export interface SubjectProgress {
+  subject: Subject;
+  answered: number;
+  correct: number;
+  left: number;
+  skills: { skill: string; attempts: number; correct: number }[];
+}
+
 /** Everything the app needs from a server. The demo and Supabase versions behave the same. */
 export interface Backend {
   mode: 'demo' | 'supabase';
@@ -170,6 +202,10 @@ export interface Backend {
   announcements(): Promise<{ items: Announcement[]; unread: number }>;
   markAnnouncementsRead(): Promise<void>;
 
+  startPractice(subject: Subject): Promise<PracticeSet>;
+  answerQuestion(questionId: string, choice: number): Promise<AnswerResult>;
+  learning(): Promise<SubjectProgress[]>;
+
   // Grown-ups
   adultSignUp(email: string, password: string, role: 'parent' | 'teacher', name: string): Promise<Adult | 'confirm_email'>;
   adultSignIn(email: string, password: string): Promise<Adult>;
@@ -177,6 +213,7 @@ export interface Backend {
   children(): Promise<ChildSummary[]>;
   childMissions(childId: string): Promise<HomeMission[]>;
   childProgress(childId: string): Promise<ChildProgress>;
+  childLearning(childId: string): Promise<SubjectProgress[]>;
   createHomeMission(childId: string, title: string, details: string, coins: number): Promise<void>;
   reviewHomeMission(id: string, approve: boolean): Promise<{ status: string; awarded: number; capped?: boolean }>;
   classes(): Promise<ClassInfo[]>;

@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createDemoBackend } from './demo-backend.ts';
 import { SignInError } from './backend.ts';
+import bank from '../../content/questions.json';
+
+const keyOf = (id: string) => (bank as { id: string; answer: number }[]).find((q) => q.id === id)!.answer;
 
 const memoryStorage = () => {
   const m = new Map<string, string>();
@@ -218,5 +221,75 @@ describe('demo backend: grown-ups and missions', () => {
     expect((await b.announcements()).unread).toBe(1);
     await b.markAnnouncementsRead();
     expect((await b.announcements()).unread).toBe(0);
+  });
+
+  describe('learning', () => {
+    it('hands out unseen questions for the hero grade and never repeats one', async () => {
+      const b = make();
+      await b.signUp(input);
+      const seen = new Set<string>();
+      for (let n = 0; n < 4; n++) {
+        const set = await b.startPractice('math');
+        expect(set.questions).toHaveLength(5);
+        for (const q of set.questions) {
+          expect(q.id.startsWith('m5-')).toBe(true);
+          expect(q).not.toHaveProperty('answer');
+          expect(seen.has(q.id)).toBe(false);
+          seen.add(q.id);
+          await b.answerQuestion(q.id, keyOf(q.id));
+        }
+      }
+      expect((await b.startPractice('math')).questions).toHaveLength(0);
+    });
+
+    it('resumes an unanswered set instead of using up new questions', async () => {
+      const b = make();
+      await b.signUp(input);
+      const first = (await b.startPractice('science')).questions.map((q) => q.id).sort();
+      const again = (await b.startPractice('science')).questions.map((q) => q.id).sort();
+      expect(again).toEqual(first);
+    });
+
+    it('pays once per right answer, nothing for wrong ones, and explains both', async () => {
+      const b = make();
+      await b.signUp(input);
+      const [a, w] = (await b.startPractice('vocab')).questions;
+      const right = await b.answerQuestion(a.id, keyOf(a.id));
+      expect(right).toMatchObject({ correct: true, repeat: false, awarded: { coins: 2, xp: 5, skillPoints: 1 } });
+      expect(right.explanation.length).toBeGreaterThan(0);
+      expect(await b.answerQuestion(a.id, keyOf(a.id))).toMatchObject({ correct: true, repeat: true });
+      const wrong = await b.answerQuestion(w.id, (keyOf(w.id) + 1) % 4);
+      expect(wrong).toMatchObject({ correct: false, rightChoice: keyOf(w.id) });
+      expect((await b.balances()).coins).toBe(2);
+      await expect(b.answerQuestion('v5-999', 0)).rejects.toThrow();
+    });
+
+    it('caps learning coins each week but still gives XP, and shows skills to the parent', async () => {
+      const b = make();
+      const hero = await b.signUp(input);
+      for (let n = 0; n < 4; n++) {
+        for (const q of (await b.startPractice('reading')).questions) await b.answerQuestion(q.id, keyOf(q.id));
+      }
+      for (let n = 0; n < 4; n++) {
+        for (const q of (await b.startPractice('math')).questions) await b.answerQuestion(q.id, keyOf(q.id));
+      }
+      for (let n = 0; n < 4; n++) {
+        for (const q of (await b.startPractice('science')).questions) await b.answerQuestion(q.id, keyOf(q.id));
+      }
+      for (let n = 0; n < 4; n++) {
+        for (const q of (await b.startPractice('vocab')).questions) await b.answerQuestion(q.id, keyOf(q.id));
+      }
+      const bal = await b.balances();
+      expect(bal.coins).toBe(150);
+      expect(bal.xp).toBe(80 * 5);
+      const code = await b.linkCode();
+      await b.signOut();
+      await b.adultSignUp('p@x.test', 'password1', 'parent', 'Pat Parent');
+      await b.adultSignIn('p@x.test', 'password1');
+      await b.claimLink(code.code);
+      const math = (await b.childLearning(hero.id)).find((s) => s.subject === 'math')!;
+      expect(math).toMatchObject({ answered: 20, correct: 20, left: 0 });
+      expect(math.skills.length).toBeGreaterThan(2);
+    });
   });
 });

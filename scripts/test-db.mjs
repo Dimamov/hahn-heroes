@@ -45,6 +45,13 @@ try {
     process.stdout.write(psql(join(tests, f)));
     console.log(`ok ${f}`);
   }
+  // The real question bank must load cleanly and fill every subject for both grades.
+  execFileSync(process.execPath, [join(root, 'scripts/seed-questions.mjs')]);
+  psql(join(root, 'supabase/seed/questions.sql'));
+  const counts = run('psql', ['-h', dir, '-p', port, '-U', 'postgres', '-d', 'postgres', '-t', '-A', '-c',
+    "select count(*) from questions where id !~ '^(mt5|vc6)-' and active and id in (select question_id from question_keys)"]);
+  if (Number(counts.trim()) !== 160) throw new Error(`expected 160 seeded questions, got ${counts}`);
+  console.log('ok question bank seeds');
 } catch (err) {
   console.error(err.stderr || err.stdout || err.message);
   process.exitCode = 1;
