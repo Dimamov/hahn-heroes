@@ -557,6 +557,7 @@ export interface Backend {
   tradeConfirm(tradeId: string, ver: number, ack: boolean): Promise<{ ok: boolean; done?: boolean; reason?: string }>;
   tradeCancel(tradeId: string): Promise<void>;
   /** Sensei only: hand any card to the hero with this code. Resolves with the hero's name. */
+  senseiDeleteHero(heroCode: string): Promise<string>;
   senseiGiveCard(heroCode: string, cardId: string): Promise<string>;
   skillState(): Promise<SkillState>;
   skillLearn(skillId: string): Promise<{ ok: true } | { ok: false; reason: 'locked' | 'already_learned' | 'not_enough_points' }>;

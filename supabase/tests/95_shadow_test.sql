@@ -49,12 +49,13 @@ begin
   if (ord ->> 0)::uuid <> g.shadow and g.word ~ '^[A-Za-z]+$' then
     perform expect_error(format($q$select shadow_clue(%L)$q$, g.word), 'gives it away');
   end if;
-  perform shadow_clue('tasty');
+  perform expect_error($q$select shadow_clue('💩')$q$, 'one word');
+  perform shadow_clue('🍕');
   perform as_user_id((ord ->> 1)::uuid); perform shadow_clue('round');
   perform as_user_id((ord ->> 2)::uuid); perform shadow_clue('yummy');
   r := shadow_view(v_code);
   assert r->>'phase' = 'vote', 'moves to voting';
-  assert (r->'players'->0->>'clue') = 'tasty', 'clues are public';
+  assert (r->'players'->0->>'clue') = '🍕', 'clues are public';
 
   -- vote everyone for the shadow (who votes for self gets another target)
   select pos - 1 into sh from jsonb_array_elements_text(ord) with ordinality t(id, pos) where id::uuid = g.shadow;
