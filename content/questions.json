@@ -1,0 +1,2562 @@
+[
+ {
+  "id": "m5-001",
+  "subject": "math",
+  "grade": 5,
+  "skill": "fractions",
+  "difficulty": 1,
+  "prompt": "What is 1/2 + 1/4?",
+  "choices": [
+   "3/4",
+   "2/6",
+   "1/4",
+   "2/8"
+  ],
+  "answer": 0,
+  "explanation": "Rename 1/2 as 2/4, then 2/4 + 1/4 = 3/4."
+ },
+ {
+  "id": "m5-002",
+  "subject": "math",
+  "grade": 5,
+  "skill": "fractions",
+  "difficulty": 2,
+  "prompt": "What is 2/3 + 1/6?",
+  "choices": [
+   "3/9",
+   "5/6",
+   "3/6",
+   "2/9"
+  ],
+  "answer": 1,
+  "explanation": "Rename 2/3 as 4/6, then 4/6 + 1/6 = 5/6."
+ },
+ {
+  "id": "m5-003",
+  "subject": "math",
+  "grade": 5,
+  "skill": "fractions",
+  "difficulty": 2,
+  "prompt": "What is 3/4 - 1/3?",
+  "choices": [
+   "2/1",
+   "1/12",
+   "5/12",
+   "2/7"
+  ],
+  "answer": 2,
+  "explanation": "Use twelfths: 9/12 - 4/12 = 5/12."
+ },
+ {
+  "id": "m5-004",
+  "subject": "math",
+  "grade": 5,
+  "skill": "fractions",
+  "difficulty": 2,
+  "prompt": "What is 1/2 x 3/4?",
+  "choices": [
+   "4/6",
+   "3/6",
+   "5/8",
+   "3/8"
+  ],
+  "answer": 3,
+  "explanation": "Multiply the tops (1x3=3) and the bottoms (2x4=8) to get 3/8."
+ },
+ {
+  "id": "m5-005",
+  "subject": "math",
+  "grade": 5,
+  "skill": "fractions",
+  "difficulty": 3,
+  "prompt": "What is 3/5 of 20?",
+  "choices": [
+   "12",
+   "15",
+   "8",
+   "60"
+  ],
+  "answer": 0,
+  "explanation": "Find 1/5 of 20 (which is 4), then multiply by 3 to get 12."
+ },
+ {
+  "id": "m5-006",
+  "subject": "math",
+  "grade": 5,
+  "skill": "decimals",
+  "difficulty": 1,
+  "prompt": "What is 3.4 + 2.75?",
+  "choices": [
+   "5.15",
+   "6.15",
+   "6.25",
+   "5.79"
+  ],
+  "answer": 1,
+  "explanation": "Line up the decimal points: 3.40 + 2.75 = 6.15."
+ },
+ {
+  "id": "m5-007",
+  "subject": "math",
+  "grade": 5,
+  "skill": "decimals",
+  "difficulty": 2,
+  "prompt": "What is 8.2 - 3.65?",
+  "choices": [
+   "5.55",
+   "4.65",
+   "4.55",
+   "5.45"
+  ],
+  "answer": 2,
+  "explanation": "Write 8.20 - 3.65 and subtract with regrouping to get 4.55."
+ },
+ {
+  "id": "m5-008",
+  "subject": "math",
+  "grade": 5,
+  "skill": "decimals",
+  "difficulty": 2,
+  "prompt": "What is 0.6 x 0.3?",
+  "choices": [
+   "1.8",
+   "0.9",
+   "0.018",
+   "0.18"
+  ],
+  "answer": 3,
+  "explanation": "6 x 3 = 18, and two decimal places in total gives 0.18."
+ },
+ {
+  "id": "m5-009",
+  "subject": "math",
+  "grade": 5,
+  "skill": "decimals",
+  "difficulty": 1,
+  "prompt": "Which number is the greatest?",
+  "choices": [
+   "0.5",
+   "0.45",
+   "0.405",
+   "0.054"
+  ],
+  "answer": 0,
+  "explanation": "Write them with three places: 0.500 is larger than 0.450, 0.405 and 0.054."
+ },
+ {
+  "id": "m5-010",
+  "subject": "math",
+  "grade": 5,
+  "skill": "place-value",
+  "difficulty": 1,
+  "prompt": "In the number 4,732,100, what is the value of the digit 7?",
+  "choices": [
+   "70,000",
+   "700,000",
+   "7,000",
+   "7,000,000"
+  ],
+  "answer": 1,
+  "explanation": "The 7 is in the hundred-thousands place, so its value is 700,000."
+ },
+ {
+  "id": "m5-011",
+  "subject": "math",
+  "grade": 5,
+  "skill": "place-value",
+  "difficulty": 2,
+  "prompt": "In the number 12.358, which place is the digit 5 in?",
+  "choices": [
+   "tenths",
+   "thousandths",
+   "hundredths",
+   "ones"
+  ],
+  "answer": 2,
+  "explanation": "After the decimal point the places are tenths, hundredths, thousandths; 5 is second."
+ },
+ {
+  "id": "m5-012",
+  "subject": "math",
+  "grade": 5,
+  "skill": "place-value",
+  "difficulty": 2,
+  "prompt": "What is 3.27 x 100?",
+  "choices": [
+   "32.7",
+   "3,270",
+   "0.327",
+   "327"
+  ],
+  "answer": 3,
+  "explanation": "Multiplying by 100 moves the decimal point two places right."
+ },
+ {
+  "id": "m5-013",
+  "subject": "math",
+  "grade": 5,
+  "skill": "volume",
+  "difficulty": 1,
+  "prompt": "A box is 4 units long, 3 units wide and 2 units tall. What is its volume?",
+  "choices": [
+   "24 cubic units",
+   "9 cubic units",
+   "14 cubic units",
+   "12 cubic units"
+  ],
+  "answer": 0,
+  "explanation": "Volume = length x width x height = 4 x 3 x 2 = 24."
+ },
+ {
+  "id": "m5-014",
+  "subject": "math",
+  "grade": 5,
+  "skill": "volume",
+  "difficulty": 2,
+  "prompt": "A cube has sides of 5 cm. What is its volume?",
+  "choices": [
+   "15 cubic cm",
+   "125 cubic cm",
+   "25 cubic cm",
+   "150 cubic cm"
+  ],
+  "answer": 1,
+  "explanation": "Volume of a cube is 5 x 5 x 5 = 125 cubic centimeters."
+ },
+ {
+  "id": "m5-015",
+  "subject": "math",
+  "grade": 5,
+  "skill": "volume",
+  "difficulty": 3,
+  "prompt": "A box has a volume of 360 cubic cm, a length of 10 cm and a width of 6 cm. How tall is it?",
+  "choices": [
+   "5 cm",
+   "8 cm",
+   "6 cm",
+   "36 cm"
+  ],
+  "answer": 2,
+  "explanation": "Length x width = 60, and 360 divided by 60 is 6."
+ },
+ {
+  "id": "m5-016",
+  "subject": "math",
+  "grade": 5,
+  "skill": "order-of-operations",
+  "difficulty": 1,
+  "prompt": "What is 3 + 4 x 2?",
+  "choices": [
+   "14",
+   "10",
+   "24",
+   "11"
+  ],
+  "answer": 3,
+  "explanation": "Multiply first (4 x 2 = 8), then add 3 to get 11."
+ },
+ {
+  "id": "m5-017",
+  "subject": "math",
+  "grade": 5,
+  "skill": "order-of-operations",
+  "difficulty": 2,
+  "prompt": "What is (12 - 4) / 2 + 1?",
+  "choices": [
+   "5",
+   "3",
+   "7",
+   "9"
+  ],
+  "answer": 0,
+  "explanation": "Parentheses first: 8, then 8 / 2 = 4, then 4 + 1 = 5."
+ },
+ {
+  "id": "m5-018",
+  "subject": "math",
+  "grade": 5,
+  "skill": "word-problems",
+  "difficulty": 2,
+  "prompt": "A student buys 3 notebooks at $2.50 each and one pen for $1.25. What is the total cost?",
+  "choices": [
+   "$8.25",
+   "$8.75",
+   "$3.75",
+   "$9.75"
+  ],
+  "answer": 1,
+  "explanation": "Notebooks cost 3 x 2.50 = 7.50, and 7.50 + 1.25 = 8.75."
+ },
+ {
+  "id": "m5-019",
+  "subject": "math",
+  "grade": 5,
+  "skill": "word-problems",
+  "difficulty": 3,
+  "prompt": "A recipe uses 3/4 cup of sugar for one batch. How many cups of sugar are needed for 4 batches?",
+  "choices": [
+   "2 cups",
+   "3 1/4 cups",
+   "3 cups",
+   "12 cups"
+  ],
+  "answer": 2,
+  "explanation": "4 x 3/4 = 12/4 = 3 cups."
+ },
+ {
+  "id": "m5-020",
+  "subject": "math",
+  "grade": 5,
+  "skill": "word-problems",
+  "difficulty": 3,
+  "prompt": "A rope is 5 1/2 meters long. If 2 3/4 meters are cut off, how much rope is left?",
+  "choices": [
+   "3 1/4 meters",
+   "2 1/4 meters",
+   "3 3/4 meters",
+   "2 3/4 meters"
+  ],
+  "answer": 3,
+  "explanation": "5 1/2 = 5 2/4, and 5 2/4 - 2 3/4 = 2 3/4."
+ },
+ {
+  "id": "m6-001",
+  "subject": "math",
+  "grade": 6,
+  "skill": "ratios",
+  "difficulty": 1,
+  "prompt": "The ratio of red to blue marbles is 3:5. If there are 15 red marbles, how many blue marbles are there?",
+  "choices": [
+   "25",
+   "9",
+   "20",
+   "18"
+  ],
+  "answer": 0,
+  "explanation": "15 is 3 x 5, so blue is 5 x 5 = 25."
+ },
+ {
+  "id": "m6-002",
+  "subject": "math",
+  "grade": 6,
+  "skill": "ratios",
+  "difficulty": 2,
+  "prompt": "A car travels 120 miles in 3 hours at a steady speed. What is its unit rate?",
+  "choices": [
+   "36 miles per hour",
+   "40 miles per hour",
+   "360 miles per hour",
+   "30 miles per hour"
+  ],
+  "answer": 1,
+  "explanation": "120 divided by 3 is 40 miles for each hour."
+ },
+ {
+  "id": "m6-003",
+  "subject": "math",
+  "grade": 6,
+  "skill": "ratios",
+  "difficulty": 2,
+  "prompt": "Which ratio is equivalent to 4:6?",
+  "choices": [
+   "3:2",
+   "2:4",
+   "2:3",
+   "8:10"
+  ],
+  "answer": 2,
+  "explanation": "Divide both parts of 4:6 by 2 to get 2:3."
+ },
+ {
+  "id": "m6-004",
+  "subject": "math",
+  "grade": 6,
+  "skill": "ratios",
+  "difficulty": 3,
+  "prompt": "Paint is mixed with blue and white in a 2:5 ratio. How many cups of white are in 14 cups of paint?",
+  "choices": [
+   "4",
+   "8",
+   "12",
+   "10"
+  ],
+  "answer": 3,
+  "explanation": "There are 7 parts in all, so each part is 2 cups, and white is 5 x 2 = 10."
+ },
+ {
+  "id": "m6-005",
+  "subject": "math",
+  "grade": 6,
+  "skill": "percents",
+  "difficulty": 1,
+  "prompt": "What is 25% of 80?",
+  "choices": [
+   "20",
+   "25",
+   "40",
+   "32"
+  ],
+  "answer": 0,
+  "explanation": "25% is one fourth, and 80 divided by 4 is 20."
+ },
+ {
+  "id": "m6-006",
+  "subject": "math",
+  "grade": 6,
+  "skill": "percents",
+  "difficulty": 2,
+  "prompt": "What is 15% of 60?",
+  "choices": [
+   "6",
+   "9",
+   "90",
+   "15"
+  ],
+  "answer": 1,
+  "explanation": "10% of 60 is 6 and 5% is 3, so 15% is 9."
+ },
+ {
+  "id": "m6-007",
+  "subject": "math",
+  "grade": 6,
+  "skill": "percents",
+  "difficulty": 2,
+  "prompt": "A student got 18 out of 24 questions right. What percent is that?",
+  "choices": [
+   "70%",
+   "80%",
+   "75%",
+   "66%"
+  ],
+  "answer": 2,
+  "explanation": "18/24 simplifies to 3/4, which equals 75%."
+ },
+ {
+  "id": "m6-008",
+  "subject": "math",
+  "grade": 6,
+  "skill": "percents",
+  "difficulty": 3,
+  "prompt": "A $40 shirt is 20% off. What is the sale price?",
+  "choices": [
+   "$8",
+   "$20",
+   "$36",
+   "$32"
+  ],
+  "answer": 3,
+  "explanation": "20% of 40 is 8, and 40 - 8 = 32."
+ },
+ {
+  "id": "m6-009",
+  "subject": "math",
+  "grade": 6,
+  "skill": "integers",
+  "difficulty": 1,
+  "prompt": "What is -3 + (-5)?",
+  "choices": [
+   "-8",
+   "8",
+   "-2",
+   "2"
+  ],
+  "answer": 0,
+  "explanation": "Adding two negatives gives a more negative number: -8."
+ },
+ {
+  "id": "m6-010",
+  "subject": "math",
+  "grade": 6,
+  "skill": "integers",
+  "difficulty": 2,
+  "prompt": "What is 4 - 9?",
+  "choices": [
+   "5",
+   "-5",
+   "-13",
+   "13"
+  ],
+  "answer": 1,
+  "explanation": "Counting 9 steps down from 4 lands on -5."
+ },
+ {
+  "id": "m6-011",
+  "subject": "math",
+  "grade": 6,
+  "skill": "integers",
+  "difficulty": 2,
+  "prompt": "The temperature is -6 degrees and rises 10 degrees. What is the new temperature?",
+  "choices": [
+   "-16 degrees",
+   "-4 degrees",
+   "4 degrees",
+   "16 degrees"
+  ],
+  "answer": 2,
+  "explanation": "-6 + 10 = 4."
+ },
+ {
+  "id": "m6-012",
+  "subject": "math",
+  "grade": 6,
+  "skill": "equations",
+  "difficulty": 1,
+  "prompt": "Solve for x: x + 7 = 15",
+  "choices": [
+   "22",
+   "7",
+   "9",
+   "8"
+  ],
+  "answer": 3,
+  "explanation": "Subtract 7 from both sides: x = 15 - 7 = 8."
+ },
+ {
+  "id": "m6-013",
+  "subject": "math",
+  "grade": 6,
+  "skill": "equations",
+  "difficulty": 2,
+  "prompt": "Solve for n: 3n = 36",
+  "choices": [
+   "12",
+   "108",
+   "33",
+   "9"
+  ],
+  "answer": 0,
+  "explanation": "Divide both sides by 3: n = 12."
+ },
+ {
+  "id": "m6-014",
+  "subject": "math",
+  "grade": 6,
+  "skill": "equations",
+  "difficulty": 3,
+  "prompt": "Solve for x: 2x + 5 = 17",
+  "choices": [
+   "11",
+   "6",
+   "7",
+   "5"
+  ],
+  "answer": 1,
+  "explanation": "Subtract 5 to get 2x = 12, then divide by 2 to get x = 6."
+ },
+ {
+  "id": "m6-015",
+  "subject": "math",
+  "grade": 6,
+  "skill": "area-triangle",
+  "difficulty": 2,
+  "prompt": "A triangle has a base of 10 units and a height of 6 units. What is its area?",
+  "choices": [
+   "60 square units",
+   "16 square units",
+   "30 square units",
+   "32 square units"
+  ],
+  "answer": 2,
+  "explanation": "Area = 1/2 x base x height = 1/2 x 10 x 6 = 30."
+ },
+ {
+  "id": "m6-016",
+  "subject": "math",
+  "grade": 6,
+  "skill": "area-triangle",
+  "difficulty": 3,
+  "prompt": "A triangle has an area of 24 square cm and a base of 8 cm. What is its height?",
+  "choices": [
+   "3 cm",
+   "12 cm",
+   "4 cm",
+   "6 cm"
+  ],
+  "answer": 3,
+  "explanation": "24 = 1/2 x 8 x h, so 24 = 4h and h = 6."
+ },
+ {
+  "id": "m6-017",
+  "subject": "math",
+  "grade": 6,
+  "skill": "mean-median",
+  "difficulty": 1,
+  "prompt": "What is the mean of 4, 6, 8, 10 and 12?",
+  "choices": [
+   "8",
+   "6",
+   "10",
+   "40"
+  ],
+  "answer": 0,
+  "explanation": "The sum is 40, and 40 divided by 5 numbers is 8."
+ },
+ {
+  "id": "m6-018",
+  "subject": "math",
+  "grade": 6,
+  "skill": "mean-median",
+  "difficulty": 2,
+  "prompt": "What is the median of 3, 9, 4, 7 and 12?",
+  "choices": [
+   "4",
+   "7",
+   "9",
+   "6"
+  ],
+  "answer": 1,
+  "explanation": "In order: 3, 4, 7, 9, 12. The middle number is 7."
+ },
+ {
+  "id": "m6-019",
+  "subject": "math",
+  "grade": 6,
+  "skill": "exponents",
+  "difficulty": 1,
+  "prompt": "What is 6 squared (6^2)?",
+  "choices": [
+   "12",
+   "26",
+   "36",
+   "8"
+  ],
+  "answer": 2,
+  "explanation": "6^2 means 6 x 6, which equals 36."
+ },
+ {
+  "id": "m6-020",
+  "subject": "math",
+  "grade": 6,
+  "skill": "exponents",
+  "difficulty": 2,
+  "prompt": "What is 2^5?",
+  "choices": [
+   "10",
+   "25",
+   "16",
+   "32"
+  ],
+  "answer": 3,
+  "explanation": "2^5 = 2 x 2 x 2 x 2 x 2 = 32."
+ },
+ {
+  "id": "v5-001",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "prefixes",
+  "difficulty": 1,
+  "prompt": "The prefix un- in the word unhappy means:",
+  "choices": [
+   "not",
+   "again",
+   "before",
+   "too much"
+  ],
+  "answer": 0,
+  "explanation": "The prefix un- means not, so unhappy means not happy."
+ },
+ {
+  "id": "v5-002",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "prefixes",
+  "difficulty": 1,
+  "prompt": "The prefix re- in the word rewrite means:",
+  "choices": [
+   "not",
+   "again",
+   "under",
+   "before"
+  ],
+  "answer": 1,
+  "explanation": "Re- means again, so rewrite means to write again."
+ },
+ {
+  "id": "v5-003",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "prefixes",
+  "difficulty": 2,
+  "prompt": "The prefix pre- in the word preview means:",
+  "choices": [
+   "after",
+   "again",
+   "before",
+   "between"
+  ],
+  "answer": 2,
+  "explanation": "Pre- means before, so a preview is a look before the full showing."
+ },
+ {
+  "id": "v5-004",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "suffixes",
+  "difficulty": 1,
+  "prompt": "The suffix -less in the word hopeless means:",
+  "choices": [
+   "full of",
+   "able to",
+   "more",
+   "without"
+  ],
+  "answer": 3,
+  "explanation": "-less means without, so hopeless means without hope."
+ },
+ {
+  "id": "v5-005",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "suffixes",
+  "difficulty": 2,
+  "prompt": "The suffix -able in the word readable means:",
+  "choices": [
+   "can be",
+   "without",
+   "one who",
+   "full of"
+  ],
+  "answer": 0,
+  "explanation": "-able means can be, so readable means can be read."
+ },
+ {
+  "id": "v5-006",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "roots",
+  "difficulty": 2,
+  "prompt": "The root aqua, as in aquarium, means:",
+  "choices": [
+   "fire",
+   "water",
+   "earth",
+   "air"
+  ],
+  "answer": 1,
+  "explanation": "Aqua is Latin for water, and an aquarium holds water and fish."
+ },
+ {
+  "id": "v5-007",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "roots",
+  "difficulty": 3,
+  "prompt": "The root bio, as in biology, means:",
+  "choices": [
+   "sound",
+   "earth",
+   "life",
+   "writing"
+  ],
+  "answer": 2,
+  "explanation": "Bio means life, and biology is the study of living things."
+ },
+ {
+  "id": "v5-008",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "synonyms",
+  "difficulty": 1,
+  "prompt": "Which word is a synonym for huge?",
+  "choices": [
+   "tiny",
+   "quick",
+   "silent",
+   "enormous"
+  ],
+  "answer": 3,
+  "explanation": "Enormous means very large, just like huge."
+ },
+ {
+  "id": "v5-009",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "synonyms",
+  "difficulty": 2,
+  "prompt": "Which word means about the same as rapid?",
+  "choices": [
+   "swift",
+   "gentle",
+   "careful",
+   "sleepy"
+  ],
+  "answer": 0,
+  "explanation": "Swift and rapid both mean fast."
+ },
+ {
+  "id": "v5-010",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "antonyms",
+  "difficulty": 2,
+  "prompt": "Which word is the opposite of ancient?",
+  "choices": [
+   "old",
+   "modern",
+   "historic",
+   "huge"
+  ],
+  "answer": 1,
+  "explanation": "Ancient means very old, so its opposite is modern."
+ },
+ {
+  "id": "v5-011",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "antonyms",
+  "difficulty": 2,
+  "prompt": "Which word is the opposite of generous?",
+  "choices": [
+   "kind",
+   "wealthy",
+   "selfish",
+   "giving"
+  ],
+  "answer": 2,
+  "explanation": "A generous person shares freely; a selfish person does not."
+ },
+ {
+  "id": "v5-012",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "multiple-meaning",
+  "difficulty": 2,
+  "prompt": "Which meaning of bank fits: We had a picnic on the bank of the river.",
+  "choices": [
+   "a place that keeps money",
+   "to tilt an airplane",
+   "a row of switches",
+   "the land beside a river"
+  ],
+  "answer": 3,
+  "explanation": "A picnic by a river would be on the sloping land beside it."
+ },
+ {
+  "id": "v5-013",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "multiple-meaning",
+  "difficulty": 3,
+  "prompt": "In the sentence The scientist had a novel idea, what does novel mean?",
+  "choices": [
+   "new and original",
+   "a long book",
+   "boring",
+   "stolen"
+  ],
+  "answer": 0,
+  "explanation": "Here novel is an adjective meaning new and different."
+ },
+ {
+  "id": "v5-014",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "context-clues",
+  "difficulty": 2,
+  "prompt": "The desert was so arid that no rain had fallen for months. What does arid mean?",
+  "choices": [
+   "very cold",
+   "very dry",
+   "very large",
+   "very windy"
+  ],
+  "answer": 1,
+  "explanation": "No rain for months is the clue that arid means very dry."
+ },
+ {
+  "id": "v5-015",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "context-clues",
+  "difficulty": 2,
+  "prompt": "Because he was famished after the long hike, he ate three sandwiches. What does famished mean?",
+  "choices": [
+   "very tired",
+   "very thirsty",
+   "very hungry",
+   "very cold"
+  ],
+  "answer": 2,
+  "explanation": "Eating three sandwiches is the clue that he was very hungry."
+ },
+ {
+  "id": "v5-016",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "context-clues",
+  "difficulty": 3,
+  "prompt": "Lena was reluctant to jump into the cold lake, so she stood at the edge for a long time. What does reluctant mean?",
+  "choices": [
+   "eager",
+   "excited",
+   "tired",
+   "unwilling"
+  ],
+  "answer": 3,
+  "explanation": "Standing at the edge for a long time shows she was unwilling."
+ },
+ {
+  "id": "v5-017",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "figurative-language",
+  "difficulty": 1,
+  "prompt": "What does the phrase busy as a bee mean?",
+  "choices": [
+   "very busy",
+   "fond of honey",
+   "easily frightened",
+   "very small"
+  ],
+  "answer": 0,
+  "explanation": "The phrase compares a hard worker to a bee that is always working."
+ },
+ {
+  "id": "v5-018",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "figurative-language",
+  "difficulty": 2,
+  "prompt": "What does the idiom It's raining cats and dogs mean?",
+  "choices": [
+   "Pets are outside.",
+   "It is raining very hard.",
+   "It has just stopped raining.",
+   "It is drizzling lightly."
+  ],
+  "answer": 1,
+  "explanation": "This idiom is a playful way to say the rain is heavy."
+ },
+ {
+  "id": "v5-019",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "figurative-language",
+  "difficulty": 3,
+  "prompt": "The classroom was a zoo before the bell rang. This sentence is an example of a:",
+  "choices": [
+   "simile",
+   "alliteration",
+   "metaphor",
+   "personification"
+  ],
+  "answer": 2,
+  "explanation": "It compares the classroom to a zoo without using like or as."
+ },
+ {
+  "id": "v5-020",
+  "subject": "vocab",
+  "grade": 5,
+  "skill": "academic-words",
+  "difficulty": 2,
+  "prompt": "To analyze something means to:",
+  "choices": [
+   "hide it",
+   "copy it",
+   "finish it",
+   "examine it closely in parts"
+  ],
+  "answer": 3,
+  "explanation": "Analyze means to study the parts of something carefully."
+ },
+ {
+  "id": "v6-001",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "prefixes",
+  "difficulty": 1,
+  "prompt": "The prefix mis- in the word misread means:",
+  "choices": [
+   "wrongly",
+   "again",
+   "before",
+   "half"
+  ],
+  "answer": 0,
+  "explanation": "Mis- means wrongly, so misread means read incorrectly."
+ },
+ {
+  "id": "v6-002",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "prefixes",
+  "difficulty": 2,
+  "prompt": "The prefix inter- in the word interstate means:",
+  "choices": [
+   "under",
+   "between",
+   "against",
+   "without"
+  ],
+  "answer": 1,
+  "explanation": "An interstate highway runs between states."
+ },
+ {
+  "id": "v6-003",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "prefixes",
+  "difficulty": 2,
+  "prompt": "The prefix anti- in the word antifreeze means:",
+  "choices": [
+   "before",
+   "with",
+   "against",
+   "many"
+  ],
+  "answer": 2,
+  "explanation": "Anti- means against; antifreeze works against freezing."
+ },
+ {
+  "id": "v6-004",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "suffixes",
+  "difficulty": 2,
+  "prompt": "The suffix -ology, as in biology, means:",
+  "choices": [
+   "fear of",
+   "full of",
+   "state of",
+   "the study of"
+  ],
+  "answer": 3,
+  "explanation": "-ology means the study of, so biology is the study of life."
+ },
+ {
+  "id": "v6-005",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "suffixes",
+  "difficulty": 2,
+  "prompt": "Adding the suffix -ment to the verb agree makes agreement, which is a:",
+  "choices": [
+   "noun",
+   "adjective",
+   "adverb",
+   "preposition"
+  ],
+  "answer": 0,
+  "explanation": "-ment turns a verb into a noun naming an action or result."
+ },
+ {
+  "id": "v6-006",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "roots",
+  "difficulty": 2,
+  "prompt": "The root port, as in transport and export, means:",
+  "choices": [
+   "stop",
+   "carry",
+   "write",
+   "look"
+  ],
+  "answer": 1,
+  "explanation": "Transport means to carry across; port means carry."
+ },
+ {
+  "id": "v6-007",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "roots",
+  "difficulty": 3,
+  "prompt": "The root spect, as in inspect and spectator, means:",
+  "choices": [
+   "hear",
+   "carry",
+   "look",
+   "break"
+  ],
+  "answer": 2,
+  "explanation": "A spectator looks at something, and to inspect is to look closely."
+ },
+ {
+  "id": "v6-008",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "roots",
+  "difficulty": 3,
+  "prompt": "The prefix tele-, as in telescope, means:",
+  "choices": [
+   "near",
+   "sound",
+   "light",
+   "far"
+  ],
+  "answer": 3,
+  "explanation": "A telescope lets you see far away objects."
+ },
+ {
+  "id": "v6-009",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "synonyms",
+  "difficulty": 2,
+  "prompt": "Which word is a synonym for diligent?",
+  "choices": [
+   "hardworking",
+   "lazy",
+   "curious",
+   "nervous"
+  ],
+  "answer": 0,
+  "explanation": "A diligent person works carefully and steadily."
+ },
+ {
+  "id": "v6-010",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "synonyms",
+  "difficulty": 2,
+  "prompt": "Which word means about the same as scarce?",
+  "choices": [
+   "plentiful",
+   "rare",
+   "costly",
+   "fragile"
+  ],
+  "answer": 1,
+  "explanation": "Scarce means hard to find, which is what rare means."
+ },
+ {
+  "id": "v6-011",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "antonyms",
+  "difficulty": 1,
+  "prompt": "Which word is the opposite of expand?",
+  "choices": [
+   "grow",
+   "stretch",
+   "shrink",
+   "enlarge"
+  ],
+  "answer": 2,
+  "explanation": "Expand means to get bigger, so shrink is its opposite."
+ },
+ {
+  "id": "v6-012",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "antonyms",
+  "difficulty": 3,
+  "prompt": "Which word is the opposite of optimistic?",
+  "choices": [
+   "hopeful",
+   "cheerful",
+   "confident",
+   "pessimistic"
+  ],
+  "answer": 3,
+  "explanation": "An optimist expects good things; a pessimist expects bad ones."
+ },
+ {
+  "id": "v6-013",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "multiple-meaning",
+  "difficulty": 2,
+  "prompt": "Which meaning of cell fits: Every living thing is made of cells.",
+  "choices": [
+   "the basic unit of life",
+   "a small prison room",
+   "a cell phone",
+   "a group of workers"
+  ],
+  "answer": 0,
+  "explanation": "In science, a cell is the smallest unit of a living thing."
+ },
+ {
+  "id": "v6-014",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "multiple-meaning",
+  "difficulty": 3,
+  "prompt": "In the sentence The current in the river was strong, what does current mean?",
+  "choices": [
+   "happening right now",
+   "flowing movement of water",
+   "up to date",
+   "a type of money"
+  ],
+  "answer": 1,
+  "explanation": "A river current is water moving in one direction."
+ },
+ {
+  "id": "v6-015",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "context-clues",
+  "difficulty": 2,
+  "prompt": "The detective's explanation was lucid; everyone understood it right away. What does lucid mean?",
+  "choices": [
+   "confusing",
+   "long",
+   "clear",
+   "secret"
+  ],
+  "answer": 2,
+  "explanation": "Everyone understood right away, so the explanation was clear."
+ },
+ {
+  "id": "v6-016",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "context-clues",
+  "difficulty": 3,
+  "prompt": "Unlike her gregarious brother, who loved parties, she preferred quiet evenings alone. What does gregarious mean?",
+  "choices": [
+   "shy",
+   "wealthy",
+   "grumpy",
+   "sociable"
+  ],
+  "answer": 3,
+  "explanation": "Loving parties is the clue, and unlike signals an opposite."
+ },
+ {
+  "id": "v6-017",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "context-clues",
+  "difficulty": 3,
+  "prompt": "The trail had no streams, so the hikers had to conserve water and sipped only a little at a time. What does conserve mean?",
+  "choices": [
+   "save by using carefully",
+   "waste",
+   "boil",
+   "carry"
+  ],
+  "answer": 0,
+  "explanation": "Sipping only a little shows they were saving their water."
+ },
+ {
+  "id": "v6-018",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "figurative-language",
+  "difficulty": 2,
+  "prompt": "Her voice was music to his ears. This means her voice was:",
+  "choices": [
+   "very loud",
+   "pleasant to hear",
+   "out of tune",
+   "sleepy"
+  ],
+  "answer": 1,
+  "explanation": "The phrase says the voice was as pleasing as music."
+ },
+ {
+  "id": "v6-019",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "figurative-language",
+  "difficulty": 3,
+  "prompt": "The old car coughed and groaned up the hill. This is an example of:",
+  "choices": [
+   "simile",
+   "hyperbole",
+   "personification",
+   "an idiom"
+  ],
+  "answer": 2,
+  "explanation": "The car is given human actions, coughing and groaning."
+ },
+ {
+  "id": "v6-020",
+  "subject": "vocab",
+  "grade": 6,
+  "skill": "academic-words",
+  "difficulty": 2,
+  "prompt": "To contrast two things means to show how they are:",
+  "choices": [
+   "the same",
+   "connected",
+   "equal in size",
+   "different"
+  ],
+  "answer": 3,
+  "explanation": "Contrast means pointing out differences."
+ },
+ {
+  "id": "r5-001",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "main-idea",
+  "difficulty": 1,
+  "prompt": "Honeybees live in large groups called colonies. Each bee has a job. Some collect nectar, some care for young bees, and some guard the hive. Working together keeps the colony alive.\n\nWhat is the main idea?",
+  "choices": [
+   "Honeybees work together in colonies by doing different jobs.",
+   "Honeybees only collect nectar.",
+   "Guard bees are the most important.",
+   "Honeybees live alone."
+  ],
+  "answer": 0,
+  "explanation": "The passage says each bee has a job and that teamwork keeps the colony alive."
+ },
+ {
+  "id": "r5-002",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "inference",
+  "difficulty": 2,
+  "prompt": "Mia grabbed her umbrella and rain boots, then looked at the dark clouds. She checked the clock and hurried out the door to catch the bus.\n\nWhat can you infer from the passage?",
+  "choices": [
+   "It is a sunny day.",
+   "It looks like it is going to rain.",
+   "Mia has already missed the bus.",
+   "Mia is going to bed."
+  ],
+  "answer": 1,
+  "explanation": "The umbrella, boots and dark clouds are clues that rain is likely."
+ },
+ {
+  "id": "r5-003",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "sequence",
+  "difficulty": 1,
+  "prompt": "To make a paper airplane, first fold the paper in half lengthwise. Next, unfold it and fold the top corners to the center. Then fold the edges in again. Finally, fold the wings down.\n\nWhat step comes right after folding the paper in half?",
+  "choices": [
+   "Fold the wings down.",
+   "Fold the edges in again.",
+   "Unfold it and fold the top corners to the center.",
+   "Throw the plane."
+  ],
+  "answer": 2,
+  "explanation": "The word next tells us the step after the first fold is unfolding and folding the corners."
+ },
+ {
+  "id": "r5-004",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "authors-purpose",
+  "difficulty": 2,
+  "prompt": "Did you know an octopus has three hearts? Two pump blood to its gills, and one pumps blood to the rest of its body. This surprising animal is full of amazing facts.\n\nThe author mostly wrote this passage to:",
+  "choices": [
+   "tell a made-up story",
+   "convince readers to buy a pet",
+   "explain how to draw an animal",
+   "inform readers about octopuses"
+  ],
+  "answer": 3,
+  "explanation": "The passage shares facts, so the author's purpose is to inform."
+ },
+ {
+  "id": "r5-005",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "theme",
+  "difficulty": 3,
+  "prompt": "A turtle kept practicing every day while the others laughed at his slow pace. Season after season he kept going. At last he crossed the finish line of the long trail, tired but proud.\n\nWhich theme fits this story best?",
+  "choices": [
+   "Patience and steady effort lead to success.",
+   "Fast animals always win.",
+   "Laughing at others is fun.",
+   "It is best to give up early."
+  ],
+  "answer": 0,
+  "explanation": "The turtle succeeds because he keeps working, even when others laugh."
+ },
+ {
+  "id": "r5-006",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "vocabulary-in-context",
+  "difficulty": 2,
+  "prompt": "The tiny village was remote, miles from any town or highway. Visitors needed a full day to reach it.\n\nIn this passage, what does remote mean?",
+  "choices": [
+   "crowded",
+   "far away",
+   "famous",
+   "controlled by a button"
+  ],
+  "answer": 1,
+  "explanation": "Miles from any town and a full day to reach it show that remote means far away."
+ },
+ {
+  "id": "r5-007",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "cause-effect",
+  "difficulty": 2,
+  "prompt": "After a week without rain, the grass in the park turned brown and the pond got smaller. Park workers asked visitors to use less water.\n\nWhat caused the grass to turn brown?",
+  "choices": [
+   "Too many visitors",
+   "Cold weather",
+   "A week without rain",
+   "A smaller pond"
+  ],
+  "answer": 2,
+  "explanation": "The passage says the grass turned brown after a week without rain."
+ },
+ {
+  "id": "r5-008",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "details",
+  "difficulty": 1,
+  "prompt": "The library opens at 9 a.m. on weekdays and 10 a.m. on Saturdays. It is closed on Sundays. Students can borrow up to five books at a time.\n\nHow many books can students borrow at a time?",
+  "choices": [
+   "Three",
+   "Nine",
+   "Ten",
+   "Five"
+  ],
+  "answer": 3,
+  "explanation": "The last sentence states students can borrow up to five books."
+ },
+ {
+  "id": "r5-009",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "main-idea",
+  "difficulty": 2,
+  "prompt": "Recycling aluminum cans saves energy. Making a new can from recycled metal uses far less energy than making one from raw materials. It also keeps cans out of landfills.\n\nWhat is the passage mostly about?",
+  "choices": [
+   "the benefits of recycling aluminum cans",
+   "how cans are shaped",
+   "why landfills are large",
+   "the cost of soda"
+  ],
+  "answer": 0,
+  "explanation": "Every sentence explains a benefit of recycling aluminum cans."
+ },
+ {
+  "id": "r5-010",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "inference",
+  "difficulty": 3,
+  "prompt": "The coach looked at the scoreboard, then smiled as the team ran off the field. Everyone was hugging, and a few players were jumping up and down.\n\nWhat most likely happened?",
+  "choices": [
+   "The team lost badly.",
+   "The team won the game.",
+   "The game was canceled.",
+   "The coach quit."
+  ],
+  "answer": 1,
+  "explanation": "Smiling, hugging and jumping are clues that the team was celebrating a win."
+ },
+ {
+  "id": "r5-011",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "sequence",
+  "difficulty": 2,
+  "prompt": "Before dinner, Ben set the table. After eating, he washed the dishes. Later, he did his homework and read for twenty minutes before bed.\n\nWhat did Ben do right after eating?",
+  "choices": [
+   "He set the table.",
+   "He did his homework.",
+   "He washed the dishes.",
+   "He read before bed."
+  ],
+  "answer": 2,
+  "explanation": "The passage says that after eating, Ben washed the dishes."
+ },
+ {
+  "id": "r5-012",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "authors-purpose",
+  "difficulty": 2,
+  "prompt": "Every student should walk or bike to school when possible. It keeps you healthy, saves money, and helps the air stay clean. Try it this week!\n\nWhat does the author want to do?",
+  "choices": [
+   "teach how to fix a bike",
+   "tell a funny story",
+   "describe a school building",
+   "persuade readers to walk or bike to school"
+  ],
+  "answer": 3,
+  "explanation": "The author gives reasons and urges readers to try it, which is persuading."
+ },
+ {
+  "id": "r5-013",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "theme",
+  "difficulty": 2,
+  "prompt": "A young crow dropped pebbles into a tall jar until the water rose high enough to drink. It had not been strong, but it had been clever.\n\nWhat lesson does this story teach?",
+  "choices": [
+   "Thinking cleverly can solve problems.",
+   "Strong birds always win.",
+   "Never drink from a jar.",
+   "Pebbles are heavy."
+  ],
+  "answer": 0,
+  "explanation": "The crow solved its problem with a smart idea instead of strength."
+ },
+ {
+  "id": "r5-014",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "vocabulary-in-context",
+  "difficulty": 3,
+  "prompt": "The hikers were weary after climbing all day. They dropped their packs and fell asleep as soon as they lay down.\n\nWhat does weary mean?",
+  "choices": [
+   "excited",
+   "very tired",
+   "cold",
+   "hungry"
+  ],
+  "answer": 1,
+  "explanation": "Falling asleep right away is the clue that they were very tired."
+ },
+ {
+  "id": "r5-015",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "inference",
+  "difficulty": 2,
+  "prompt": "When the other kids teased him, Leo took a deep breath and walked away without a word. Later he told his teacher what happened.\n\nWhat does this show about Leo?",
+  "choices": [
+   "He wanted to tease them back.",
+   "He did not care.",
+   "He handled the problem calmly and responsibly.",
+   "He was angry at his teacher."
+  ],
+  "answer": 2,
+  "explanation": "Walking away calmly and telling a teacher shows responsible behavior."
+ },
+ {
+  "id": "r5-016",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "cause-effect",
+  "difficulty": 1,
+  "prompt": "The power went out during the storm, so the family lit candles and played board games.\n\nWhy did the family light candles?",
+  "choices": [
+   "It was someone's birthday.",
+   "The storm ended.",
+   "They bought new games.",
+   "The power went out."
+  ],
+  "answer": 3,
+  "explanation": "The word so shows the power outage caused the candles to be lit."
+ },
+ {
+  "id": "r5-017",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "compare-contrast",
+  "difficulty": 2,
+  "prompt": "Frogs and toads look alike, but they differ. Frogs have smooth, moist skin and long legs for jumping. Toads have dry, bumpy skin and shorter legs.\n\nHow are frogs different from toads?",
+  "choices": [
+   "Frogs have smooth skin and toads have bumpy skin.",
+   "Frogs have bumpy skin and toads have smooth skin.",
+   "Toads have longer legs than frogs.",
+   "Frogs have dry skin and toads have moist skin."
+  ],
+  "answer": 0,
+  "explanation": "The passage says frogs have smooth, moist skin and toads have dry, bumpy skin."
+ },
+ {
+  "id": "r5-018",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "vocabulary-in-context",
+  "difficulty": 2,
+  "prompt": "The chef used fresh herbs to enhance the soup's flavor. After adding basil, the soup tasted much richer.\n\nWhat does enhance mean?",
+  "choices": [
+   "hide",
+   "improve",
+   "cool down",
+   "spill"
+  ],
+  "answer": 1,
+  "explanation": "The soup tasted richer, so enhance means to make better."
+ },
+ {
+  "id": "r5-019",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "main-idea",
+  "difficulty": 3,
+  "prompt": "Many people think deserts are empty, but they hold plenty of life. Cacti store water, lizards hide in cool burrows by day, and owls hunt after dark. Each living thing is suited to dry heat.\n\nWhat is the main idea?",
+  "choices": [
+   "Deserts are empty.",
+   "Owls are the best hunters.",
+   "Desert life has ways to survive in dry places.",
+   "Cacti are very tall."
+  ],
+  "answer": 2,
+  "explanation": "The examples all show how desert life is suited to the dry heat."
+ },
+ {
+  "id": "r5-020",
+  "subject": "reading",
+  "grade": 5,
+  "skill": "inference",
+  "difficulty": 3,
+  "prompt": "A sign at the pool reads: Walk, don't run. Wet floors are slippery. Please shower before swimming.\n\nWhy does the sign say Walk, don't run?",
+  "choices": [
+   "Because the pool is far away",
+   "To help swimmers swim faster",
+   "Because walking is more fun",
+   "To keep people from slipping"
+  ],
+  "answer": 3,
+  "explanation": "The next sentence explains that wet floors are slippery."
+ },
+ {
+  "id": "r6-001",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "main-idea",
+  "difficulty": 1,
+  "prompt": "Volcanoes form when melted rock from deep inside Earth rises to the surface. Over time, layers of cooled lava and ash pile up and build a mountain. Some volcanoes are still active today.\n\nWhat is the main idea?",
+  "choices": [
+   "Rising melted rock builds volcanoes over time.",
+   "All volcanoes are active.",
+   "Ash harms plants.",
+   "Mountains form overnight."
+  ],
+  "answer": 0,
+  "explanation": "The passage mostly explains how volcanoes are formed."
+ },
+ {
+  "id": "r6-002",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "inference",
+  "difficulty": 2,
+  "prompt": "The cafeteria was unusually quiet. Students stared at their trays, and the usual chatter was gone. A few kept glancing at the clock, waiting for the announcement about test scores.\n\nHow do the students probably feel?",
+  "choices": [
+   "excited about a party",
+   "nervous about the results",
+   "bored with lunch",
+   "angry at the cooks"
+  ],
+  "answer": 1,
+  "explanation": "Quiet students waiting for test scores are most likely nervous."
+ },
+ {
+  "id": "r6-003",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "authors-purpose",
+  "difficulty": 2,
+  "prompt": "The bright yellow lemon looked cheerful on the counter. Its skin was bumpy and smelled sweetly sour, like sunshine in a bottle.\n\nWhy does the author write sunshine in a bottle?",
+  "choices": [
+   "to prove lemons need sun",
+   "to explain how to make juice",
+   "to help readers imagine the smell",
+   "to compare prices"
+  ],
+  "answer": 2,
+  "explanation": "The comparison is a descriptive image that helps readers picture the scent."
+ },
+ {
+  "id": "r6-004",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "sequence",
+  "difficulty": 2,
+  "prompt": "The sea turtle crawled from the water and dug a hole in the sand. She laid her eggs, covered them, and returned to the sea. Weeks later, the hatchlings dug out and scurried to the waves.\n\nWhat happens right after she lays her eggs?",
+  "choices": [
+   "The hatchlings reach the waves.",
+   "She digs a hole.",
+   "The hatchlings dig out.",
+   "She covers them with sand."
+  ],
+  "answer": 3,
+  "explanation": "The passage lists covering the eggs right after laying them."
+ },
+ {
+  "id": "r6-005",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "theme",
+  "difficulty": 3,
+  "prompt": "Everyone said the old bridge could not be fixed. Neighbors brought boards, tools, and lunches anyway. By sunset, they had rebuilt it, and everyone crossed together.\n\nWhich theme fits this story?",
+  "choices": [
+   "Working together can accomplish hard goals.",
+   "Old things should be thrown away.",
+   "Bridges are easy to build.",
+   "Lunch is the most important part of work."
+  ],
+  "answer": 0,
+  "explanation": "The neighbors achieved the goal by cooperating."
+ },
+ {
+  "id": "r6-006",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "vocabulary-in-context",
+  "difficulty": 2,
+  "prompt": "The lawyer's argument was so compelling that the jury listened without moving. Many members changed their minds.\n\nWhat does compelling mean?",
+  "choices": [
+   "confusing",
+   "convincing",
+   "lengthy",
+   "rude"
+  ],
+  "answer": 1,
+  "explanation": "The jurors changed their minds, so the argument was convincing."
+ },
+ {
+  "id": "r6-007",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "cause-effect",
+  "difficulty": 2,
+  "prompt": "When the factory closed, many families moved away. With fewer customers, the town's shops lost business, and several closed too.\n\nWhat was a result of fewer customers?",
+  "choices": [
+   "The factory closed.",
+   "More families moved in.",
+   "Several shops closed.",
+   "The factory reopened."
+  ],
+  "answer": 2,
+  "explanation": "The passage says shops lost business and several closed."
+ },
+ {
+  "id": "r6-008",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "authors-purpose",
+  "difficulty": 1,
+  "prompt": "Our class garden needs volunteers! Join us Saturday at 9 a.m. to plant seeds and pull weeds. Bring gloves and a water bottle.\n\nWhat is the main purpose of this passage?",
+  "choices": [
+   "to explain how seeds grow",
+   "to tell about a past trip",
+   "to describe weeds",
+   "to invite readers to help"
+  ],
+  "answer": 3,
+  "explanation": "The author asks readers to join and gives details for volunteering."
+ },
+ {
+  "id": "r6-009",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "main-idea",
+  "difficulty": 2,
+  "prompt": "Sleep is important for growing students. During sleep, the body repairs itself and the brain stores new memories. Students who sleep nine to eleven hours often do better in class.\n\nWhich sentence best summarizes the passage?",
+  "choices": [
+   "Enough sleep helps the body and the brain.",
+   "Students should skip homework.",
+   "Memory only works during class.",
+   "Sleep is only for adults."
+  ],
+  "answer": 0,
+  "explanation": "The passage gives reasons sleep helps both body and brain."
+ },
+ {
+  "id": "r6-010",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "inference",
+  "difficulty": 3,
+  "prompt": "The path was covered with small paw prints that led to the edge of the pond. Near the water, the mud was churned up, and a few feathers floated nearby.\n\nWhat can you infer?",
+  "choices": [
+   "No animals live nearby.",
+   "An animal visited the pond recently.",
+   "The pond froze solid.",
+   "People built the path yesterday."
+  ],
+  "answer": 1,
+  "explanation": "Fresh paw prints, churned mud and feathers show an animal was there."
+ },
+ {
+  "id": "r6-011",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "vocabulary-in-context",
+  "difficulty": 3,
+  "prompt": "The scientist's theory was tentative, so she planned more experiments before announcing it as fact.\n\nWhat does tentative mean?",
+  "choices": [
+   "final",
+   "secret",
+   "not yet certain",
+   "famous"
+  ],
+  "answer": 2,
+  "explanation": "She needed more tests, so the theory was not yet certain."
+ },
+ {
+  "id": "r6-012",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "sequence",
+  "difficulty": 1,
+  "prompt": "First, the team gathered data on bird visits. Then they graphed the results. Last, they wrote a summary.\n\nWhat did the team do second?",
+  "choices": [
+   "They gathered data.",
+   "They wrote a summary.",
+   "They fed the birds.",
+   "They graphed the results."
+  ],
+  "answer": 3,
+  "explanation": "The word then marks graphing as the second step."
+ },
+ {
+  "id": "r6-013",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "theme",
+  "difficulty": 2,
+  "prompt": "Though the little fox lost the race, she congratulated the winner and asked for tips. Next time, she trained with them and ran her best time yet.\n\nWhich theme fits this story?",
+  "choices": [
+   "Learning from setbacks leads to growth.",
+   "Winning is everything.",
+   "Losing is shameful.",
+   "Foxes are fast."
+  ],
+  "answer": 0,
+  "explanation": "The fox improved by learning from her loss."
+ },
+ {
+  "id": "r6-014",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "cause-effect",
+  "difficulty": 3,
+  "prompt": "Because mangrove roots trap soil, coastlines with mangroves lose less land to waves. When people cut the trees down, shores often wash away faster.\n\nWhat happens when mangroves are cut down?",
+  "choices": [
+   "Roots trap more soil.",
+   "Shores may wash away faster.",
+   "Waves stop.",
+   "Coastlines grow."
+  ],
+  "answer": 1,
+  "explanation": "The passage states shores often wash away faster without the trees."
+ },
+ {
+  "id": "r6-015",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "compare-contrast",
+  "difficulty": 2,
+  "prompt": "Both lakes and ponds hold fresh water. Lakes are generally larger and deeper, while ponds are shallow enough for sunlight to reach the bottom.\n\nHow is a pond different from a lake?",
+  "choices": [
+   "Ponds are salty.",
+   "Ponds are deeper.",
+   "Ponds are generally shallower.",
+   "Ponds get no sunlight."
+  ],
+  "answer": 2,
+  "explanation": "The passage says ponds are shallow enough for sunlight to reach the bottom."
+ },
+ {
+  "id": "r6-016",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "mood",
+  "difficulty": 2,
+  "prompt": "The old house stood alone on the hill, its windows dark and its shutters creaking in the wind. No one had lived there for years.\n\nWhat mood does the author create?",
+  "choices": [
+   "cheerful and busy",
+   "angry and loud",
+   "excited and proud",
+   "lonely and eerie"
+  ],
+  "answer": 3,
+  "explanation": "Dark windows, creaking shutters and emptiness create a lonely, eerie feeling."
+ },
+ {
+  "id": "r6-017",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "main-idea",
+  "difficulty": 3,
+  "prompt": "Coral reefs cover less than one percent of the ocean floor, yet about a quarter of ocean species depend on them. Warming water can cause corals to lose color and weaken. Protecting reefs protects countless animals.\n\nWhat is the main idea?",
+  "choices": [
+   "Coral reefs support many species and need protection.",
+   "Reefs cover most of the ocean.",
+   "Corals love warm water.",
+   "Fish are colorful."
+  ],
+  "answer": 0,
+  "explanation": "The passage stresses how important reefs are to ocean life and why protect them."
+ },
+ {
+  "id": "r6-018",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "inference",
+  "difficulty": 2,
+  "prompt": "Rosa measured a plant each Monday. It was 4 cm in week one, 7 cm in week two, and 10 cm in week three.\n\nIf the pattern continues, how tall will it be in week four?",
+  "choices": [
+   "11 cm",
+   "13 cm",
+   "12 cm",
+   "14 cm"
+  ],
+  "answer": 1,
+  "explanation": "The plant grows 3 cm each week, so 10 + 3 = 13."
+ },
+ {
+  "id": "r6-019",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "vocabulary-in-context",
+  "difficulty": 2,
+  "prompt": "The farmer let the field lie fallow for a year, leaving it unplanted so the soil could rest.\n\nWhat does fallow mean?",
+  "choices": [
+   "newly planted",
+   "covered in snow",
+   "left unplanted",
+   "used for animals"
+  ],
+  "answer": 2,
+  "explanation": "The passage explains the field was left unplanted."
+ },
+ {
+  "id": "r6-020",
+  "subject": "reading",
+  "grade": 6,
+  "skill": "character",
+  "difficulty": 3,
+  "prompt": "Though some call him a hero, the lighthouse keeper simply said, I just lit the lamp every night. He never asked for thanks and quietly kept working for forty years.\n\nWhat does this show about the keeper?",
+  "choices": [
+   "He is proud of his fame.",
+   "He wanted rewards.",
+   "He disliked his work.",
+   "He is humble."
+  ],
+  "answer": 3,
+  "explanation": "Downplaying his role and not asking for thanks shows humility."
+ },
+ {
+  "id": "s5-001",
+  "subject": "science",
+  "grade": 5,
+  "skill": "life-science",
+  "difficulty": 1,
+  "prompt": "Which part of a plant takes in water from the soil?",
+  "choices": [
+   "roots",
+   "leaves",
+   "petals",
+   "stem"
+  ],
+  "answer": 0,
+  "explanation": "Roots absorb water and nutrients from the soil."
+ },
+ {
+  "id": "s5-002",
+  "subject": "science",
+  "grade": 5,
+  "skill": "life-science",
+  "difficulty": 2,
+  "prompt": "What is the process plants use to make food from sunlight, water and carbon dioxide?",
+  "choices": [
+   "evaporation",
+   "photosynthesis",
+   "digestion",
+   "pollination"
+  ],
+  "answer": 1,
+  "explanation": "Photosynthesis uses light energy to make sugar."
+ },
+ {
+  "id": "s5-003",
+  "subject": "science",
+  "grade": 5,
+  "skill": "life-science",
+  "difficulty": 2,
+  "prompt": "In a food chain, what is a producer?",
+  "choices": [
+   "an animal that eats only meat",
+   "an organism that breaks down dead things",
+   "a plant that makes its own food",
+   "an animal that eats plants"
+  ],
+  "answer": 2,
+  "explanation": "Producers, such as plants, make their own food using sunlight."
+ },
+ {
+  "id": "s5-004",
+  "subject": "science",
+  "grade": 5,
+  "skill": "life-science",
+  "difficulty": 2,
+  "prompt": "Animals that eat only plants are called:",
+  "choices": [
+   "carnivores",
+   "omnivores",
+   "decomposers",
+   "herbivores"
+  ],
+  "answer": 3,
+  "explanation": "Herbivore means plant eater."
+ },
+ {
+  "id": "s5-005",
+  "subject": "science",
+  "grade": 5,
+  "skill": "life-science",
+  "difficulty": 3,
+  "prompt": "Which adaptation helps a polar bear stay warm in the Arctic?",
+  "choices": [
+   "a thick layer of fat and fur",
+   "long legs for running",
+   "bright feathers",
+   "gills"
+  ],
+  "answer": 0,
+  "explanation": "Fat and thick fur insulate the bear from the cold."
+ },
+ {
+  "id": "s5-006",
+  "subject": "science",
+  "grade": 5,
+  "skill": "earth-science",
+  "difficulty": 1,
+  "prompt": "What is the name for water falling from clouds as rain, snow or hail?",
+  "choices": [
+   "evaporation",
+   "precipitation",
+   "condensation",
+   "collection"
+  ],
+  "answer": 1,
+  "explanation": "Precipitation is any water that falls from clouds."
+ },
+ {
+  "id": "s5-007",
+  "subject": "science",
+  "grade": 5,
+  "skill": "earth-science",
+  "difficulty": 2,
+  "prompt": "Water vapor cooling into tiny droplets to form clouds is called:",
+  "choices": [
+   "evaporation",
+   "erosion",
+   "condensation",
+   "precipitation"
+  ],
+  "answer": 2,
+  "explanation": "Condensation is when a gas cools and becomes liquid."
+ },
+ {
+  "id": "s5-008",
+  "subject": "science",
+  "grade": 5,
+  "skill": "earth-science",
+  "difficulty": 2,
+  "prompt": "Which type of rock forms when melted rock cools and hardens?",
+  "choices": [
+   "sedimentary",
+   "metamorphic",
+   "fossil",
+   "igneous"
+  ],
+  "answer": 3,
+  "explanation": "Igneous rock forms from cooled magma or lava."
+ },
+ {
+  "id": "s5-009",
+  "subject": "science",
+  "grade": 5,
+  "skill": "earth-science",
+  "difficulty": 3,
+  "prompt": "Which process moves bits of rock and soil from one place to another by wind or water?",
+  "choices": [
+   "erosion",
+   "condensation",
+   "germination",
+   "reflection"
+  ],
+  "answer": 0,
+  "explanation": "Erosion carries sediment away."
+ },
+ {
+  "id": "s5-010",
+  "subject": "science",
+  "grade": 5,
+  "skill": "physical-science",
+  "difficulty": 1,
+  "prompt": "Which state of matter has a definite shape and a definite volume?",
+  "choices": [
+   "liquid",
+   "solid",
+   "gas",
+   "steam"
+  ],
+  "answer": 1,
+  "explanation": "Solids keep their own shape and volume."
+ },
+ {
+  "id": "s5-011",
+  "subject": "science",
+  "grade": 5,
+  "skill": "physical-science",
+  "difficulty": 2,
+  "prompt": "What happens to water molecules as water is heated to boiling?",
+  "choices": [
+   "They stop moving.",
+   "They move slower.",
+   "They move faster and become a gas.",
+   "They disappear."
+  ],
+  "answer": 2,
+  "explanation": "Heat energy makes molecules move faster until they escape as vapor."
+ },
+ {
+  "id": "s5-012",
+  "subject": "science",
+  "grade": 5,
+  "skill": "physical-science",
+  "difficulty": 2,
+  "prompt": "Which object is the best conductor of heat?",
+  "choices": [
+   "a wooden spoon",
+   "a foam cup",
+   "a plastic handle",
+   "a metal spoon"
+  ],
+  "answer": 3,
+  "explanation": "Metals let heat move through them easily."
+ },
+ {
+  "id": "s5-013",
+  "subject": "science",
+  "grade": 5,
+  "skill": "physical-science",
+  "difficulty": 3,
+  "prompt": "A ball rolling across grass slows to a stop mainly because of:",
+  "choices": [
+   "friction",
+   "magnetism",
+   "light",
+   "evaporation"
+  ],
+  "answer": 0,
+  "explanation": "Friction between the ball and the grass opposes its motion."
+ },
+ {
+  "id": "s5-014",
+  "subject": "science",
+  "grade": 5,
+  "skill": "space",
+  "difficulty": 1,
+  "prompt": "What is the closest star to Earth?",
+  "choices": [
+   "the Moon",
+   "the Sun",
+   "Polaris",
+   "Mars"
+  ],
+  "answer": 1,
+  "explanation": "The Sun is our nearest star."
+ },
+ {
+  "id": "s5-015",
+  "subject": "science",
+  "grade": 5,
+  "skill": "space",
+  "difficulty": 2,
+  "prompt": "Why do we have day and night?",
+  "choices": [
+   "Earth orbits the Sun once a day.",
+   "The Moon blocks the Sun.",
+   "Earth rotates on its axis.",
+   "The Sun moves around Earth."
+  ],
+  "answer": 2,
+  "explanation": "As Earth spins, different places face toward or away from the Sun."
+ },
+ {
+  "id": "s5-016",
+  "subject": "science",
+  "grade": 5,
+  "skill": "space",
+  "difficulty": 2,
+  "prompt": "Which planet is the largest in our solar system?",
+  "choices": [
+   "Saturn",
+   "Earth",
+   "Neptune",
+   "Jupiter"
+  ],
+  "answer": 3,
+  "explanation": "Jupiter is bigger than all other planets."
+ },
+ {
+  "id": "s5-017",
+  "subject": "science",
+  "grade": 5,
+  "skill": "scientific-method",
+  "difficulty": 2,
+  "prompt": "A student tests how sunlight affects plant growth. What should stay the same for all plants?",
+  "choices": [
+   "the amount of water each plant gets",
+   "the amount of light each plant gets",
+   "the final height of each plant",
+   "the conclusion"
+  ],
+  "answer": 0,
+  "explanation": "Only one variable (light) should change, so water must stay the same."
+ },
+ {
+  "id": "s5-018",
+  "subject": "science",
+  "grade": 5,
+  "skill": "scientific-method",
+  "difficulty": 1,
+  "prompt": "A testable prediction made before an experiment is called a:",
+  "choices": [
+   "conclusion",
+   "hypothesis",
+   "data table",
+   "observation"
+  ],
+  "answer": 1,
+  "explanation": "A hypothesis is a prediction you can test."
+ },
+ {
+  "id": "s5-019",
+  "subject": "science",
+  "grade": 5,
+  "skill": "measurement",
+  "difficulty": 1,
+  "prompt": "Which tool measures temperature?",
+  "choices": [
+   "ruler",
+   "balance",
+   "thermometer",
+   "barometer"
+  ],
+  "answer": 2,
+  "explanation": "A thermometer measures how hot or cold something is."
+ },
+ {
+  "id": "s5-020",
+  "subject": "science",
+  "grade": 5,
+  "skill": "measurement",
+  "difficulty": 2,
+  "prompt": "Which unit is used to measure the volume of a liquid?",
+  "choices": [
+   "grams",
+   "centimeters",
+   "degrees",
+   "milliliters"
+  ],
+  "answer": 3,
+  "explanation": "Milliliters measure how much space a liquid takes up."
+ },
+ {
+  "id": "s6-001",
+  "subject": "science",
+  "grade": 6,
+  "skill": "life-science",
+  "difficulty": 1,
+  "prompt": "What is the basic unit of life?",
+  "choices": [
+   "cell",
+   "tissue",
+   "organ",
+   "atom"
+  ],
+  "answer": 0,
+  "explanation": "All living things are made of one or more cells."
+ },
+ {
+  "id": "s6-002",
+  "subject": "science",
+  "grade": 6,
+  "skill": "life-science",
+  "difficulty": 2,
+  "prompt": "Which structure gives a plant cell a rigid outer layer for support?",
+  "choices": [
+   "nucleus",
+   "cell wall",
+   "chloroplast",
+   "cytoplasm"
+  ],
+  "answer": 1,
+  "explanation": "The cell wall surrounds plant cells and keeps them firm."
+ },
+ {
+  "id": "s6-003",
+  "subject": "science",
+  "grade": 6,
+  "skill": "life-science",
+  "difficulty": 2,
+  "prompt": "What is the main job of the mitochondria in a cell?",
+  "choices": [
+   "make food from sunlight",
+   "store the cell's nucleus",
+   "release usable energy from food",
+   "control the cell's color"
+  ],
+  "answer": 2,
+  "explanation": "Mitochondria release energy the cell can use."
+ },
+ {
+  "id": "s6-004",
+  "subject": "science",
+  "grade": 6,
+  "skill": "life-science",
+  "difficulty": 3,
+  "prompt": "Which organisms break down dead material and return nutrients to the soil?",
+  "choices": [
+   "producers",
+   "herbivores",
+   "predators",
+   "decomposers"
+  ],
+  "answer": 3,
+  "explanation": "Decomposers like fungi and bacteria recycle nutrients."
+ },
+ {
+  "id": "s6-005",
+  "subject": "science",
+  "grade": 6,
+  "skill": "life-science",
+  "difficulty": 2,
+  "prompt": "Which is an example of an inherited trait?",
+  "choices": [
+   "eye color",
+   "a scar",
+   "knowing how to ride a bike",
+   "a short haircut"
+  ],
+  "answer": 0,
+  "explanation": "Eye color is passed from parents to offspring in genes."
+ },
+ {
+  "id": "s6-006",
+  "subject": "science",
+  "grade": 6,
+  "skill": "earth-science",
+  "difficulty": 1,
+  "prompt": "On which layer of Earth do we live?",
+  "choices": [
+   "mantle",
+   "crust",
+   "outer core",
+   "inner core"
+  ],
+  "answer": 1,
+  "explanation": "The crust is Earth's thin, solid outer layer."
+ },
+ {
+  "id": "s6-007",
+  "subject": "science",
+  "grade": 6,
+  "skill": "earth-science",
+  "difficulty": 2,
+  "prompt": "Where do most earthquakes happen?",
+  "choices": [
+   "in the middle of large flat plains",
+   "only in deserts",
+   "where tectonic plates meet",
+   "deep inside Earth's core"
+  ],
+  "answer": 2,
+  "explanation": "Earthquakes mostly occur along plate boundaries where plates move."
+ },
+ {
+  "id": "s6-008",
+  "subject": "science",
+  "grade": 6,
+  "skill": "earth-science",
+  "difficulty": 2,
+  "prompt": "Where is most of Earth's surface water found?",
+  "choices": [
+   "in lakes",
+   "in rivers",
+   "in the air",
+   "in the oceans"
+  ],
+  "answer": 3,
+  "explanation": "About 97 percent of Earth's water is in the oceans."
+ },
+ {
+  "id": "s6-009",
+  "subject": "science",
+  "grade": 6,
+  "skill": "earth-science",
+  "difficulty": 3,
+  "prompt": "What causes the seasons on Earth?",
+  "choices": [
+   "the tilt of Earth's axis",
+   "Earth moving much closer to and farther from the Sun",
+   "the phases of the Moon",
+   "clouds blocking the Sun"
+  ],
+  "answer": 0,
+  "explanation": "The tilt changes how directly sunlight hits each part of Earth during the year."
+ },
+ {
+  "id": "s6-010",
+  "subject": "science",
+  "grade": 6,
+  "skill": "earth-science",
+  "difficulty": 2,
+  "prompt": "Which of these is a fossil fuel?",
+  "choices": [
+   "solar energy",
+   "coal",
+   "wind",
+   "hydropower"
+  ],
+  "answer": 1,
+  "explanation": "Coal formed from ancient plants over millions of years."
+ },
+ {
+  "id": "s6-011",
+  "subject": "science",
+  "grade": 6,
+  "skill": "physical-science",
+  "difficulty": 1,
+  "prompt": "Which unit is used to measure force?",
+  "choices": [
+   "gram",
+   "meter",
+   "newton",
+   "liter"
+  ],
+  "answer": 2,
+  "explanation": "The newton is the standard unit of force."
+ },
+ {
+  "id": "s6-012",
+  "subject": "science",
+  "grade": 6,
+  "skill": "physical-science",
+  "difficulty": 2,
+  "prompt": "A car travels 150 km in 3 hours at a steady speed. What is its speed?",
+  "choices": [
+   "450 km/h",
+   "153 km/h",
+   "30 km/h",
+   "50 km/h"
+  ],
+  "answer": 3,
+  "explanation": "Speed = distance divided by time = 150 / 3 = 50."
+ },
+ {
+  "id": "s6-013",
+  "subject": "science",
+  "grade": 6,
+  "skill": "physical-science",
+  "difficulty": 2,
+  "prompt": "A rocket moves upward as gases push downward. This shows that:",
+  "choices": [
+   "for every action there is an equal and opposite reaction",
+   "objects at rest stay at rest forever",
+   "heavier objects always fall faster",
+   "energy can be created"
+  ],
+  "answer": 0,
+  "explanation": "The downward push of the gas causes an upward push on the rocket."
+ },
+ {
+  "id": "s6-014",
+  "subject": "science",
+  "grade": 6,
+  "skill": "physical-science",
+  "difficulty": 3,
+  "prompt": "Which is an example of a chemical change?",
+  "choices": [
+   "melting ice",
+   "burning wood",
+   "tearing paper",
+   "crushing a can"
+  ],
+  "answer": 1,
+  "explanation": "Burning makes new substances like ash and gases."
+ },
+ {
+  "id": "s6-015",
+  "subject": "science",
+  "grade": 6,
+  "skill": "physical-science",
+  "difficulty": 2,
+  "prompt": "What is the energy of motion called?",
+  "choices": [
+   "potential energy",
+   "chemical energy",
+   "kinetic energy",
+   "nuclear energy"
+  ],
+  "answer": 2,
+  "explanation": "Kinetic energy is the energy an object has because it is moving."
+ },
+ {
+  "id": "s6-016",
+  "subject": "science",
+  "grade": 6,
+  "skill": "physical-science",
+  "difficulty": 3,
+  "prompt": "Which of these is a mixture?",
+  "choices": [
+   "pure water",
+   "oxygen gas",
+   "pure iron",
+   "salt dissolved in water"
+  ],
+  "answer": 3,
+  "explanation": "Salt water is two substances mixed but not chemically combined."
+ },
+ {
+  "id": "s6-017",
+  "subject": "science",
+  "grade": 6,
+  "skill": "space",
+  "difficulty": 2,
+  "prompt": "What causes the phases of the Moon?",
+  "choices": [
+   "how much of its sunlit side we can see as it orbits Earth",
+   "Earth's shadow covering it",
+   "clouds in the sky",
+   "the Moon changing size"
+  ],
+  "answer": 0,
+  "explanation": "As the Moon orbits, we see different amounts of its lit half."
+ },
+ {
+  "id": "s6-018",
+  "subject": "science",
+  "grade": 6,
+  "skill": "space",
+  "difficulty": 1,
+  "prompt": "Which planet is closest to the Sun?",
+  "choices": [
+   "Venus",
+   "Mercury",
+   "Mars",
+   "Earth"
+  ],
+  "answer": 1,
+  "explanation": "Mercury orbits nearest the Sun."
+ },
+ {
+  "id": "s6-019",
+  "subject": "science",
+  "grade": 6,
+  "skill": "scientific-method",
+  "difficulty": 3,
+  "prompt": "Why do scientists repeat experiments?",
+  "choices": [
+   "to make the experiment longer",
+   "to change their hypothesis",
+   "to check that results are reliable",
+   "to be sure they win"
+  ],
+  "answer": 2,
+  "explanation": "Repeated trials that match show the results are trustworthy."
+ },
+ {
+  "id": "s6-020",
+  "subject": "science",
+  "grade": 6,
+  "skill": "measurement",
+  "difficulty": 2,
+  "prompt": "A rock has a mass of 250 grams. How many kilograms is that?",
+  "choices": [
+   "2.5 kg",
+   "25 kg",
+   "0.025 kg",
+   "0.25 kg"
+  ],
+  "answer": 3,
+  "explanation": "There are 1,000 grams in a kilogram, so 250 / 1000 = 0.25."
+ }
+]

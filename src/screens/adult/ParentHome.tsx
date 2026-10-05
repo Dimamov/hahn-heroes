@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import type { Adult, Backend, ChildProgress, ChildSummary, HomeMission } from '../../lib/backend.ts';
+import type { Adult, Backend, ChildProgress, ChildSummary, HomeMission, SubjectProgress } from '../../lib/backend.ts';
+import { SUBJECT_INFO } from '../Learn.tsx';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 import { HeroArt } from '../../components/HeroArt.tsx';
 import { formatHeroCode, normalizeHeroCode } from '../../../supabase/functions/_shared/kid-auth.ts';
 
-type View = { name: 'list' } | { name: 'link' } | { name: 'child'; child: ChildSummary } | { name: 'new'; child: ChildSummary };
+type View = { name: 'list' } | { name: 'link' } | { name: 'child'; child: ChildSummary } | { name: 'new'; child: ChildSummary } | { name: 'learning'; child: ChildSummary };
 
 const LINK_ERRORS = { invalid_code: "That code isn't right, or it was already used. Ask your child for a new one.", too_many_tries: 'Too many tries. Please wait an hour and try again.' };
 
@@ -17,7 +18,8 @@ export function ParentHome({ backend, adult, onSignOut }: { backend: Backend; ad
 
   if (view.name === 'link') return <LinkChild backend={backend} onBack={() => { reload(); setView({ name: 'list' }); }} />;
   if (view.name === 'new') return <NewMission backend={backend} child={view.child} onBack={() => setView({ name: 'child', child: view.child })} />;
-  if (view.name === 'child') return <ChildScreen backend={backend} child={view.child} onBack={() => { reload(); setView({ name: 'list' }); }} onNew={() => setView({ name: 'new', child: view.child })} />;
+  if (view.name === 'learning') return <LearningView backend={backend} child={view.child} onBack={() => setView({ name: 'child', child: view.child })} />;
+  if (view.name === 'child') return <ChildScreen backend={backend} child={view.child} onBack={() => { reload(); setView({ name: 'list' }); }} onNew={() => setView({ name: 'new', child: view.child })} onLearning={() => setView({ name: 'learning', child: view.child })} />;
 
   return (
     <main className="screen">
@@ -74,7 +76,7 @@ function LinkChild({ backend, onBack }: { backend: Backend; onBack: () => void }
 
 const STATUS: Record<HomeMission['status'], string> = { assigned: 'Not done yet', submitted: 'Needs your check', approved: 'Approved', sent_back: 'Sent back' };
 
-function ChildScreen({ backend, child, onBack, onNew }: { backend: Backend; child: ChildSummary; onBack: () => void; onNew: () => void }) {
+function ChildScreen({ backend, child, onBack, onNew, onLearning }: { backend: Backend; child: ChildSummary; onBack: () => void; onNew: () => void; onLearning: () => void }) {
   const [missions, setMissions] = useState<HomeMission[] | null>(null);
   const [progress, setProgress] = useState<ChildProgress | null>(null);
   const [note, setNote] = useState('');
@@ -122,7 +124,38 @@ function ChildScreen({ backend, child, onBack, onNew }: { backend: Backend; chil
             </div>
           )} />
       )}
-      <button className="btn primary" onClick={onNew}>＋ New mission</button>
+      <div className="stack row">
+        <button className="btn ghost" onClick={onLearning}>📈 Learning</button>
+        <button className="btn primary" onClick={onNew}>＋ New mission</button>
+      </div>
+    </main>
+  );
+}
+
+/** How a child is doing in each subject, with the skills that need more practice. */
+function LearningView({ backend, child, onBack }: { backend: Backend; child: ChildSummary; onBack: () => void }) {
+  const [data, setData] = useState<SubjectProgress[] | null>(null);
+  useEffect(() => { backend.childLearning(child.id).then(setData).catch(() => setData([])); }, [backend, child.id]);
+  const pct = (c: number, a: number) => (a ? Math.round((100 * c) / a) : 0);
+  const weak = (data ?? []).flatMap((s) => s.skills.filter((k) => k.attempts >= 3 && pct(k.correct, k.attempts) < 60).map((k) => ({ subject: s.subject, ...k })));
+  const strong = (data ?? []).flatMap((s) => s.skills.filter((k) => k.attempts >= 3 && pct(k.correct, k.attempts) >= 80).map((k) => ({ subject: s.subject, ...k })));
+  const name = (k: { subject: SubjectProgress['subject']; skill: string }) => `${SUBJECT_INFO[k.subject].label}: ${k.skill.replace(/-/g, ' ')}`;
+  return (
+    <main className="screen">
+      <ScreenBar title={`${child.displayName}: learning`} onBack={onBack} />
+      {data === null ? <div className="spinner" /> : (
+        <>
+          <div className="progress-card learn">
+            {data.map((s) => (
+              <div key={s.subject}><b>{SUBJECT_INFO[s.subject].icon} {s.answered ? `${pct(s.correct, s.answered)}%` : '–'}</b><small>{SUBJECT_INFO[s.subject].label} · {s.answered} answered</small></div>
+            ))}
+          </div>
+          <p className="hint">Needs more practice</p>
+          {weak.length ? weak.slice(0, 3).map((k) => <div className="skill-row weak" key={name(k)}><span>{name(k)}</span><span>{pct(k.correct, k.attempts)}%</span></div>) : <p className="note">Nothing stands out yet. Skills show up after a few answers.</p>}
+          <p className="hint">Going great</p>
+          {strong.length ? strong.slice(0, 3).map((k) => <div className="skill-row" key={name(k)}><span>{name(k)}</span><span>{pct(k.correct, k.attempts)}%</span></div>) : <p className="note">Still gathering answers.</p>}
+        </>
+      )}
     </main>
   );
 }

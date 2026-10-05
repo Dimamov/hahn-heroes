@@ -10,7 +10,7 @@ export const SOURCES = [
 export type RewardSource = (typeof SOURCES)[number];
 
 /** Nexus points from missions are capped per school week, Monday to Sunday. */
-export const WEEKLY_CAPS: Partial<Record<RewardSource, number>> = { home_mission: 500, class_mission: 500 };
+export const WEEKLY_CAPS: Partial<Record<RewardSource, number>> = { home_mission: 500, class_mission: 500, learning: 150 };
 export const DAILY_LOGIN_COINS = 10;
 export const SCHOOL_TIMEZONE = 'America/New_York';
 
@@ -35,3 +35,6 @@ export function classMissionCoins(maxCoins: number, scorePct: number): number {
   if (scorePct < CLASS_PASS_PERCENT) return 0;
   return Math.max(1, Math.round((maxCoins * (scorePct - 50)) / 50));
 }
+
+/** Practice rewards: each question pays once, so the total is bounded by the question pool. */
+export const LEARNING_REWARDS = { coins: 2, xp: 5, skillPoints: 1, setSize: 5, resumeMinutes: 30 } as const;

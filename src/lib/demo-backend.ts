@@ -1,19 +1,41 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
 import {
-  CLASS_PASS_PERCENT, DAILY_LOGIN_COINS, WEEKLY_CAPS, classMissionCoins, schoolDate, schoolWeek,
+  CLASS_PASS_PERCENT, DAILY_LOGIN_COINS, LEARNING_REWARDS, WEEKLY_CAPS, classMissionCoins, schoolDate, schoolWeek,
   type Currency, type RewardSource,
 } from '../../supabase/functions/_shared/rewards.ts';
 import {
   LOCKOUT_MINUTES, MAX_FAILED_TRIES, generateCode, generateHeroCode, heroDisplayName, isGrade, isStarterHero,
   isValidPicture, normalizeHeroCode,
 } from '../../supabase/functions/_shared/kid-auth.ts';
+import bank from '../../content/questions.json';
 import {
-  AdultAuthError, SignInError, emptyBalances,
+  AdultAuthError, SUBJECTS, SignInError, emptyBalances,
   type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
   type ClassResult, type Hero, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
-  type QuizQuestion, type SignUpInput,
+  type QuizQuestion, type SignUpInput, type Subject, type SubjectProgress,
 } from './backend.ts';
+
+interface BankQuestion {
+  id: string;
+  subject: Subject;
+  grade: 5 | 6;
+  skill: string;
+  difficulty: number;
+  prompt: string;
+  choices: string[];
+  answer: number;
+  explanation: string;
+}
+const QUESTIONS = bank as BankQuestion[];
+type AnswerResultAwarded = { coins: number; xp: number; skillPoints: number; capped: boolean };
+interface HistoryRow {
+  childId: string;
+  questionId: string;
+  servedAt: number;
+  answered?: boolean;
+  correct?: boolean;
+}
 
 interface LedgerRow {
   heroId: string;
@@ -69,11 +91,13 @@ interface Db {
   announcements: Announcement[];
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
+  history: HistoryRow[];
+  stats: { childId: string; subject: Subject; skill: string; attempts: number; correct: number }[];
   ledger: LedgerRow[];
   current: string | null; // hero id or adult id
 }
 
-const KEY = 'hahn-heroes-demo-v2';
+const KEY = 'hahn-heroes-demo-v3';
 export const DEMO_SENSEI = { email: 'sensei@demo.test', password: 'sensei' };
 
 const fresh = (): Db => ({
@@ -81,7 +105,7 @@ const fresh = (): Db => ({
   adults: [{ id: 'demo-sensei', role: 'sensei', displayName: 'The Sensei', approved: true, ...DEMO_SENSEI }],
   parentLinks: [], linkCodes: [], codeAttempts: [], homeMissions: [], classes: [], members: [], classMissions: [],
   submissions: [], announcements: [], reads: [], triviaNight: { weekday: 'thursday', time: '18:30' },
-  ledger: [], current: null,
+  history: [], stats: [], ledger: [], current: null,
 });
 
 const HOUR = 3_600_000;
@@ -145,6 +169,17 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     return { awarded: grant, duplicate: false, capped: grant < amount };
   }
 
+  const learningFor = (childId: string): SubjectProgress[] => {
+    const hero = Object.values(db.accounts).find((a) => a.id === childId);
+    return SUBJECTS.map((subject) => {
+      const done = db.history.filter((h) => h.childId === childId && h.answered && QUESTIONS.find((q) => q.id === h.questionId)?.subject === subject);
+      const left = QUESTIONS.filter((q) => q.subject === subject && q.grade === hero?.grade && !db.history.some((h) => h.childId === childId && h.questionId === q.id)).length;
+      return {
+        subject, answered: done.length, correct: done.filter((h) => h.correct).length, left,
+        skills: db.stats.filter((x) => x.childId === childId && x.subject === subject).map(({ skill, attempts, correct }) => ({ skill, attempts, correct })).sort((a, b) => a.skill.localeCompare(b.skill)),
+      };
+    });
+  };
   const dailyKey = () => `daily:${schoolDate(now())}`;
   const homeView = ({ parentId: _p, ...m }: HomeRow): HomeMission => m;
   const classView = (c: ClassRow, withCode: boolean): ClassInfo => ({
@@ -358,6 +393,59 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     async childMissions(childId) {
       if (!isParentOf(childId)) throw new Error('not your child');
       return db.homeMissions.filter((m) => m.childId === childId).map(homeView);
+    },
+    async startPractice(subject) {
+      const hero = meHero();
+      if (!(SUBJECTS as readonly string[]).includes(subject)) throw new Error('unknown subject');
+      const pool = QUESTIONS.filter((q) => q.subject === subject && q.grade === hero.grade);
+      const seen = new Set(db.history.filter((h) => h.childId === hero.id).map((h) => h.questionId));
+      const resumeMs = LEARNING_REWARDS.resumeMinutes * 60_000;
+      const ids = db.history
+        .filter((h) => h.childId === hero.id && !h.answered && at() - h.servedAt < resumeMs && pool.some((q) => q.id === h.questionId))
+        .map((h) => h.questionId);
+      const fresh = pool.filter((q) => !seen.has(q.id)).sort(() => Math.random() - 0.5).slice(0, Math.max(0, LEARNING_REWARDS.setSize - ids.length));
+      for (const q of fresh) {
+        db.history.push({ childId: hero.id, questionId: q.id, servedAt: at() });
+        ids.push(q.id);
+      }
+      commit();
+      const left = pool.filter((q) => !db.history.some((h) => h.childId === hero.id && h.questionId === q.id)).length;
+      return {
+        questions: ids.map((id) => QUESTIONS.find((q) => q.id === id)!).map(({ id, subject: sub, skill, prompt, choices }) => ({ id, subject: sub, skill, prompt, choices })),
+        remaining: left,
+      };
+    },
+    async answerQuestion(questionId, choice) {
+      const hero = meHero();
+      const row = db.history.find((h) => h.childId === hero.id && h.questionId === questionId);
+      if (!row) throw new Error('that question was not handed to you');
+      const q = QUESTIONS.find((x) => x.id === questionId)!;
+      if (row.answered) return { correct: !!row.correct, rightChoice: q.answer, explanation: q.explanation, repeat: true };
+      if (!Number.isInteger(choice) || choice < 0 || choice >= q.choices.length) throw new Error('pick one of the choices');
+      const right = choice === q.answer;
+      row.answered = true;
+      row.correct = right;
+      const stat = db.stats.find((x) => x.childId === hero.id && x.subject === q.subject && x.skill === q.skill)
+        ?? (db.stats[db.stats.push({ childId: hero.id, subject: q.subject, skill: q.skill, attempts: 0, correct: 0 }) - 1]);
+      stat.attempts += 1;
+      if (right) stat.correct += 1;
+      let awarded: AnswerResultAwarded | undefined;
+      if (right) {
+        const key = `learn:${questionId}`;
+        const coins = award(hero.id, 'coins', LEARNING_REWARDS.coins, 'learning', key);
+        award(hero.id, 'xp', LEARNING_REWARDS.xp, 'learning', key);
+        award(hero.id, 'skill_points', LEARNING_REWARDS.skillPoints, 'learning', key);
+        awarded = { coins: coins.awarded, xp: LEARNING_REWARDS.xp, skillPoints: LEARNING_REWARDS.skillPoints, capped: coins.capped };
+      }
+      commit();
+      return { correct: right, rightChoice: q.answer, explanation: q.explanation, repeat: false, awarded };
+    },
+    async learning() {
+      return learningFor(meHero().id);
+    },
+    async childLearning(childId) {
+      if (!isParentOf(childId)) throw new Error('not your child');
+      return learningFor(childId);
     },
     async childProgress(childId) {
       if (!isParentOf(childId)) throw new Error('not your child');

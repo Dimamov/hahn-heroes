@@ -5,6 +5,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "strict": true,
@@ -15,6 +16,6 @@
     "skipLibCheck": true,
     "types": ["vite/client", "vite-plugin-pwa/client"]
   },
-  "include": ["src", "supabase/functions/_shared"],
+  "include": ["src", "supabase/functions/_shared", "content"],
   "exclude": ["supabase/functions/_shared/secret.ts", "supabase/functions/_shared/http.ts"]
 }
