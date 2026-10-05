@@ -1,5 +1,6 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
+import { fallbackHint } from './hints.ts';
 import { KIND_REASONS, KIND_REWARD, KIND_WEEKLY_MAX } from './kindness.ts';
 import { DRAWING_WORDS, isRightGuess, maskWord, scribble, type DrawStroke } from './drawing-rules.ts';
 import { BOT_CLUES, isCaught, newRound, tallyVotes } from './shadow-rules.ts';
@@ -1699,6 +1700,9 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const given = db.kind!.filter((x) => x.nominee === k.nominee && x.status === 'approved' && x.id !== k.id && schoolWeek(new Date(x.at)) === week).length;
       if (given >= KIND_WEEKLY_MAX) return { awarded: 0 };
       return { awarded: award(k.nominee, 'coins', KIND_REWARD, 'event', `kind:${k.id}`).awarded };
+    },
+    async hintFor(questionId, subject) {
+      return { hint: fallbackHint(subject, questionId), ai: false, left: null };
     },
     async raceState(back = 0) {
       const hero = meHero();

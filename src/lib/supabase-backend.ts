@@ -1,3 +1,4 @@
+import { fallbackHint } from './hints.ts';
 import { createClient } from '@supabase/supabase-js';
 import {
   AdultAuthError, SignInError, emptyBalances,
@@ -491,6 +492,13 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async kindDecide(id, approve) {
       const d = await rpc('kind_decide', { p_id: id, p_approve: approve });
       return { awarded: d.awarded };
+    },
+    async hintFor(questionId, subject) {
+      try {
+        const { data, error } = await sb.functions.invoke('hint-ai', { body: { id: questionId } });
+        if (!error && data?.hint) return { hint: String(data.hint), ai: true, left: typeof data.left === 'number' ? data.left : null };
+      } catch { /* fall through to the built-in hint */ }
+      return { hint: fallbackHint(subject, questionId), ai: false, left: null };
     },
     async raceState(back = 0) {
       const d = await rpc('class_race', { p_back: back });

@@ -63,6 +63,8 @@ export function Practice({ subject }: { subject: Subject }) {
     const t = setInterval(() => tick((n) => n + 1), 1000);
     return () => clearInterval(t);
   }, [surge]);
+  const [hint, setHint] = useState<string | null>(null);
+  const [hinting, setHinting] = useState(false);
   const [pending, setPending] = useState(false); // this answer is saved on the device, waiting for Wi-Fi
   const [waiting, setWaiting] = useState(0);
   const [offlineStart, setOfflineStart] = useState(false);
@@ -149,11 +151,16 @@ export function Practice({ subject }: { subject: Subject }) {
       setPicked(null); setError("That answer didn't go through. Tap it again.");
     }
   };
-  const next = () => { if (last) setDone(true); else { setI(i + 1); setResult(null); setPending(false); setPicked(null); } };
+  const askHint = async () => {
+    setHinting(true);
+    try { setHint((await backend.hintFor(q.id, subject)).hint); } catch { setHint(null); }
+    setHinting(false);
+  };
+  const next = () => { if (last) setDone(true); else { setI(i + 1); setResult(null); setPending(false); setPicked(null); setHint(null); } };
 
   return (
     <main className="screen">
-      <ScreenBar title={`${info.label} ${i + 1}/${set.questions.length}`} onBack={back} right={<ReadAloud text={questionText(question, q.choices, passage)} />} />
+      <ScreenBar title={`${info.label} ${i + 1}/${set.questions.length}`} onBack={back} right={<span className="bar-actions">{!result && !pending && !hint && <button className="read-aloud" aria-label="Need a hint?" disabled={hinting} onClick={askHint}>{hinting ? '…' : '💡'}</button>}<ReadAloud text={questionText(question, q.choices, passage)} /></span>} />
       {!online && <div className="surge" role="status">📴 No Wi-Fi: your answers are saved and sent later.</div>}
       {surge && (surge.active && surge.endAt > Date.now()
         ? <div className="surge on" role="status">⚡ Nexus Surge! Points x{surge.mult} · {Math.floor((surge.endAt - Date.now()) / 60000)}:{String(Math.floor(((surge.endAt - Date.now()) % 60000) / 1000)).padStart(2, '0')} left{surge.started ? ' 🎉 It just started!' : ''}</div>
@@ -166,7 +173,7 @@ export function Practice({ subject }: { subject: Subject }) {
           return <button key={n} className={`choice${state}`} disabled={!!result || pending} onClick={() => choose(n)}>{c}</button>;
         })}
       </div>
-      <p className="error" role="alert">{error}</p>
+      {hint && !result && !pending && !error ? <p className="hint-line" role="status">💡 {hint}</p> : <p className="error" role="alert">{error}</p>}
       {pending && <div className="feedback" role="status">📴 Saved! We will check it and give your points when you are back online.</div>}
       {result && (
         <div className={`feedback ${result.correct ? 'ok' : 'no'}`} role="status">
