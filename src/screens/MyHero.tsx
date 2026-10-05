@@ -7,6 +7,7 @@ import { WEAR_SLOTS, itemById } from '../lib/shop-catalog.ts';
 import { TREES } from '../lib/skills.ts';
 import type { ShopItem, ShopState, SkillState } from '../lib/backend.ts';
 
+const niceDate = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 type Tab = 'wardrobe' | 'shop' | 'skills';
 type Cat = 'outfit' | 'accessory' | 'decor';
 const CATS: { id: Cat; label: string }[] = [{ id: 'outfit', label: 'Outfits' }, { id: 'accessory', label: 'Accessories' }, { id: 'decor', label: 'Room' }];
@@ -36,7 +37,7 @@ export function MyHero() {
     const r = await backend.shopBuy(item.id).catch(() => null);
     if (!r) setNote("That didn't work. Please try again.");
     else if (r.ok) setNote(`You got the ${item.name}! 🎉`);
-    else setNote(r.reason === 'not_enough_coins' ? 'Not enough points yet. Finish missions and practice to earn more.' : r.reason === 'locked' ? 'Keep learning to unlock that one.' : 'You already have that.');
+    else setNote(r.reason === 'not_enough_coins' ? 'Not enough points yet. Finish missions and practice to earn more.' : r.reason === 'locked' ? 'Keep learning to unlock that one.' : r.reason === 'event_over' ? 'That event is over for now.' : 'You already have that.');
     await load();
     refresh().catch(() => undefined);
   };
@@ -44,7 +45,7 @@ export function MyHero() {
   if (!state) return <main className="screen"><ScreenBar title="My Hero" onBack={() => go('home')} /><div className="spinner" /></main>;
   const worn = state.equipped;
   const wearable = state.items.filter((i) => i.owned && i.slot === slot);
-  const shelf = state.items.filter((i) => i.kind === cat);
+  const shelf = state.items.filter((i) => i.kind === cat).sort((a, b) => Number(!!b.event && !b.owned) - Number(!!a.event && !a.owned));
   return (
     <main className="screen hero-screen">
       <ScreenBar title="My Hero" onBack={() => go('home')} right={<span className="coins" aria-label="Your points">💎 {state.coins}</span>} />
@@ -81,12 +82,13 @@ export function MyHero() {
         </>
       ) : (
         <>
+          {state.events.map((e) => <p key={e.id} className="event-banner" role="status">{e.icon} <b>{e.name}</b> · {e.live ? `limited items until ${niceDate(e.ends)}` : `starts ${niceDate(e.starts)}`}</p>)}
           <div className="chips">{CATS.map((c) => <button key={c.id} className={`chip${cat === c.id ? ' chosen' : ''}`} onClick={() => setCat(c.id)}>{c.label}</button>)}</div>
           <ItemGrid items={shelf} empty="Nothing here yet." render={(i) => (
             <button key={i.id} className={`item-tile${i.owned ? ' owned' : ''}${i.locked && !i.owned ? ' locked' : ''}`} disabled={i.owned || i.locked} onClick={() => setAsking(i)}>
               <span className="item-icon">{i.locked && !i.owned ? '🔒' : i.icon}</span>
               <b>{i.name}</b>
-              <small>{i.owned ? 'Owned ✓' : i.locked ? `Needs ${i.unlockXp} XP` : `💎 ${i.price}`}</small>
+              <small>{i.owned ? 'Owned ✓' : i.locked ? `Needs ${i.unlockXp} XP` : `💎 ${i.price}${i.event ? ' · ⏳ Limited' : ''}`}</small>
             </button>
           )} />
         </>

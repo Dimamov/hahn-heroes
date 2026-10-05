@@ -366,6 +366,12 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiSetChallenge(theme, goal, coins) {
       await rpc('sensei_set_challenge', { p_theme: theme, p_goal: goal, p_coins: coins });
     },
+    async senseiEvents() {
+      return rpc('sensei_events');
+    },
+    async senseiSetEvent(id, starts, ends, enabled) {
+      await rpc('sensei_set_event', { p_id: id, p_starts: starts, p_ends: ends, p_enabled: enabled });
+    },
     async questState() {
       const d = await rpc('quest_state');
       return { streak: d.streak, milestones: d.milestones, tasks: d.tasks, questCoins: d.quest_coins, questClaimed: d.quest_claimed };
@@ -422,7 +428,7 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     },
     async shopState() {
       const d = await rpc('shop_state');
-      return { coins: d.coins, xp: d.xp, equipped: d.equipped, items: d.items.map((i: any) => ({ ...i, unlockXp: i.unlock_xp })) };
+      return { coins: d.coins, xp: d.xp, equipped: d.equipped, events: d.events ?? [], items: d.items.map((i: any) => ({ ...i, unlockXp: i.unlock_xp })) };
     },
     async shopBuy(itemId) {
       const d = await rpc('shop_buy', { p_item: itemId });

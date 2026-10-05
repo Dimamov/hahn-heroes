@@ -633,3 +633,6 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 /* Read aloud */
 .read-aloud { width: 44px; height: 44px; border-radius: 50%; border: 0; background: #ffffff1c; color: inherit; font-size: 1.3rem; }
 .read-aloud[aria-pressed="true"] { background: #fbbf2433; }
+
+/* Seasonal events */
+.event-banner { margin: 0; padding: 6px 12px; border-radius: 12px; background: #f59e0b22; border: 1px solid #f59e0b55; font-size: .85rem; text-align: center; }

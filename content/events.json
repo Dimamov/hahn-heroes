@@ -1,0 +1,5 @@
+[
+ { "id": "fall", "name": "Fall Festival", "icon": "🍂", "blurb": "Cozy harvest gear, here for a little while.", "starts": "2026-10-12", "ends": "2026-11-02" },
+ { "id": "winter", "name": "Winter Lights", "icon": "❄️", "blurb": "Sparkly winter gear to brighten the cold days.", "starts": "2026-12-01", "ends": "2027-01-05" },
+ { "id": "spring", "name": "Spring Bloom", "icon": "🌸", "blurb": "Flowers and kites for the first warm days.", "starts": "2027-03-15", "ends": "2027-04-15" }
+]
