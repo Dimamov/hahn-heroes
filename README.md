@@ -14,6 +14,8 @@ Milestone 1, the foundation:
 - Server-side reward ledger: one award per reward key, weekly 500 Home plus 500 Class cap, append-only, students can't write to it
 - Demo mode: with no Supabase project connected, everything runs on this device
 
+Milestone 2, grown-ups: parent, teacher and Sensei accounts; one-time link codes; home missions (parent approves); class missions (teacher pastes a reading, kids answer, 80% passes, coins scale with score); announcements; Sensei overview, teacher approval and Trivia Night time. The Sensei role can only be granted in SQL.
+
 The full plan is in the project thread. Later milestones: parents/teachers/Sensei, learning engine, solo arcade, squad play, collections, story and events.
 
 ## Run it
@@ -50,4 +52,4 @@ VITE_SUPABASE_URL=https://reccddfusealreknvjfj.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_0lgGi-nNahJtzBObQIbI-A_fwYczmEo
 ```
 
-Known gap for a later milestone: `kid-signup` has no limit on how many heroes one network can create.
+`kid-signup` now limits hero creation (60 per network per hour, 400 overall per hour, editable in `app_settings`). Redeploy the function after applying migration `20261005001000`.

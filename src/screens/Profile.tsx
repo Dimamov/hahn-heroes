@@ -22,6 +22,7 @@ export function Profile() {
       </div>
       {backend.mode === 'demo' && <p className="note">Demo mode: this hero lives on this device only.</p>}
       <div className="grow" />
+      <button className="btn ghost" onClick={() => go('parentcode')}>👪 Grown-up code</button>
       <button className="btn ghost" onClick={signOut}>Switch hero</button>
     </main>
   );

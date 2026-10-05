@@ -24,6 +24,12 @@ Deno.serve(async (req) => {
   const secret = await getKidSecret(admin);
   if (!secret) return json({ error: 'server_not_configured' }, 500);
 
+  // Limit how many heroes one network (and the whole app) can make per hour.
+  const ip = req.headers.get('cf-connecting-ip') ?? req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null;
+  const { data: gate, error: gateError } = await admin.rpc('check_signup', { p_ip: ip });
+  if (gateError) return json({ error: 'server_error' }, 500);
+  if (!gate.allowed) return json({ error: 'too_many_signups', retryAfter: gate.retry_after }, 429);
+
   // A taken code is rare (31^8 codes); try a few times before giving up.
   for (let attempt = 0; attempt < 5; attempt++) {
     const code = generateHeroCode();

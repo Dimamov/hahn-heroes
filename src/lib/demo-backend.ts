@@ -1,13 +1,19 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
 import {
-  DAILY_LOGIN_COINS, WEEKLY_CAPS, schoolDate, schoolWeek, type Currency, type RewardSource,
+  CLASS_PASS_PERCENT, DAILY_LOGIN_COINS, WEEKLY_CAPS, classMissionCoins, schoolDate, schoolWeek,
+  type Currency, type RewardSource,
 } from '../../supabase/functions/_shared/rewards.ts';
 import {
-  LOCKOUT_MINUTES, MAX_FAILED_TRIES, generateHeroCode, heroDisplayName, isGrade, isStarterHero, isValidPicture,
-  normalizeHeroCode,
+  LOCKOUT_MINUTES, MAX_FAILED_TRIES, generateCode, generateHeroCode, heroDisplayName, isGrade, isStarterHero,
+  isValidPicture, normalizeHeroCode,
 } from '../../supabase/functions/_shared/kid-auth.ts';
-import { SignInError, emptyBalances, type Backend, type Hero, type SignUpInput } from './backend.ts';
+import {
+  AdultAuthError, SignInError, emptyBalances,
+  type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
+  type ClassResult, type Hero, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
+  type QuizQuestion, type SignUpInput,
+} from './backend.ts';
 
 interface LedgerRow {
   heroId: string;
@@ -21,13 +27,65 @@ interface Account extends Hero {
   picture: number[];
   failures: number[]; // timestamps (ms) of wrong tries since the last success
 }
+interface DemoAdult extends Adult {
+  email: string;
+  password: string;
+}
+interface HomeRow extends HomeMission {
+  parentId: string;
+}
+interface ClassRow {
+  id: string;
+  teacherId: string;
+  name: string;
+  grade: 5 | 6;
+  joinCode: string;
+}
+interface ClassMissionRow {
+  id: string;
+  classId: string;
+  title: string;
+  passage: string;
+  questions: QuizQuestion[];
+  maxCoins: number;
+  answers: number[];
+  explanations: string[];
+}
+interface SubmissionRow extends ClassResult {
+  missionId: string;
+  childId: string;
+}
 interface Db {
-  accounts: Record<string, Account>; // by hero code
+  accounts: Record<string, Account>; // heroes, by hero code
+  adults: DemoAdult[];
+  parentLinks: { childId: string; parentId: string }[];
+  linkCodes: { childId: string; code: string; expiresAt: number; used: boolean }[];
+  codeAttempts: { actor: string; kind: 'link' | 'class'; at: number }[];
+  homeMissions: HomeRow[];
+  classes: ClassRow[];
+  members: { classId: string; childId: string }[];
+  classMissions: ClassMissionRow[];
+  submissions: SubmissionRow[];
+  announcements: Announcement[];
+  reads: { userId: string; announcementId: number }[];
+  triviaNight: { weekday: string; time: string };
   ledger: LedgerRow[];
-  current: string | null; // hero id
+  current: string | null; // hero id or adult id
 }
 
-const KEY = 'hahn-heroes-demo-v1';
+const KEY = 'hahn-heroes-demo-v2';
+export const DEMO_SENSEI = { email: 'sensei@demo.test', password: 'sensei' };
+
+const fresh = (): Db => ({
+  accounts: {},
+  adults: [{ id: 'demo-sensei', role: 'sensei', displayName: 'The Sensei', approved: true, ...DEMO_SENSEI }],
+  parentLinks: [], linkCodes: [], codeAttempts: [], homeMissions: [], classes: [], members: [], classMissions: [],
+  submissions: [], announcements: [], reads: [], triviaNight: { weekday: 'thursday', time: '18:30' },
+  ledger: [], current: null,
+});
+
+const HOUR = 3_600_000;
+const DAY = 24 * HOUR;
 
 export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>, now: () => Date = () => new Date()): Backend {
   const load = (): Db => {
@@ -35,108 +93,391 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const raw = storage.getItem(KEY);
       if (raw) return JSON.parse(raw) as Db;
     } catch { /* corrupted or blocked storage: start fresh */ }
-    return { accounts: {}, ledger: [], current: null };
+    return fresh();
   };
   const save = (db: Db) => {
     try { storage.setItem(KEY, JSON.stringify(db)); } catch { /* private mode: keep going in memory only */ }
   };
-  let memory = load();
-  const db = () => memory;
-  const commit = () => save(memory);
+  const db = load();
+  const commit = () => save(db);
+  const at = () => now().getTime();
 
   const strip = ({ picture: _p, failures: _f, ...hero }: Account): Hero => hero;
-  const me = (): Account => {
-    const acct = Object.values(db().accounts).find((a) => a.id === db().current);
-    if (!acct) throw new Error('not signed in');
+  const toAdult = ({ email: _e, password: _w, ...adult }: DemoAdult): Adult => adult;
+  const meHero = (): Account => {
+    const acct = Object.values(db.accounts).find((a) => a.id === db.current);
+    if (!acct) throw new Error('not signed in as a hero');
     return acct;
   };
+  const meAdult = (role?: Adult['role']): DemoAdult => {
+    const a = db.adults.find((x) => x.id === db.current);
+    if (!a || (role && (a.role !== role || !a.approved))) throw new Error(`not signed in as an approved ${role ?? 'grown-up'}`);
+    return a;
+  };
+  const heroById = (id: string) => Object.values(db.accounts).find((a) => a.id === id);
+  const isParentOf = (childId: string) => {
+    const a = meAdult('parent');
+    return db.parentLinks.some((l) => l.childId === childId && l.parentId === a.id);
+  };
+  const teaches = (classId: string) => {
+    const t = meAdult('teacher');
+    return db.classes.find((c) => c.id === classId && c.teacherId === t.id);
+  };
+  const tooManyTries = (actor: string, kind: 'link' | 'class') =>
+    db.codeAttempts.filter((x) => x.actor === actor && x.kind === kind && at() - x.at < HOUR).length >= 10;
 
   /** Mirrors award() in the database: once per key, mission coins capped per school week. */
   function award(heroId: string, currency: Currency, amount: number, source: RewardSource, key: string) {
-    const d = db();
-    if (d.ledger.some((r) => r.heroId === heroId && r.currency === currency && r.key === key)) {
-      return { awarded: 0, duplicate: true };
+    if (db.ledger.some((r) => r.heroId === heroId && r.currency === currency && r.key === key)) {
+      return { awarded: 0, duplicate: true, capped: false };
     }
     const week = schoolWeek(now());
     let grant = amount;
     const cap = currency === 'coins' ? WEEKLY_CAPS[source] : undefined;
     if (cap !== undefined) {
-      const used = d.ledger
+      const used = db.ledger
         .filter((r) => r.heroId === heroId && r.currency === 'coins' && r.source === source && r.week === week)
         .reduce((s, r) => s + r.amount, 0);
       grant = Math.max(0, Math.min(amount, cap - used));
     }
-    d.ledger.push({ heroId, currency, amount: grant, source, key, week });
+    db.ledger.push({ heroId, currency, amount: grant, source, key, week });
     commit();
-    return { awarded: grant, duplicate: false };
+    return { awarded: grant, duplicate: false, capped: grant < amount };
   }
 
   const dailyKey = () => `daily:${schoolDate(now())}`;
+  const homeView = ({ parentId: _p, ...m }: HomeRow): HomeMission => m;
+  const classView = (c: ClassRow, withCode: boolean): ClassInfo => ({
+    id: c.id, name: c.name, grade: c.grade,
+    ...(withCode ? { joinCode: c.joinCode, members: db.members.filter((m) => m.classId === c.id).length } : {}),
+  });
 
-  return {
+  const backend: Backend = {
     mode: 'demo',
-    async restore() {
-      const d = db();
-      const acct = Object.values(d.accounts).find((a) => a.id === d.current);
-      return acct ? strip(acct) : null;
+
+    async restore(): Promise<Identity> {
+      const hero = Object.values(db.accounts).find((a) => a.id === db.current);
+      if (hero) return { kind: 'hero', hero: strip(hero) };
+      const adult = db.adults.find((a) => a.id === db.current);
+      return adult ? { kind: 'adult', adult: toAdult(adult) } : null;
     },
+    async signOut() {
+      db.current = null;
+      commit();
+    },
+
+    // ---- Heroes -----------------------------------------------------------------------
     async signUp(input: SignUpInput) {
       const name = heroDisplayName(input.nameAdjective, input.nameNoun);
       if (!name || !isGrade(input.grade) || !isStarterHero(input.hero) || !isValidPicture(input.picture)) {
         throw new Error('invalid_request');
       }
-      const d = db();
       let code = generateHeroCode();
-      while (d.accounts[code]) code = generateHeroCode();
+      while (db.accounts[code]) code = generateHeroCode();
       const acct: Account = {
         id: crypto.randomUUID(), heroCode: code, displayName: name, grade: input.grade, starter: input.hero,
         picture: input.picture, failures: [],
       };
-      d.accounts[code] = acct;
-      d.current = acct.id;
+      db.accounts[code] = acct;
+      db.current = acct.id;
       commit();
       return strip(acct);
     },
     async signIn(heroCode, picture) {
-      const d = db();
-      const acct = d.accounts[normalizeHeroCode(heroCode)];
-      const at = now().getTime();
+      const acct = db.accounts[normalizeHeroCode(heroCode)];
+      const t = at();
       const window = LOCKOUT_MINUTES * 60_000;
       if (acct) {
-        const recent = acct.failures.filter((t) => at - t < window);
+        const recent = acct.failures.filter((x) => t - x < window);
         if (recent.length >= MAX_FAILED_TRIES) {
-          throw new SignInError('resting', { retryAfter: Math.ceil((recent[0] + window - at) / 1000) });
+          throw new SignInError('resting', { retryAfter: Math.ceil((recent[0] + window - t) / 1000) });
         }
         acct.failures = recent;
       }
       if (!acct || acct.picture.join() !== picture.join()) {
         if (acct) {
-          acct.failures.push(at);
+          acct.failures.push(t);
           commit();
         }
         throw new SignInError('wrong', { triesLeft: acct ? MAX_FAILED_TRIES - acct.failures.length : undefined });
       }
       acct.failures = [];
-      d.current = acct.id;
+      db.current = acct.id;
       commit();
       return strip(acct);
     },
-    async signOut() {
-      db().current = null;
-      commit();
-    },
     async balances() {
       const out = emptyBalances();
-      for (const r of db().ledger) if (r.heroId === me().id) out[r.currency] += r.amount;
+      for (const r of db.ledger) if (r.heroId === meHero().id) out[r.currency] += r.amount;
       return out;
     },
     async dailyStatus() {
-      const id = me().id;
-      const taken = db().ledger.some((r) => r.heroId === id && r.currency === 'coins' && r.key === dailyKey());
+      const id = meHero().id;
+      const taken = db.ledger.some((r) => r.heroId === id && r.currency === 'coins' && r.key === dailyKey());
       return { available: !taken, amount: DAILY_LOGIN_COINS };
     },
     async claimDaily() {
-      return award(me().id, 'coins', DAILY_LOGIN_COINS, 'daily', dailyKey());
+      const r = award(meHero().id, 'coins', DAILY_LOGIN_COINS, 'daily', dailyKey());
+      return { awarded: r.awarded, duplicate: r.duplicate };
+    },
+    async linkCode() {
+      const id = meHero().id;
+      let row = db.linkCodes.filter((c) => c.childId === id && !c.used && c.expiresAt > at()).pop();
+      if (!row) {
+        row = { childId: id, code: generateCode(8), expiresAt: at() + 7 * DAY, used: false };
+        db.linkCodes.push(row);
+        commit();
+      }
+      return { code: row.code, expiresAt: new Date(row.expiresAt).toISOString() };
+    },
+    async homeMissions() {
+      const id = meHero().id;
+      return db.homeMissions.filter((m) => m.childId === id).map(homeView);
+    },
+    async submitHomeMission(id) {
+      const m = db.homeMissions.find((x) => x.id === id && x.childId === meHero().id);
+      if (!m || (m.status !== 'assigned' && m.status !== 'sent_back')) throw new Error('mission not available');
+      m.status = 'submitted';
+      commit();
+    },
+    async myClass() {
+      const link = db.members.find((m) => m.childId === meHero().id);
+      const c = link && db.classes.find((x) => x.id === link.classId);
+      return c ? classView(c, false) : null;
+    },
+    async joinClass(code) {
+      const hero = meHero();
+      if (tooManyTries(hero.id, 'class')) return { ok: false, error: 'too_many_tries' };
+      if (db.members.some((m) => m.childId === hero.id)) return { ok: false, error: 'already_in_class' };
+      const c = db.classes.find((x) => x.joinCode === normalizeHeroCode(code));
+      if (!c) {
+        db.codeAttempts.push({ actor: hero.id, kind: 'class', at: at() });
+        commit();
+        return { ok: false, error: 'invalid_code' };
+      }
+      if (c.grade !== hero.grade) return { ok: false, error: 'wrong_grade' };
+      db.members.push({ classId: c.id, childId: hero.id });
+      commit();
+      return { ok: true, name: c.name };
+    },
+    async classMissions() {
+      const hero = meHero();
+      const link = db.members.find((m) => m.childId === hero.id);
+      if (!link) return [];
+      return db.classMissions.filter((m) => m.classId === link.classId).map((m): ClassMission => {
+        const sub = db.submissions.find((s) => s.missionId === m.id && s.childId === hero.id);
+        return {
+          id: m.id, title: m.title, passage: m.passage, questions: m.questions, maxCoins: m.maxCoins,
+          result: sub && { correct: sub.correct, total: sub.total, scorePct: sub.scorePct, coins: sub.coins, passed: sub.scorePct >= CLASS_PASS_PERCENT, alreadyDone: true },
+        };
+      });
+    },
+    async submitClassMission(id, answers) {
+      const hero = meHero();
+      const m = db.classMissions.find((x) => x.id === id);
+      const inClass = m && db.members.some((x) => x.classId === m.classId && x.childId === hero.id);
+      if (!m || !inClass) throw new Error('mission not found');
+      const prior = db.submissions.find((s) => s.missionId === id && s.childId === hero.id);
+      if (prior) {
+        return { correct: prior.correct, total: prior.total, scorePct: prior.scorePct, coins: prior.coins, passed: prior.scorePct >= CLASS_PASS_PERCENT, alreadyDone: true };
+      }
+      if (answers.length !== m.questions.length) throw new Error('answer every question');
+      const review = m.answers.map((right, i) => ({ correct: answers[i] === right, rightChoice: right, explanation: m.explanations[i] }));
+      const correct = review.filter((r) => r.correct).length;
+      const scorePct = Math.round((100 * correct) / m.questions.length);
+      let coins = 0;
+      if (scorePct >= CLASS_PASS_PERCENT) {
+        coins = award(hero.id, 'coins', classMissionCoins(m.maxCoins, scorePct), 'class_mission', `class_mission:${id}`).awarded;
+      }
+      const result: ClassResult = { correct, total: m.questions.length, scorePct, coins, passed: scorePct >= CLASS_PASS_PERCENT, alreadyDone: false, review };
+      const { review: _r, alreadyDone: _a, ...stored } = result;
+      db.submissions.push({ missionId: id, childId: hero.id, ...stored });
+      commit();
+      return result;
+    },
+    async announcements() {
+      const userId = db.current ?? '';
+      const items = [...db.announcements].sort((a, b) => b.id - a.id);
+      const unread = items.filter((a) => !db.reads.some((r) => r.userId === userId && r.announcementId === a.id)).length;
+      return { items, unread };
+    },
+    async markAnnouncementsRead() {
+      const userId = db.current ?? '';
+      for (const a of db.announcements) {
+        if (!db.reads.some((r) => r.userId === userId && r.announcementId === a.id)) db.reads.push({ userId, announcementId: a.id });
+      }
+      commit();
+    },
+
+    // ---- Grown-ups ----------------------------------------------------------------------
+    async adultSignUp(email, password, role, name) {
+      const e = email.trim().toLowerCase();
+      if (password.length < 6) throw new AdultAuthError('weak');
+      if (db.adults.some((a) => a.email === e)) throw new AdultAuthError('taken');
+      const displayName = name.trim();
+      if (displayName.length < 2 || displayName.length > 60) throw new Error('name must be 2 to 60 characters');
+      const adult: DemoAdult = { id: crypto.randomUUID(), role, displayName, approved: role === 'parent', email: e, password };
+      db.adults.push(adult);
+      db.current = adult.id;
+      commit();
+      return toAdult(adult);
+    },
+    async adultSignIn(email, password) {
+      const a = db.adults.find((x) => x.email === email.trim().toLowerCase());
+      if (!a || a.password !== password) throw new AdultAuthError('wrong');
+      db.current = a.id;
+      commit();
+      return toAdult(a);
+    },
+    async claimLink(code) {
+      const parent = meAdult('parent');
+      if (tooManyTries(parent.id, 'link')) return { ok: false, error: 'too_many_tries' };
+      const row = db.linkCodes.find((c) => c.code === normalizeHeroCode(code) && !c.used && c.expiresAt > at());
+      if (!row) {
+        db.codeAttempts.push({ actor: parent.id, kind: 'link', at: at() });
+        commit();
+        return { ok: false, error: 'invalid_code' };
+      }
+      row.used = true;
+      if (!db.parentLinks.some((l) => l.childId === row.childId && l.parentId === parent.id)) {
+        db.parentLinks.push({ childId: row.childId, parentId: parent.id });
+      }
+      commit();
+      return { ok: true, childName: heroById(row.childId)!.displayName };
+    },
+    async children() {
+      const parent = meAdult('parent');
+      return db.parentLinks.filter((l) => l.parentId === parent.id).map((l) => {
+        const h = heroById(l.childId)!;
+        return {
+          id: h.id, displayName: h.displayName, grade: h.grade, starter: h.starter,
+          waiting: db.homeMissions.filter((m) => m.childId === h.id && m.status === 'submitted').length,
+        };
+      });
+    },
+    async childMissions(childId) {
+      if (!isParentOf(childId)) throw new Error('not your child');
+      return db.homeMissions.filter((m) => m.childId === childId).map(homeView);
+    },
+    async childProgress(childId) {
+      if (!isParentOf(childId)) throw new Error('not your child');
+      const week = schoolWeek(now());
+      const sum = (f: (r: LedgerRow) => boolean) => db.ledger.filter((r) => r.heroId === childId && f(r)).reduce((s, r) => s + r.amount, 0);
+      return {
+        coins: sum((r) => r.currency === 'coins'),
+        xp: sum((r) => r.currency === 'xp'),
+        homeWeek: sum((r) => r.currency === 'coins' && r.source === 'home_mission' && r.week === week),
+        classWeek: sum((r) => r.currency === 'coins' && r.source === 'class_mission' && r.week === week),
+        homeCap: WEEKLY_CAPS.home_mission!,
+        classCap: WEEKLY_CAPS.class_mission!,
+      };
+    },
+    async createHomeMission(childId, title, details, coins) {
+      if (!isParentOf(childId)) throw new Error('not your child');
+      if (!Number.isInteger(coins) || coins < 1 || coins > 100) throw new Error('coins must be 1 to 100');
+      if (!title.trim() || title.trim().length > 80) throw new Error('title must be 1 to 80 characters');
+      db.homeMissions.push({
+        id: crypto.randomUUID(), childId, parentId: meAdult().id, title: title.trim(), details: details.trim().slice(0, 500),
+        coins, status: 'assigned' as HomeMissionStatus,
+      });
+      commit();
+    },
+    async reviewHomeMission(id, approve) {
+      const m = db.homeMissions.find((x) => x.id === id);
+      if (!m || !isParentOf(m.childId)) throw new Error('mission not found');
+      if (m.status !== 'submitted') throw new Error('mission is not waiting for approval');
+      if (!approve) {
+        m.status = 'sent_back';
+        commit();
+        return { status: 'sent_back', awarded: 0 };
+      }
+      m.status = 'approved';
+      const r = award(m.childId, 'coins', m.coins, 'home_mission', `home_mission:${id}`);
+      return { status: 'approved', awarded: r.awarded, capped: r.capped };
+    },
+    async classes() {
+      const t = meAdult('teacher');
+      return db.classes.filter((c) => c.teacherId === t.id).map((c) => classView(c, true));
+    },
+    async createClass(name, grade) {
+      const t = meAdult('teacher');
+      if (!isGrade(grade) || !name.trim()) throw new Error('invalid class');
+      let joinCode = generateCode(6);
+      while (db.classes.some((c) => c.joinCode === joinCode)) joinCode = generateCode(6);
+      const row: ClassRow = { id: crypto.randomUUID(), teacherId: t.id, name: name.trim().slice(0, 60), grade, joinCode };
+      db.classes.push(row);
+      commit();
+      return classView(row, true);
+    },
+    async createClassMission(classId, mission: NewClassMission) {
+      if (!teaches(classId)) throw new Error('not your class');
+      const n = mission.questions.length;
+      if (n < 3 || n > 10) throw new Error('a mission needs 3 to 10 questions');
+      if (mission.answers.length !== n || mission.explanations.length !== n) throw new Error('every question needs an answer and an explanation');
+      mission.questions.forEach((q, i) => {
+        if (!q.prompt.trim() || q.choices.length < 2 || q.choices.length > 4 || !(mission.answers[i] >= 0 && mission.answers[i] < q.choices.length)) {
+          throw new Error(`question ${i + 1} is not valid`);
+        }
+      });
+      db.classMissions.push({
+        id: crypto.randomUUID(), classId, title: mission.title.trim(), passage: mission.passage, questions: mission.questions,
+        maxCoins: mission.maxCoins, answers: mission.answers, explanations: mission.explanations,
+      });
+      commit();
+    },
+    async classResults(classId): Promise<ClassMissionResults[]> {
+      if (!teaches(classId)) throw new Error('not your class');
+      return db.classMissions.filter((m) => m.classId === classId).map((m) => ({
+        id: m.id, title: m.title,
+        submissions: db.submissions.filter((s) => s.missionId === m.id).map((s) => ({
+          childId: s.childId, childName: heroById(s.childId)!.displayName, scorePct: s.scorePct, coins: s.coins,
+        })),
+      }));
+    },
+    async resetSubmission(missionId, childId) {
+      const m = db.classMissions.find((x) => x.id === missionId);
+      if (!m || !teaches(m.classId)) throw new Error('not your class');
+      db.submissions = db.submissions.filter((s) => !(s.missionId === missionId && s.childId === childId));
+      commit();
+    },
+    async senseiOverview() {
+      meAdult('sensei');
+      const heroes = Object.values(db.accounts);
+      return {
+        heroes: heroes.length,
+        grade5: heroes.filter((h) => h.grade === 5).length,
+        grade6: heroes.filter((h) => h.grade === 6).length,
+        parents: db.adults.filter((a) => a.role === 'parent').length,
+        teachers: db.adults.filter((a) => a.role === 'teacher' && a.approved).length,
+        pendingTeachers: db.adults.filter((a) => a.role === 'teacher' && !a.approved).length,
+        classes: db.classes.length,
+        triviaNight: db.triviaNight,
+      };
+    },
+    async pendingTeachers() {
+      meAdult('sensei');
+      return db.adults.filter((a) => a.role === 'teacher' && !a.approved).map((a) => ({ id: a.id, displayName: a.displayName, email: a.email }));
+    },
+    async approveTeacher(id, approve) {
+      meAdult('sensei');
+      const a = db.adults.find((x) => x.id === id && x.role === 'teacher');
+      if (!a) return;
+      if (approve) a.approved = true;
+      else if (!a.approved) db.adults = db.adults.filter((x) => x.id !== id);
+      commit();
+    },
+    async postAnnouncement(title, body) {
+      meAdult('sensei');
+      if (!title.trim() || !body.trim()) throw new Error('write a title and a message');
+      db.announcements.push({ id: db.announcements.length + 1, title: title.trim().slice(0, 80), body: body.trim().slice(0, 500), createdAt: now().toISOString() });
+      commit();
+    },
+    async setTriviaNight(weekday, time) {
+      meAdult('sensei');
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error('trivia night needs a time like 18:30');
+      db.triviaNight = { weekday, time };
+      commit();
     },
   };
+  return backend;
 }

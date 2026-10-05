@@ -28,3 +28,10 @@ export function schoolWeek(at: Date, timeZone = SCHOOL_TIMEZONE): string {
   day.setUTCDate(day.getUTCDate() - sinceMonday);
   return day.toISOString().slice(0, 10);
 }
+
+/** Class missions pass at 80%. 100% earns the full amount, 90% earns 80% of it, 80% earns 60%. */
+export const CLASS_PASS_PERCENT = 80;
+export function classMissionCoins(maxCoins: number, scorePct: number): number {
+  if (scorePct < CLASS_PASS_PERCENT) return 0;
+  return Math.max(1, Math.round((maxCoins * (scorePct - 50)) / 50));
+}
