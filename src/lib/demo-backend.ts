@@ -19,6 +19,7 @@ import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
 import { RAID_BOSSES, RAID_RULES } from './raid.ts';
 import { HEROES } from './heroes.ts';
+import { HUNTS, TREASURE_COIN, huntIndex } from './treasure.ts';
 import { CODE_LIMITS, CODE_WORDS_A, CODE_WORDS_B } from './codes.ts';
 import { CONTEST_POINTS, contestTheme } from './contest.ts';
 import { COMIC_LINES, COMIC_MAX, COMIC_POSES, COMIC_SCENES, type ComicPanels } from './comics.ts';
@@ -285,6 +286,7 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  treasure?: { week: string; heroId: string; step: number; claimed: boolean }[];
   codes?: { id: number; code: string; by: string; classId: string | null; coins: number; xp: number; day: string; expires: number; used: string[] }[];
   codeTries?: { heroId: string; at: number }[];
   contest?: { entries: { week: string; heroId: string }[]; votes: { week: string; voter: string; entry: string }[]; claims: { week: string; heroId: string }[] };
@@ -1648,6 +1650,37 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const s = all.find((x) => x.id === stickerId && x.owner === me);
       if (!s) throw new Error('that is not your sticker');
       s.owner = toHero;
+      commit();
+      return { ok: true };
+    },
+    async treasureState() {
+      const me = meHero().id;
+      const week = schoolWeek(now());
+      const h = huntIndex(week);
+      const p = (db.treasure ??= []).find((x) => x.week === week && x.heroId === me);
+      return { hunt: h, step: p?.step ?? 0, steps: 4, done: (p?.step ?? 0) >= 4, claimed: !!p?.claimed, card: HUNTS[h].card };
+    },
+    async treasureFind(place) {
+      const me = meHero().id;
+      const week = schoolWeek(now());
+      const all = (db.treasure ??= []);
+      let p = all.find((x) => x.week === week && x.heroId === me);
+      if (!p) { p = { week, heroId: me, step: 0, claimed: false }; all.push(p); }
+      if (p.step >= 4 || HUNTS[huntIndex(week)].steps[p.step].place !== place) return { ok: false };
+      award(me, 'coins', TREASURE_COIN, 'event', `treasure:${week}:${p.step}`);
+      p.step += 1;
+      commit();
+      return { ok: true, done: p.step >= 4 };
+    },
+    async treasureClaim() {
+      const me = meHero().id;
+      const week = schoolWeek(now());
+      const p = (db.treasure ??= []).find((x) => x.week === week && x.heroId === me);
+      if (!p || p.step < 4 || p.claimed) return { ok: false };
+      p.claimed = true;
+      const inv = (db.cardInv ??= []);
+      const have = inv.find((c) => c.heroId === me && c.cardId === HUNTS[huntIndex(week)].card);
+      if (have) have.qty += 1; else inv.push({ heroId: me, cardId: HUNTS[huntIndex(week)].card, qty: 1 });
       commit();
       return { ok: true };
     },

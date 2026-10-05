@@ -478,6 +478,17 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('sticker_give', { p_sticker: stickerId, p_to: toHero });
       return { ok: !!d.ok, reason: d.reason };
     },
+    async treasureState() {
+      return (await rpc('treasure_state')) as never;
+    },
+    async treasureFind(place) {
+      const d = await rpc('treasure_find', { p_place: place });
+      return { ok: !!d.ok, done: !!d.done };
+    },
+    async treasureClaim() {
+      const d = await rpc('treasure_claim');
+      return { ok: !!d.ok };
+    },
     async badgeWall() {
       return (await rpc('badge_wall')) as string[];
     },

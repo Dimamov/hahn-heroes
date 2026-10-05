@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createDemoBackend } from './demo-backend.ts';
 import { SignInError } from './backend.ts';
+import { HUNTS } from './treasure.ts';
 import { isWild, playable } from './odin-rules.ts';
 import bank from '../../content/questions.json';
 
@@ -300,6 +301,23 @@ describe('demo backend: grown-ups and missions', () => {
     expect(await b.badgeWall()).toEqual([]);
     await b.comicMake([0, 1, 2].map(() => ({ hero: 'ana', scene: 'hall', pose: 'stand', line: 'Awesome!' })) as never);
     expect(await b.badgeWall()).toEqual(['comic-creator']);
+  });
+
+  it('runs the treasure hunt in order, pays each clue once and gives the card once', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    let s = await b.treasureState();
+    expect(s).toMatchObject({ step: 0, done: false });
+    const places = HUNTS[s.hunt].steps.map((x) => x.place);
+    expect(await b.treasureFind(places[1])).toEqual({ ok: false });
+    expect(await b.treasureClaim()).toEqual({ ok: false });
+    for (const p of places) expect((await b.treasureFind(p)).ok).toBe(true);
+    expect((await b.treasureState()).done).toBe(true);
+    expect(await b.treasureFind(places[0])).toEqual({ ok: false });
+    expect(await b.treasureClaim()).toEqual({ ok: true });
+    expect(await b.treasureClaim()).toEqual({ ok: false });
+    s = await b.treasureState();
+    expect(s.claimed).toBe(true);
   });
 
   it('lets a teacher send a quiz without a reading passage', async () => {

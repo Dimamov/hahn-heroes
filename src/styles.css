@@ -781,3 +781,7 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 /* Achievement wall */
 .item-tile.badge.locked { opacity: .5; filter: grayscale(1); }
 .item-tile.badge.picked { outline: 3px solid var(--cyan, #22d3ee); }
+
+/* Treasure map */
+.treasure-pins { display: flex; justify-content: center; gap: 14px; font-size: 1.8rem; }
+.treasure-pins span:not(.found) { opacity: .5; }
