@@ -478,6 +478,18 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('sticker_give', { p_sticker: stickerId, p_to: toHero });
       return { ok: !!d.ok, reason: d.reason };
     },
+    async lookGet() {
+      return (await rpc('look_get')) as never;
+    },
+    async lookSave(look, pinned) {
+      await rpc('look_save', { p_hair: look.hair, p_makeup: look.makeup, p_aura: look.aura, p_outfit: look.outfit, p_accessory: look.accessory, p_pinned: pinned });
+    },
+    async lookGallery() {
+      return (await rpc('look_gallery')) as never;
+    },
+    async lookLike(heroId) {
+      await rpc('look_like', { p_hero: heroId });
+    },
     async baseGet() {
       return (await rpc('base_get')) as never;
     },
