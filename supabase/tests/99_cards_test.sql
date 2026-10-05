@@ -20,6 +20,7 @@ begin
 
   -- give known cards for the trade tests
   perform as_admin();
+  update hero_cards set qty = 0 where hero_id = u(71);   -- the random pack must not change the trade maths
   insert into hero_cards (hero_id, card_id, qty) values
     (u(71), 'c-lamp', 3), (u(71), 'r-luna', 1), (u(72), 'c-map', 2), (u(72), 'c-bell', 1), (u(72), 'e-ana', 1)
   on conflict (hero_id, card_id) do update set qty = excluded.qty;
