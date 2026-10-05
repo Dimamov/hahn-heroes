@@ -2,20 +2,22 @@ import { useEffect, useState } from 'react';
 import type { Adult, Backend, ChildProgress, ChildSummary, HomeMission, SubjectProgress, WeekSummary } from '../../lib/backend.ts';
 import { SUBJECT_INFO } from '../Learn.tsx';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
+import { PushSettings } from '../../components/PushSettings.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 import { HeroArt } from '../../components/HeroArt.tsx';
 import { formatHeroCode, normalizeHeroCode } from '../../../supabase/functions/_shared/kid-auth.ts';
 
-type View = { name: 'list' } | { name: 'link' } | { name: 'child'; child: ChildSummary } | { name: 'new'; child: ChildSummary } | { name: 'learning'; child: ChildSummary } | { name: 'week'; child: ChildSummary };
+type View = { name: 'list' } | { name: 'link' } | { name: 'child'; child: ChildSummary } | { name: 'new'; child: ChildSummary } | { name: 'learning'; child: ChildSummary } | { name: 'week'; child: ChildSummary } | { name: 'push' };
 
 const LINK_ERRORS = { invalid_code: "That code isn't right, or it was already used. Ask your child for a new one.", too_many_tries: 'Too many tries. Please wait an hour and try again.' };
 
-export function ParentHome({ backend, adult, onSignOut }: { backend: Backend; adult: Adult; onSignOut: () => void }) {
+export function ParentHome({ backend, adult, onSignOut, onPrivacy }: { backend: Backend; adult: Adult; onSignOut: () => void; onPrivacy?: () => void }) {
   const [view, setView] = useState<View>(new URLSearchParams(window.location.search).has('link') ? { name: 'link' } : { name: 'list' });
   const [children, setChildren] = useState<ChildSummary[] | null>(null);
   const reload = () => backend.children().then(setChildren).catch(() => setChildren([]));
   useEffect(() => { reload(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  if (view.name === 'push') return <main className="screen"><ScreenBar title="Notifications" onBack={() => setView({ name: 'list' })} /><PushSettings backend={backend} role="parent" /></main>;
   if (view.name === 'link') return <LinkChild backend={backend} onBack={() => { reload(); setView({ name: 'list' }); }} />;
   if (view.name === 'new') return <NewMission backend={backend} child={view.child} onBack={() => setView({ name: 'child', child: view.child })} />;
   if (view.name === 'learning') return <LearningView backend={backend} child={view.child} onBack={() => setView({ name: 'child', child: view.child })} />;
@@ -24,7 +26,7 @@ export function ParentHome({ backend, adult, onSignOut }: { backend: Backend; ad
 
   return (
     <main className="screen">
-      <ScreenBar title={`Hi ${adult.displayName.split(' ')[0]}`} onBack={onSignOut} right={<button className="btn link" onClick={onSignOut}>Sign out</button>} />
+      <ScreenBar title={`Hi ${adult.displayName.split(' ')[0]}`} onBack={onSignOut} right={<><button className="btn link" onClick={onPrivacy}>Privacy</button><button className="btn link" onClick={onSignOut}>Sign out</button></>} />
       {children === null ? <div className="spinner" /> : (
         <PagedList
           items={children}
@@ -39,6 +41,7 @@ export function ParentHome({ backend, adult, onSignOut }: { backend: Backend; ad
           )}
         />
       )}
+      <button className="btn ghost" onClick={() => setView({ name: 'push' })}>🔔 Notifications</button>
       <button className="btn primary" onClick={() => setView({ name: 'link' })}>＋ Link a child</button>
     </main>
   );
