@@ -638,3 +638,9 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .event-banner { margin: 0; padding: 6px 12px; border-radius: 12px; background: #f59e0b22; border: 1px solid #f59e0b55; font-size: .85rem; text-align: center; }
 @media (max-height: 480px) and (orientation: landscape) { .profile-hero { max-height: 38vh; } .profile-info { gap: 3px; } .profile-info strong { font-size: 1.2rem; } .profile .stats > div { padding: 4px 10px; } }
 @media (max-height: 480px) and (orientation: landscape) { .big-code b { font-size: 1.3rem; } .big-code { margin: 0; } }
+
+/* Privacy page */
+.privacy-line { margin: 0; line-height: 1.35; }
+@media (max-height: 480px) and (orientation: landscape) { .privacy-line { font-size: .85rem; line-height: 1.25; } }
+.welcome .stack.row { justify-content: center; flex-wrap: wrap; gap: 4px 16px; }
+@media (max-height: 480px) and (orientation: landscape) { .welcome .logo { width: 56px; height: 56px; } .welcome h1 { font-size: 2rem; } .welcome { gap: 4px; } }

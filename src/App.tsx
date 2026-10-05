@@ -12,6 +12,7 @@ import { LearnHome, Practice } from './screens/Learn.tsx';
 import type { Subject } from './lib/backend.ts';
 import { Adventures } from './screens/Adventures.tsx';
 import { Quest } from './screens/Quest.tsx';
+import { Privacy } from './screens/Privacy.tsx';
 import { Showcase } from './screens/Showcase.tsx';
 import { Announcements, ClassMissions, HomeMissions, MissionsHome, ParentCode, Quiz } from './screens/Missions.tsx';
 import { Squad } from './screens/Squad.tsx';
@@ -72,6 +73,7 @@ export default function App() {
   const [missionDot, setMissionDot] = useState(false);
   const [arcadeDot, setArcadeDot] = useState(false);
   const [questDot, setQuestDot] = useState(false);
+  const [privacy, setPrivacy] = useState(false);
 
   const refresh = useCallback(async () => {
     const [b, d] = await Promise.all([backend.balances(), backend.dailyStatus()]);
@@ -124,15 +126,17 @@ export default function App() {
 
   if (!ready) return <main className="screen center"><div className="spinner" aria-label="Loading" /></main>;
 
+  if (privacy) return <Privacy onBack={() => setPrivacy(false)} />;
+
   if (resetting) return <NewPassword backend={backend} onDone={() => { setResetting(false); backend.restore().then((who) => { if (who?.kind === 'adult') setAdult(who.adult); }).catch(() => undefined); }} />;
 
-  if (adult) return <AdultApp backend={backend} adult={adult} onAdult={setAdult} onSignOut={signOut} />;
+  if (adult) return <AdultApp backend={backend} adult={adult} onAdult={setAdult} onSignOut={signOut} onPrivacy={() => setPrivacy(true)} />;
 
   if (!hero) {
     if (screen === 'new') return <Onboarding backend={backend} onDone={enterHero} onBack={() => setScreen('welcome')} />;
     if (screen === 'signin') return <SignIn backend={backend} onDone={enterHero} onBack={() => setScreen('welcome')} />;
     if (screen === 'adult') return <AdultAuth backend={backend} onDone={setAdult} onBack={() => setScreen('welcome')} />;
-    return <Welcome demo={backend.mode === 'demo'} onNew={() => setScreen('new')} onSignIn={() => setScreen('signin')} onAdult={() => setScreen('adult')} />;
+    return <Welcome demo={backend.mode === 'demo'} onNew={() => setScreen('new')} onSignIn={() => setScreen('signin')} onAdult={() => setScreen('adult')} onPrivacy={() => setPrivacy(true)} />;
   }
 
   const session: Session = { backend, hero, balances, dailyAvailable, unread, missionDot, arcadeDot, questDot, refresh, signOut, go: setScreen };
@@ -158,6 +162,7 @@ export default function App() {
       {screen === 'adventures' && <Adventures />}
       {screen === 'quest' && <Quest />}
       {screen === 'showcase' && <Showcase />}
+      {screen === 'privacy' && <Privacy onBack={() => setScreen('profile')} />}
       {screen === 'game:pattern-pulse' && <PatternPulse />}
       {screen === 'game:memory-flip' && <MemoryFlip />}
       {screen === 'game:word-builder' && <WordBuilder />}
@@ -172,7 +177,7 @@ export default function App() {
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'privacy', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }
