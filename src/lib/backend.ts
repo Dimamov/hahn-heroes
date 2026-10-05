@@ -1,3 +1,4 @@
+import type { DrawStroke } from './drawing-rules.ts';
 import type { Currency } from '../../supabase/functions/_shared/rewards.ts';
 
 export interface Hero {
@@ -218,6 +219,30 @@ export interface ShadowView {
   players: ShadowPlayer[];
   result: { caught: boolean; shadowWon: boolean; guess: string | null; word: string } | null;
 }
+export interface DrawingGuess { name: string; text: string | null; correct: boolean; me: boolean }
+export interface DrawingPlayer { name: string; starter: string; score: number; me: boolean; artist: boolean; solved: boolean; left: boolean }
+export interface DrawingView {
+  state: 'lobby' | 'playing' | 'done' | 'closed';
+  phase: 'draw' | 'reveal';
+  round: number;
+  rounds: number;
+  seconds: number;
+  secondsLeft: number;
+  isArtist: boolean;
+  solved: boolean;
+  voided: boolean;
+  artist: string;
+  /** The word, for the artist, for guessers who solved it, and once the round is over. */
+  word: string | null;
+  /** Blanks for everyone else, like "_ _ _". */
+  pattern: string | null;
+  /** The strokes from this index onwards; earlier ones the caller already has. */
+  strokesFrom: number;
+  strokes: DrawStroke[];
+  guesses: DrawingGuess[];
+  players: DrawingPlayer[];
+}
+export interface DrawingReport { artist: string; reporter: string; word: string; at: string }
 export interface ChatMessage { id: number; name: string; me: boolean; body: string }
 export type ChatResult = { ok: true } | { ok: false; reason: 'warning' | 'banned' | 'slow' | 'private' };
 export interface ChatChild { banned: boolean; requested: boolean }
@@ -337,6 +362,13 @@ export interface Backend {
   shadowClue(text: string): Promise<void>;
   shadowVote(index: number): Promise<void>;
   shadowGuess(word: string): Promise<void>;
+  drawingView(code: string, since: number): Promise<DrawingView>;
+  /** Squad Drawing: adds points to the stroke with this id (a new stroke starts when the id is new). */
+  drawingStroke(id: number, color: string, width: number, points: [number, number][]): Promise<void>;
+  drawingClear(): Promise<void>;
+  drawingGuess(text: string): Promise<{ correct: boolean; points: number }>;
+  drawingReport(): Promise<void>;
+  senseiDrawingReports(): Promise<DrawingReport[]>;
   chatSend(text: string): Promise<ChatResult>;
   chatRead(): Promise<{ banned: boolean; messages: ChatMessage[] }>;
   childChat(childId: string): Promise<ChatChild>;

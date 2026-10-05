@@ -352,6 +352,29 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async shadowGuess(word) {
       await rpc('shadow_guess', { p_word: word });
     },
+    async drawingView(code, since) {
+      const d = await rpc('drawing_view', { p_code: code, p_since: since });
+      return {
+        state: d.state, phase: d.phase, round: d.round, rounds: d.rounds, seconds: d.seconds, secondsLeft: d.seconds_left ?? 0,
+        isArtist: !!d.is_artist, solved: !!d.solved, voided: !!d.voided, artist: d.artist, word: d.word ?? null, pattern: d.pattern ?? null,
+        strokesFrom: d.strokes_from ?? 0, strokes: d.strokes ?? [], guesses: d.guesses ?? [], players: d.players ?? [],
+      };
+    },
+    async drawingStroke(id, color, width, points) {
+      await rpc('drawing_stroke', { p_id: id, p_color: color, p_width: width, p_points: points });
+    },
+    async drawingClear() {
+      await rpc('drawing_clear');
+    },
+    async drawingGuess(text) {
+      return rpc('drawing_guess', { p_text: text });
+    },
+    async drawingReport() {
+      await rpc('drawing_report');
+    },
+    async senseiDrawingReports() {
+      return rpc('sensei_drawing_reports');
+    },
     async chatSend(text) {
       const d = await rpc('chat_send', { p_text: text });
       if (d.ok) return { ok: true };

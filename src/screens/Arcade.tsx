@@ -11,6 +11,7 @@ export const GAMES = [
   { id: 'trivia-clash', label: 'Trivia Clash (with friends)', icon: '⚔️', reward: false },
   { id: 'odin', label: 'ODIN (card game)', icon: '🎴', reward: false },
   { id: 'shadow-signal', label: 'Shadow Signal', icon: '🕵️', reward: false },
+  { id: 'squad-drawing', label: 'Squad Drawing', icon: '🎨', reward: false },
   { id: 'word-rush', label: 'Word Rush (pass the device)', icon: '⏱️', reward: false },
   { id: 'fun-box', label: 'Fun Box', icon: '🎁', reward: false },
 ] as const;
@@ -23,7 +24,7 @@ export function Arcade() {
   return (
     <main className="screen">
       <ScreenBar title="Arcade" onBack={() => go('home')} />
-      <p className="hint">Solo games, Trivia Clash, ODIN and Shadow Signal. Win a ⭐ game to collect points once a day.</p>
+      <p className="hint">Solo games, Trivia Clash, ODIN, Shadow Signal and Squad Drawing. Win a ⭐ game to collect points once a day.</p>
       <div className="subjects">
         {GAMES.map((g) => {
           const open = g.reward && status && status.games.includes(g.id) && !status.claimed.includes(g.id);
@@ -33,12 +34,12 @@ export function Arcade() {
               {open && <i className="red-dot" aria-label="Reward waiting" />}
               <span className="folder-icon" aria-hidden>{g.icon}</span>
               <b>{g.label}</b>
-              <em>{done ? '✅ Collected today' : g.reward ? '⭐ Daily reward' : g.id === 'trivia-clash' || g.id === 'odin' ? 'Private rooms' : g.id === 'shadow-signal' ? 'Rooms or one device' : 'Just for fun'}</em>
+              <em>{done ? '✅ Collected today' : g.reward ? '⭐ Daily reward' : g.id === 'trivia-clash' || g.id === 'odin' || g.id === 'squad-drawing' ? 'Private rooms' : g.id === 'shadow-signal' ? 'Rooms or one device' : 'Just for fun'}</em>
             </button>
           );
         })}
       </div>
-      <p className="note">🔒 More squad games (Squad Drawing and more) arrive soon.</p>
+      <p className="note">🔒 More squad games (Escape the Nexus and more) arrive soon.</p>
     </main>
   );
 }

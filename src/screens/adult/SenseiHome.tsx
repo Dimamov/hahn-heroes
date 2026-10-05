@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import type { Adult, Backend, ChatRequest, PendingTeacher, SenseiOverview, SenseiTraffic } from '../../lib/backend.ts';
+import type { Adult, Backend, ChatRequest, DrawingReport, PendingTeacher, SenseiOverview, SenseiTraffic } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
-type View = 'home' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat';
+type View = 'home' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings';
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
@@ -16,6 +16,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
 
   if (view === 'teachers') return <Teachers backend={backend} onBack={back} />;
   if (view === 'announce') return <Announce backend={backend} onBack={back} />;
+  if (view === 'drawings') return <DrawingReports backend={backend} onBack={back} />;
   if (view === 'chat') return <ChatUnlocks backend={backend} onBack={back} />;
   if (view === 'traffic') return <Traffic backend={backend} onBack={back} />;
   if (view === 'trivia') return <Trivia backend={backend} current={overview?.triviaNight} onBack={back} />;
@@ -35,6 +36,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
       )}
       <div className="grow" />
       <button className="btn" onClick={() => setView('chat')}>💬 Chat unlocks</button>
+      <button className="btn" onClick={() => setView('drawings')}>🚩 Drawing reports</button>
       <button className="btn" onClick={() => setView('traffic')}>📈 Players and traffic</button>
       <button className="btn" onClick={() => setView('teachers')}>Teachers to approve{overview && overview.pendingTeachers > 0 ? ` (${overview.pendingTeachers})` : ''}</button>
       <button className="btn" onClick={() => setView('announce')}>📣 Post an announcement</button>
@@ -185,6 +187,26 @@ function Traffic({ backend, onBack }: { backend: Backend; onBack: () => void }) 
         </>
       )}
       <div className="grow" />
+    </main>
+  );
+}
+
+function DrawingReports({ backend, onBack }: { backend: Backend; onBack: () => void }) {
+  const [list, setList] = useState<DrawingReport[] | null>(null);
+  useEffect(() => { backend.senseiDrawingReports().then(setList).catch(() => setList([])); }, [backend]);
+  return (
+    <main className="screen">
+      <ScreenBar title="Drawing reports" onBack={onBack} />
+      <p className="hint">Drawings that heroes reported in Squad Drawing. Two reports end a drawing right away. Nothing is saved from the drawing itself.</p>
+      {list === null ? <div className="spinner" /> : (
+        <PagedList items={list} perPage={3} empty="No reports. Everything looks good!"
+          render={(r) => (
+            <div className="card" key={`${r.at}-${r.reporter}`}>
+              <div className="card-top"><b>{r.artist}</b><small className="muted">{new Date(r.at).toLocaleString()}</small></div>
+              <small className="muted">The word was “{r.word}”. Reported by {r.reporter}.</small>
+            </div>
+          )} />
+      )}
     </main>
   );
 }

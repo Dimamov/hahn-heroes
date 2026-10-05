@@ -456,7 +456,7 @@ describe('demo backend: grown-ups and missions', () => {
       expect(v.phase).toBe('clue');
       expect(v.players).toHaveLength(3);
       expect(v.category).toBeTruthy();
-      expect(v.isShadow ? v.word : 'x').toBeNull();
+      if (v.isShadow) expect(v.word).toBeNull(); else expect(v.word).toBeTruthy();
       for (let turns = 0; turns < 200 && v.phase !== 'done'; turns++) {
         const me = v.players.find((p) => p.me)!;
         if (v.phase === 'clue' && me.speaking) await b.shadowClue('shiny');
@@ -479,6 +479,58 @@ describe('demo backend: grown-ups and missions', () => {
       if (!v.players.find((p) => p.me)!.speaking) { await expect(b.shadowClue('hello')).rejects.toThrow('not your turn'); return; }
       await expect(b.shadowClue('two words')).rejects.toThrow('one word');
       await expect(b.shadowClue('sh1t')).rejects.toThrow();
+    });
+  });
+
+  describe('squad drawing', () => {
+    it('lets a hero draw, then guess against practice buddies, and finishes after everyone drew', async () => {
+      const b = make();
+      await b.signUp(input);
+      const code = await b.createRoom('squad-drawing');
+      await b.addPracticeBuddy!();
+      await b.startRoom();
+      let v = await b.drawingView(code, 0);
+      expect(v.rounds).toBe(2);
+      const mine = v.isArtist;
+      if (mine) {
+        expect(v.word).toBeTruthy();
+        await b.drawingStroke(1, '#111111', 4, [[10, 10], [20, 20]]);
+        await b.drawingStroke(1, '#111111', 4, [[30, 30]]);
+        await expect(b.drawingStroke(2, 'red', 4, [[1, 1]])).rejects.toThrow('bad pen');
+        await expect(b.drawingGuess('cat')).rejects.toThrow('you are drawing');
+        v = await b.drawingView(code, 0);
+        expect(v.strokes).toHaveLength(1);
+        expect(v.strokes[0].p).toHaveLength(3);
+      } else {
+        expect(v.word).toBeNull();
+        expect(v.pattern).toMatch(/^[_ ]+$/);
+        await expect(b.drawingStroke(1, '#111111', 4, [[1, 1]])).rejects.toThrow('not drawing');
+        await expect(b.drawingGuess('sh1t')).rejects.toThrow('letters only');
+        const wrong = await b.drawingGuess('qqq');
+        expect(wrong.correct).toBe(false);
+      }
+      for (let turns = 0; turns < 400 && v.state !== 'done'; turns++) {
+        clock = new Date(clock.getTime() + 3_000);
+        v = await b.drawingView(code, 0);
+      }
+      expect(v.state).toBe('done');
+    });
+    it('ends a drawing after reports and shows them to the Sensei', async () => {
+      const b = make();
+      await b.signUp(input);
+      const code = await b.createRoom('squad-drawing');
+      await b.addPracticeBuddy!();
+      await b.startRoom();
+      let v = await b.drawingView(code, 0);
+      if (v.isArtist) { clock = new Date(clock.getTime() + 70_000); await b.drawingView(code, 0); clock = new Date(clock.getTime() + 7_000); v = await b.drawingView(code, 0); }
+      expect(v.isArtist).toBe(false);
+      await b.drawingReport();
+      v = await b.drawingView(code, 0);
+      expect(v.phase).toBe('reveal');
+      expect(v.voided).toBe(true);
+      await b.signOut();
+      await b.adultSignIn('sensei@demo.test', 'sensei');
+      expect((await b.senseiDrawingReports())).toHaveLength(1);
     });
   });
 
