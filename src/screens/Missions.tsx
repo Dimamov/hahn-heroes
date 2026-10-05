@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { useSession } from '../App.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
+import { ReadAloud } from '../components/ReadAloud.tsx';
+import { questionText } from '../lib/speak.ts';
 import { PagedList } from '../components/PagedList.tsx';
 import { Pager } from '../components/Pager.tsx';
 import type { Announcement, ClassMission, ClassResult, HomeMission, JoinClassResult, TriviaState } from '../lib/backend.ts';
@@ -182,7 +184,7 @@ export function Quiz({ id }: { id: string }) {
     const pages = chunkText(mission.passage);
     return (
       <main className="screen">
-        <ScreenBar title={mission.title} onBack={back} />
+        <ScreenBar title={mission.title} onBack={back} right={<ReadAloud text={mission.passage} />} />
         <div className="passage"><Pager pages={pages.map((p, n) => <p className="passage-text" key={n}>{p}</p>)} /></div>
         <p className="hint">{pages.length > 1 ? 'Swipe to keep reading.' : 'Read it carefully.'}</p>
         <button className="btn primary" onClick={() => setStep('ask')}>I'm ready for the questions</button>
@@ -195,7 +197,7 @@ export function Quiz({ id }: { id: string }) {
     const last = i === mission.questions.length - 1;
     return (
       <main className="screen">
-        <ScreenBar title={`Question ${i + 1} of ${mission.questions.length}`} onBack={back} />
+        <ScreenBar title={`Question ${i + 1} of ${mission.questions.length}`} onBack={back} right={<ReadAloud text={questionText(q.prompt, q.choices)} />} />
         <h3 className="question">{q.prompt}</h3>
         <div className="choices">
           {q.choices.map((c, n) => (
