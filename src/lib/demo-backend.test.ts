@@ -155,7 +155,7 @@ describe('demo backend: grown-ups and missions', () => {
   it('only lets a hero show titles they have earned', async () => {
     const b = make();
     await b.signUp(input);
-    expect(await b.showcaseState()).toEqual({ title: 'rookie', pose: 'stand', unlocked: ['rookie'] });
+    expect(await b.showcaseState()).toEqual({ title: 'rookie', pose: 'stand', emote: 'wave', xp: 0, unlocked: ['rookie'] });
     await expect(b.showcaseSet('detective', 'stand')).rejects.toThrow('earned');
     await expect(b.showcaseSet('rookie', 'dance')).rejects.toThrow('pose');
     await b.showcaseSet('rookie', 'cheer');
@@ -192,6 +192,16 @@ describe('demo backend: grown-ups and missions', () => {
     const w = await b.myWeek();
     expect(w).toMatchObject({ answered: 1, daysActive: 1 });
     expect((await b.myWeek(1)).answered).toBe(0);
+  });
+
+  it('unlocks emotes with XP and shows them in the room', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    expect(await b.showcaseState()).toMatchObject({ emote: 'wave', xp: 0 });
+    await expect(b.emoteSet('dance')).rejects.toThrow('unlocked');
+    await expect(b.emoteSet('moonwalk')).rejects.toThrow('unlocked');
+    await b.emoteSet('wave');
+    expect((await b.dormGet()).emote).toBe('wave');
   });
 
   it('lets a teacher send a quiz without a reading passage', async () => {
