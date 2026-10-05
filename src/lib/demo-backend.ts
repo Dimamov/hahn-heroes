@@ -1,5 +1,6 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
+import { KIND_REASONS, KIND_REWARD, KIND_WEEKLY_MAX } from './kindness.ts';
 import { DRAWING_WORDS, isRightGuess, maskWord, scribble, type DrawStroke } from './drawing-rules.ts';
 import { BOT_CLUES, isCaught, newRound, tallyVotes } from './shadow-rules.ts';
 import { botMove, deal, move as odinMoveRule, type OdinGame } from './odin-rules.ts';
@@ -289,6 +290,7 @@ interface Db {
   trivia?: { date: string; heroId: string; going: boolean }[];
   looks?: { heroId: string; hair: string; makeup: string; aura: string; outfit: string | null; accessory: string | null; pinned: boolean; version: number; at: number }[];
   lookLikes?: { owner: string; liker: string; version: number }[];
+  kind?: { id: number; nominator: string; nominee: string; reason: string; day: string; at: number; status: 'pending' | 'approved' | 'skipped' }[];
   squadBase?: { squadId: string; cell: number; item: string; by: string }[];
   treasure?: { week: string; heroId: string; step: number; claimed: boolean }[];
   codes?: { id: number; code: string; by: string; classId: string | null; coins: number; xp: number; day: string; expires: number; used: string[] }[];
@@ -1656,6 +1658,47 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       s.owner = toHero;
       commit();
       return { ok: true };
+    },
+    async kindState() {
+      const me = meHero().id;
+      const sq = (db.squads ?? []).find((q) => !q.disbanded && q.members.some((m) => m.childId === me && m.status === 'member'));
+      const list = (db.kind ??= []);
+      return {
+        nominatedToday: list.some((k) => k.nominator === me && k.day === schoolDate(now())),
+        mates: (sq?.members ?? []).filter((m) => m.status === 'member' && m.childId !== me).map((m) => ({ id: m.childId, name: heroById(m.childId)!.displayName })),
+        received: list.filter((k) => k.nominee === me && k.status === 'approved').slice(-10).reverse().map((k) => ({ reason: k.reason, day: k.day })),
+      };
+    },
+    async kindNominate(heroId, reason) {
+      const me = meHero().id;
+      if (!KIND_REASONS.some((r) => r.id === reason)) throw new Error('pick one of the reasons');
+      if (!(await this.kindState()).mates.some((m) => m.id === heroId)) throw new Error('you can nominate a squad mate');
+      const list = (db.kind ??= []);
+      if (list.some((k) => k.nominator === me && k.day === schoolDate(now()))) throw new Error('you already nominated someone today');
+      list.push({ id: list.length + 1, nominator: me, nominee: heroId, reason, day: schoolDate(now()), at: at(), status: 'pending' });
+      commit();
+    },
+    async kindReview() {
+      const a = meAdult();
+      if (a.role !== 'sensei' && a.role !== 'teacher') throw new Error('only teachers and the Sensei can review');
+      const list = (db.kind ??= []);
+      return list.filter((k) => k.status === 'pending' && (a.role === 'sensei' || canSeeChild(k.nominee))).map((k) => ({
+        id: k.id, nominator: heroById(k.nominator)!.displayName, nominee: heroById(k.nominee)!.displayName, reason: k.reason, day: k.day,
+        repeat: list.some((r) => r.nominator === k.nominee && r.nominee === k.nominator && r.at > k.at - 7 * 86400000),
+      }));
+    },
+    async kindDecide(id, approve) {
+      const a = meAdult();
+      const k = (db.kind ??= []).find((x) => x.id === id && x.status === 'pending');
+      if (!k) throw new Error('that nomination is not waiting');
+      if (!(a.role === 'sensei' || (a.role === 'teacher' && canSeeChild(k.nominee)))) throw new Error('that is not your student');
+      k.status = approve ? 'approved' : 'skipped';
+      commit();
+      if (!approve) return { awarded: 0 };
+      const week = schoolWeek(new Date(k.at));
+      const given = db.kind!.filter((x) => x.nominee === k.nominee && x.status === 'approved' && x.id !== k.id && schoolWeek(new Date(x.at)) === week).length;
+      if (given >= KIND_WEEKLY_MAX) return { awarded: 0 };
+      return { awarded: award(k.nominee, 'coins', KIND_REWARD, 'event', `kind:${k.id}`).awarded };
     },
     async raceState(back = 0) {
       const hero = meHero();

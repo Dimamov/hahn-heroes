@@ -478,6 +478,20 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('sticker_give', { p_sticker: stickerId, p_to: toHero });
       return { ok: !!d.ok, reason: d.reason };
     },
+    async kindState() {
+      const d = await rpc('kind_state');
+      return { nominatedToday: !!d.nominated_today, mates: d.mates, received: d.received };
+    },
+    async kindNominate(heroId, reason) {
+      await rpc('kind_nominate', { p_hero: heroId, p_reason: reason });
+    },
+    async kindReview() {
+      return (await rpc('kind_review')) as never;
+    },
+    async kindDecide(id, approve) {
+      const d = await rpc('kind_decide', { p_id: id, p_approve: approve });
+      return { awarded: d.awarded };
+    },
     async raceState(back = 0) {
       const d = await rpc('class_race', { p_back: back });
       return { month: d.month, minMembers: d.min_members, classes: d.classes };
