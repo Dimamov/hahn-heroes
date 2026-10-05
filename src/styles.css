@@ -445,3 +445,16 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .nxmate.me { border-color: var(--cyan); }
 .nxmate.done { border-color: #4ade80; }
 .soon-icon.small { font-size: 3.5rem; text-align: center; }
+
+/* Houses */
+.page-title { margin: 0; text-align: center; font: 800 1.1rem 'Baloo 2', 'Nunito', system-ui; }
+.house-card { align-items: center; text-align: center; border-width: 3px; gap: 4px; }
+.house-crest { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; font-size: 2.2rem; margin: 0 auto; }
+.house-crest.small { width: 40px; height: 40px; font-size: 1.3rem; flex: none; margin: 0; }
+.house-name { font: 800 1.5rem 'Baloo 2', 'Nunito', system-ui; }
+.house-option { display: flex; flex-direction: row; align-items: center; gap: 10px; border-width: 3px; text-align: left; width: 100%; color: inherit; }
+.house-option.chosen { background: #ffffff18; }
+.rank-row { display: flex; flex-direction: row; align-items: center; gap: 10px; padding: 8px 12px; border-width: 2px; }
+.rank-row.mine { background: #ffffff18; }
+.rank-row .rank { min-width: 2.2rem; }
+.mini-hero { width: 36px; height: 36px; flex: none; }

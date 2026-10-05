@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import type { Adult, Backend, ClassInfo, ClassMissionResults, NewClassMission } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
+import { TeacherHouse } from './TeacherHouse.tsx';
 
-type View = { name: 'list' } | { name: 'new-class' } | { name: 'class'; cls: ClassInfo } | { name: 'new-mission'; cls: ClassInfo };
+type View = { name: 'list' } | { name: 'new-class' } | { name: 'class'; cls: ClassInfo } | { name: 'new-mission'; cls: ClassInfo } | { name: 'house'; cls: ClassInfo };
 
 export function TeacherHome({ backend, adult, onSignOut }: { backend: Backend; adult: Adult; onSignOut: () => void }) {
   const [view, setView] = useState<View>({ name: 'list' });
@@ -13,7 +14,8 @@ export function TeacherHome({ backend, adult, onSignOut }: { backend: Backend; a
   const toList = () => { reload(); setView({ name: 'list' }); };
 
   if (view.name === 'new-class') return <NewClass backend={backend} onBack={toList} onDone={(cls) => { reload(); setView({ name: 'class', cls }); }} />;
-  if (view.name === 'class') return <ClassScreen backend={backend} cls={view.cls} onBack={toList} onNew={() => setView({ name: 'new-mission', cls: view.cls })} />;
+  if (view.name === 'class') return <ClassScreen backend={backend} cls={view.cls} onBack={toList} onNew={() => setView({ name: 'new-mission', cls: view.cls })} onHouse={() => setView({ name: 'house', cls: view.cls })} />;
+  if (view.name === 'house') return <TeacherHouse backend={backend} cls={view.cls} onBack={() => setView({ name: 'class', cls: view.cls })} />;
   if (view.name === 'new-mission') return <NewClassMissionScreen backend={backend} cls={view.cls} onBack={() => setView({ name: 'class', cls: view.cls })} />;
 
   return (
@@ -51,7 +53,7 @@ function NewClass({ backend, onBack, onDone }: { backend: Backend; onBack: () =>
   );
 }
 
-function ClassScreen({ backend, cls, onBack, onNew }: { backend: Backend; cls: ClassInfo; onBack: () => void; onNew: () => void }) {
+function ClassScreen({ backend, cls, onBack, onNew, onHouse }: { backend: Backend; cls: ClassInfo; onBack: () => void; onNew: () => void; onHouse: () => void }) {
   const [results, setResults] = useState<ClassMissionResults[] | null>(null);
   const load = () => backend.classResults(cls.id).then(setResults).catch(() => setResults([]));
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -76,6 +78,7 @@ function ClassScreen({ backend, cls, onBack, onNew }: { backend: Backend; cls: C
             </div>
           )} />
       )}
+      <button className="btn ghost" onClick={onHouse}>🏰 House</button>
       <button className="btn primary" onClick={onNew}>＋ New mission</button>
     </main>
   );
