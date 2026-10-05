@@ -4,7 +4,7 @@ import { useSession } from '../App.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
 import { PagedList } from '../components/PagedList.tsx';
 import { Pager } from '../components/Pager.tsx';
-import type { Announcement, ClassMission, ClassResult, HomeMission, JoinClassResult } from '../lib/backend.ts';
+import type { Announcement, ClassMission, ClassResult, HomeMission, JoinClassResult, TriviaState } from '../lib/backend.ts';
 import { formatHeroCode, normalizeHeroCode } from '../../supabase/functions/_shared/kid-auth.ts';
 
 const STATUS_TEXT: Record<HomeMission['status'], string> = {
@@ -241,6 +241,25 @@ export function Quiz({ id }: { id: string }) {
   );
 }
 
+function TriviaCard() {
+  const { backend } = useSession();
+  const [t, setT] = useState<TriviaState | null>(null);
+  useEffect(() => { backend.triviaState().then(setT).catch(() => undefined); }, [backend]);
+  if (!t) return null;
+  const when = new Date(`${t.date}T${t.time}:00`).toLocaleString(undefined, { weekday: 'long', hour: 'numeric', minute: '2-digit' });
+  const rsvp = (going: boolean) => backend.triviaRsvp(going).then(setT).catch(() => undefined);
+  return (
+    <div className="card trivia-card">
+      <b>{t.today ? '🎉 Trivia Night is tonight!' : '🎉 Next Trivia Night'}</b>
+      <p>{when}. {t.goingCount > 0 ? `${t.goingCount} in your grade ${t.goingCount === 1 ? 'is' : 'are'} coming.` : 'Be the first to join!'}</p>
+      <div className="chips">
+        <button className={`chip${t.going === true ? ' chosen' : ''}`} onClick={() => rsvp(true)}>I'm in!</button>
+        <button className={`chip${t.going === false ? ' chosen' : ''}`} onClick={() => rsvp(false)}>Can't make it</button>
+      </div>
+    </div>
+  );
+}
+
 export function Announcements() {
   const { backend, go, refresh } = useSession();
   const [items, setItems] = useState<Announcement[] | null>(null);
@@ -254,8 +273,8 @@ export function Announcements() {
     <main className="screen">
       <ScreenBar title="News from the Sensei" onBack={() => go('home')} />
       {items === null ? <div className="spinner" /> : (
-        <PagedList items={items} perPage={3} empty="No news yet."
-          render={(a) => (
+        <PagedList items={[{ id: -1 } as Announcement, ...items]} perPage={3} empty="No news yet."
+          render={(a) => a.id === -1 ? <TriviaCard key="trivia" /> : (
             <div className="card" key={a.id}>
               <b>{a.title}</b>
               <p>{a.body}</p>

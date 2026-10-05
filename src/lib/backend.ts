@@ -107,6 +107,19 @@ export type JoinClassResult =
   | { ok: true; name: string }
   | { ok: false; error: 'invalid_code' | 'wrong_grade' | 'already_in_class' | 'too_many_tries' };
 
+export interface TriviaState {
+  date: string; // YYYY-MM-DD, school time
+  time: string; // HH:MM
+  today: boolean;
+  going: boolean | null;
+  goingCount: number; // heroes in my grade who are coming
+}
+export interface TriviaRoster {
+  date: string;
+  time: string;
+  grades: { grade: number; going: number; names: string[] }[];
+}
+
 export interface Announcement {
   id: number;
   title: string;
@@ -393,6 +406,9 @@ export interface Backend {
   submitClassMission(id: string, answers: number[]): Promise<ClassResult>;
   announcements(): Promise<{ items: Announcement[]; unread: number }>;
   markAnnouncementsRead(): Promise<void>;
+  /** The next Trivia Night, and whether this hero said they are coming. */
+  triviaState(): Promise<TriviaState>;
+  triviaRsvp(going: boolean): Promise<TriviaState>;
 
   startPractice(subject: Subject): Promise<PracticeSet>;
   answerQuestion(questionId: string, choice: number): Promise<AnswerResult>;
@@ -506,6 +522,9 @@ export interface Backend {
   approveTeacher(id: string, approve: boolean): Promise<void>;
   postAnnouncement(title: string, body: string): Promise<void>;
   setTriviaNight(weekday: string, time: string): Promise<void>;
+  senseiTriviaRoster(): Promise<TriviaRoster>;
+  /** Gives every hero who said yes the same prize, once per night. Returns how many got it. */
+  senseiTriviaPrize(coins: number): Promise<number>;
 }
 
 export const emptyBalances = (): Balances => ({ coins: 0, xp: 0, skill_points: 0, nexling_growth: 0, house_score: 0 });

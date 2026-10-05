@@ -742,4 +742,26 @@ describe('demo backend: grown-ups and missions', () => {
       expect(await b.senseiChatRequests()).toEqual([]);
     });
   });
+
+  describe('trivia night', () => {
+    it('takes an RSVP and pays the prize once, to the heroes who said yes', async () => {
+      const b = make();
+      const hero = await b.signUp(input);
+      const code = hero.heroCode;
+      await b.signOut();
+      await b.adultSignIn('sensei@demo.test', 'sensei');
+      const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][clock.getUTCDay()];
+      await b.setTriviaNight(day, '18:30');
+      await b.signOut();
+      await b.signIn(code, input.picture);
+      expect((await b.triviaState()).going).toBeNull();
+      expect(await b.triviaRsvp(true)).toMatchObject({ today: true, going: true, goingCount: 1 });
+      await b.signOut();
+      await b.adultSignIn('sensei@demo.test', 'sensei');
+      expect((await b.senseiTriviaRoster()).grades).toEqual([{ grade: 5, going: 1, names: [hero.displayName] }]);
+      await expect(b.senseiTriviaPrize(500)).rejects.toThrow();
+      expect(await b.senseiTriviaPrize(10)).toBe(1);
+      expect(await b.senseiTriviaPrize(10)).toBe(0);
+    });
+  });
 });
