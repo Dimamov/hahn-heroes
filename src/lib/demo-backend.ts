@@ -13,7 +13,7 @@ import {
   AdultAuthError, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
   type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
   type ClassResult, type Hero, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
-  type QuizQuestion, type SignUpInput, type Subject, type SubjectProgress,
+  type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress,
 } from './backend.ts';
 
 interface BankQuestion {
@@ -77,6 +77,18 @@ interface SubmissionRow extends ClassResult {
   missionId: string;
   childId: string;
 }
+interface DemoRoom {
+  code: string;
+  hostId: string;
+  state: 'lobby' | 'playing' | 'done' | 'closed';
+  phase: 'question' | 'reveal';
+  idx: number;
+  phaseStart: number;
+  questions: { id: string; seconds: number }[];
+  players: { id: string; name: string; starter: string; score: number; bot: boolean; answers: Record<number, { choice: number; points: number }>; botAt?: number; botRight?: boolean }[];
+}
+const ROOM_RULES = { max: 6, min: 2, questions: 8, seconds: 20, readingSeconds: 40, revealSeconds: 5 };
+
 interface Db {
   accounts: Record<string, Account>; // heroes, by hero code
   adults: DemoAdult[];
@@ -96,6 +108,7 @@ interface Db {
   ledger: LedgerRow[];
   friendships?: { id: string; a: string; b: string; status: 'pending' | 'accepted' | 'declined' | 'removed' }[];
   squads?: { id: string; leader: string; name: string; disbanded: boolean; members: { childId: string; status: 'invited' | 'member' | 'declined' | 'left' }[] }[];
+  room?: DemoRoom | null;
   pings?: { userId: string; role: 'hero' | 'parent' | 'teacher' | 'sensei'; screen: string; at: number }[];
   current: string | null; // hero id or adult id
 }
@@ -113,6 +126,30 @@ const fresh = (): Db => ({
 
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
+
+/** Moves a demo room along: practice buddies answer on their own, then the question closes and the next one opens. */
+function demoRoomTick(r: DemoRoom, now = Date.now()) {
+  for (let guard = 0; guard < 50 && r.state === 'playing'; guard++) {
+    const rq = r.questions[r.idx];
+    if (r.phase === 'question') {
+      for (const p of r.players.filter((x) => x.bot && !x.answers[r.idx])) {
+        p.botAt ??= r.phaseStart + (2 + Math.random() * 8) * 1000;
+        p.botRight ??= Math.random() < 0.6;
+        if (now >= p.botAt) {
+          const q = QUESTIONS.find((x) => x.id === rq.id)!;
+          const points = p.botRight ? 100 + Math.floor(50 * Math.max(0, 1 - (p.botAt - r.phaseStart) / 1000 / rq.seconds)) : 0;
+          p.answers[r.idx] = { choice: p.botRight ? q.answer : (q.answer + 1) % q.choices.length, points };
+          p.score += points;
+        }
+      }
+      const everyone = r.players.every((p) => p.answers[r.idx]);
+      if (everyone || now >= r.phaseStart + rq.seconds * 1000) { r.phase = 'reveal'; r.phaseStart = now; for (const p of r.players) { p.botAt = undefined; p.botRight = undefined; } } else break;
+    } else if (now >= r.phaseStart + ROOM_RULES.revealSeconds * 1000) {
+      if (r.idx + 1 >= r.questions.length) r.state = 'done';
+      else { r.idx += 1; r.phase = 'question'; r.phaseStart = now; }
+    } else break;
+  }
+}
 
 export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>, now: () => Date = () => new Date()): Backend {
   const load = (): Db => {
@@ -644,6 +681,98 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (squad.leader === me) squad.disbanded = true;
       else squad.members.find((m) => m.childId === me)!.status = 'left';
       commit();
+    },
+    async currentRoom() {
+      const me = meHero().id;
+      const r = db.room;
+      return r && (r.state === 'lobby' || r.state === 'playing') && r.players.some((p) => p.id === me) ? r.code : null;
+    },
+    async createRoom(game) {
+      const me = meHero();
+      if (game !== 'trivia-clash') throw new Error('unknown game');
+      if (await this.currentRoom!()) throw new Error('leave your room first');
+      const code = generateCode(4).replace(/[^A-Z]/g, 'K');
+      db.room = { code, hostId: me.id, state: 'lobby', phase: 'question', idx: 0, phaseStart: at(), questions: [], players: [{ id: me.id, name: me.displayName, starter: me.starter, score: 0, bot: false, answers: {} }] };
+      commit();
+      return code;
+    },
+    async joinRoom(code) {
+      const r = db.room;
+      if (!r || r.code !== code.trim().toUpperCase() || r.state !== 'lobby') throw new Error('no room with that code');
+      const me = meHero();
+      if (r.players.some((p) => p.id === me.id)) return r.code;
+      throw new Error('that room is for the other grade');
+    },
+    async leaveRoom() {
+      const me = meHero().id;
+      const r = db.room;
+      if (!r || !r.players.some((p) => p.id === me)) return;
+      db.room = null;
+      commit();
+    },
+    async addPracticeBuddy() {
+      const r = db.room;
+      if (!r || r.state !== 'lobby') return;
+      const n = r.players.filter((p) => p.bot).length;
+      if (r.players.length >= ROOM_RULES.max) return;
+      r.players.push({ id: `bot-${n}`, name: ['Bot Fox', 'Bot Owl', 'Bot Wolf'][n % 3], starter: 'ana', score: 0, bot: true, answers: {} });
+      commit();
+    },
+    async startRoom() {
+      const me = meHero();
+      const r = db.room;
+      if (!r || r.hostId !== me.id || r.state !== 'lobby') throw new Error('you are not hosting a room');
+      if (r.players.length < ROOM_RULES.min) throw new Error('you need at least 2 players');
+      const seen = new Set(db.history.filter((h) => h.childId === me.id).map((h) => h.questionId));
+      const pool = QUESTIONS.filter((q) => q.grade === me.grade && !seen.has(q.id)).sort(() => Math.random() - 0.5).slice(0, ROOM_RULES.questions);
+      if (pool.length < ROOM_RULES.questions) throw new Error('not enough fresh questions');
+      r.questions = pool.map((q) => ({ id: q.id, seconds: q.prompt.includes('\n\n') ? ROOM_RULES.readingSeconds : ROOM_RULES.seconds }));
+      for (const q of pool) db.history.push({ childId: me.id, questionId: q.id, servedAt: at() });
+      r.state = 'playing'; r.phase = 'question'; r.idx = 0; r.phaseStart = at();
+      commit();
+    },
+    async roomAnswer(choice) {
+      const me = meHero().id;
+      const r = db.room;
+      if (!r || r.state !== 'playing') throw new Error('you are not in a game');
+      demoRoomTick(r, at());
+      if (r.state !== 'playing' || r.phase !== 'question') return;
+      const player = r.players.find((p) => p.id === me)!;
+      if (player.answers[r.idx]) return;
+      const q = QUESTIONS.find((x) => x.id === r.questions[r.idx].id)!;
+      const res = await this.answerQuestion(q.id, choice);
+      const left = Math.max(0, 1 - (at() - r.phaseStart) / 1000 / r.questions[r.idx].seconds);
+      const points = res.correct ? 100 + Math.floor(50 * left) : 0;
+      player.answers[r.idx] = { choice, points };
+      player.score += points;
+      demoRoomTick(r, at());
+      commit();
+    },
+    async roomState(code) {
+      const me = meHero().id;
+      const r = db.room;
+      if (!r || r.code !== code.trim().toUpperCase() || !r.players.some((p) => p.id === me)) throw new Error('you are not in that room');
+      demoRoomTick(r, at());
+      commit();
+      const out: RoomState = {
+        code: r.code, game: 'trivia-clash', state: r.state, phase: r.phase, idx: r.idx, total: r.questions.length, host: r.hostId === me,
+        minPlayers: ROOM_RULES.min,
+        players: [...r.players].sort((a, b) => b.score - a.score).map((p) => ({ name: p.name, starter: p.starter, score: p.score, me: p.id === me, host: p.id === r.hostId, answered: !!p.answers[r.idx] })),
+      };
+      if (r.state === 'playing') {
+        const rq = r.questions[r.idx];
+        const q = QUESTIONS.find((x) => x.id === rq.id)!;
+        const wait = r.phase === 'question' ? rq.seconds : ROOM_RULES.revealSeconds;
+        out.seconds = rq.seconds;
+        out.secondsLeft = Math.max(0, Math.ceil(wait - (at() - r.phaseStart) / 1000));
+        out.question = { prompt: q.prompt, choices: q.choices };
+        out.myChoice = r.players.find((p) => p.id === me)!.answers[r.idx]?.choice ?? null;
+        if (r.phase === 'reveal') {
+          out.rightChoice = q.answer; out.explanation = q.explanation;
+          out.myPoints = r.players.find((p) => p.id === me)!.answers[r.idx]?.points ?? 0;
+        }
+      }
+      return out;
     },
     async senseiOverview() {
       meAdult('sensei');

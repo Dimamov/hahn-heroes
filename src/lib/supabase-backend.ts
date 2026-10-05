@@ -298,6 +298,32 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async leaveSquad() {
       await rpc('squad_leave');
     },
+    async currentRoom() {
+      return (await rpc('my_room')) ?? null;
+    },
+    async createRoom(game) {
+      return rpc('room_create', { p_game: game });
+    },
+    async joinRoom(code) {
+      return rpc('room_join', { p_code: code });
+    },
+    async leaveRoom() {
+      await rpc('room_leave');
+    },
+    async startRoom() {
+      await rpc('room_start');
+    },
+    async roomAnswer(choice) {
+      await rpc('room_answer', { p_choice: choice });
+    },
+    async roomState(code) {
+      const d = await rpc('room_state', { p_code: code });
+      return {
+        code: d.code, game: d.game, state: d.state, phase: d.phase, idx: d.idx, total: d.total, host: d.host, minPlayers: d.min_players,
+        players: d.players, seconds: d.seconds, secondsLeft: d.seconds_left, question: d.question, myChoice: d.my_choice,
+        rightChoice: d.right_choice, explanation: d.explanation, myPoints: d.my_points,
+      };
+    },
     async senseiOverview() {
       const d = await rpc('sensei_overview');
       return {

@@ -19,6 +19,7 @@ import { WordBuilder } from './games/WordBuilder.tsx';
 import { SpotDifference } from './games/SpotDifference.tsx';
 import { WordRush } from './games/WordRush.tsx';
 import { FunBox } from './games/FunBox.tsx';
+import { TriviaClash } from './games/TriviaClash.tsx';
 import { DoNotPress } from './games/DoNotPress.tsx';
 import { AdultAuth } from './screens/adult/AdultAuth.tsx';
 import { NewPassword } from './screens/adult/NewPassword.tsx';
@@ -138,6 +139,7 @@ export default function App() {
       {screen === 'game:word-builder' && <WordBuilder />}
       {screen === 'game:spot-difference' && <SpotDifference />}
       {screen === 'game:word-rush' && <WordRush />}
+      {screen === 'game:trivia-clash' && <TriviaClash />}
       {screen === 'game:fun-box' && <FunBox />}
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}

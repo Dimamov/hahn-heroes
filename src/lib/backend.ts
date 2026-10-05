@@ -169,6 +169,25 @@ export const SQUAD_WORDS = {
   nouns: ['Wolves', 'Comets', 'Owls', 'Foxes', 'Falcons', 'Dragons', 'Stars', 'Lions', 'Sparks', 'Titans'],
   maxMembers: 5,
 };
+export interface RoomPlayer { name: string; starter: string; score: number; me: boolean; host: boolean; answered: boolean }
+export interface RoomState {
+  code: string;
+  game: string;
+  state: 'lobby' | 'playing' | 'done' | 'closed';
+  phase: 'question' | 'reveal';
+  idx: number;
+  total: number;
+  host: boolean;
+  minPlayers: number;
+  players: RoomPlayer[];
+  seconds?: number;
+  secondsLeft?: number;
+  question?: { prompt: string; choices: string[] };
+  myChoice?: number | null;
+  rightChoice?: number;
+  explanation?: string;
+  myPoints?: number;
+}
 export interface ArcadeStatus { coins: number; games: string[]; claimed: string[] }
 export interface PendingTeacher {
   id: string;
@@ -268,6 +287,16 @@ export interface Backend {
   inviteToSquad(friendHeroId: string): Promise<void>;
   respondSquadInvite(squadId: string, accept: boolean): Promise<void>;
   leaveSquad(): Promise<void>;
+  /** The code of the room this hero is in right now, so a reconnect can rejoin it. */
+  currentRoom(): Promise<string | null>;
+  createRoom(game: string): Promise<string>;
+  joinRoom(code: string): Promise<string>;
+  leaveRoom(): Promise<void>;
+  startRoom(): Promise<void>;
+  roomAnswer(choice: number): Promise<void>;
+  roomState(code: string): Promise<RoomState>;
+  /** Demo mode only: adds a practice buddy so a game can start without a second device. */
+  addPracticeBuddy?(): Promise<void>;
   senseiOverview(): Promise<SenseiOverview>;
   /** Tells the Sensei this person is here. Safe to call often; the server throttles it. */
   ping(screen: string): Promise<void>;
