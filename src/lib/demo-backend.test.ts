@@ -320,6 +320,13 @@ describe('demo backend: grown-ups and missions', () => {
     expect(s.claimed).toBe(true);
   });
 
+  it('needs a squad for the hideout and lets members place only decorations they own', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    expect(await b.baseGet()).toMatchObject({ squad: null });
+    await expect(b.basePlace(0, 'd-lamp')).rejects.toThrow('join a squad');
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);

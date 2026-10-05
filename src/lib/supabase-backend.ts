@@ -478,6 +478,15 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('sticker_give', { p_sticker: stickerId, p_to: toHero });
       return { ok: !!d.ok, reason: d.reason };
     },
+    async baseGet() {
+      return (await rpc('base_get')) as never;
+    },
+    async basePlace(cell, item) {
+      await rpc('base_place', { p_cell: cell, p_item: item });
+    },
+    async baseRemove(cell) {
+      await rpc('base_remove', { p_cell: cell });
+    },
     async treasureState() {
       return (await rpc('treasure_state')) as never;
     },

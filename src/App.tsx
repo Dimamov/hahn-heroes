@@ -22,6 +22,7 @@ import { Comics } from './screens/Comics.tsx';
 import { Treasure, TreasureSpot } from './screens/Treasure.tsx';
 import { HUNTS } from './lib/treasure.ts';
 import type { TreasureState } from './lib/treasure.ts';
+import { SquadBase } from './screens/SquadBase.tsx';
 import { Badges } from './screens/Badges.tsx';
 import { Codes } from './screens/Codes.tsx';
 import { Contest } from './screens/Contest.tsx';
@@ -199,6 +200,7 @@ export default function App() {
       {screen === 'contest' && <Contest />}
       {screen === 'codes' && <Codes />}
       {screen === 'badges' && <Badges />}
+      {screen === 'base' && <SquadBase />}
       {screen === 'treasure' && <Treasure />}
       {treasure && !treasure.done && HUNTS[treasure.hunt].steps[treasure.step].place === screen && <TreasureSpot step={treasure.step} place={screen} onFound={() => backend.treasureState().then(setTreasure).catch(() => undefined)} />}
       {screen === 'secret' && <Secret />}
@@ -219,7 +221,7 @@ export default function App() {
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'badges', 'treasure', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'badges', 'treasure', 'base', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }
