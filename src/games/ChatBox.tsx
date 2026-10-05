@@ -7,6 +7,7 @@ const NOTES = {
   banned: 'Chat is paused. A grown-up can ask the Sensei to unlock it.',
   private: 'Keep names, numbers and links to yourself.',
   slow: 'Slow down a little!',
+  no_class: 'Chat opens when you join your teacher\'s class. Ask your teacher for the class code.',
 } as const;
 
 /** A small chat for a game room. A button opens a sheet; the server filters every message. */
@@ -15,13 +16,14 @@ export function ChatButton() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [banned, setBanned] = useState(false);
+  const [canChat, setCanChat] = useState(true);
   const [seen, setSeen] = useState(0);
   const [text, setText] = useState('');
   const [note, setNote] = useState('');
 
   useEffect(() => {
     let alive = true;
-    const load = () => backend.chatRead().then((d) => { if (alive) { setMessages(d.messages); setBanned(d.banned); } }).catch(() => undefined);
+    const load = () => backend.chatRead().then((d) => { if (alive) { setMessages(d.messages); setBanned(d.banned); setCanChat(d.canChat); } }).catch(() => undefined);
     load();
     const id = setInterval(load, 2000);
     return () => { alive = false; clearInterval(id); };
@@ -64,7 +66,9 @@ export function ChatButton() {
             ))}
           </div>
           <p className="error" role="alert">{banned ? '' : note}</p>
-          {banned
+          {!canChat
+            ? <p className="hint">{NOTES.no_class}</p>
+            : banned
             ? <p className="hint">{NOTES.banned}</p>
             : (
               <form className="chat-form" onSubmit={(e) => { e.preventDefault(); send(); }}>

@@ -471,7 +471,9 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       return rpc('room_create', { p_game: game });
     },
     async joinRoom(code) {
-      return rpc('room_join', { p_code: code });
+      const d = await rpc('room_join', { p_code: code });
+      if (!d) throw new Error('no room with that code');
+      return d;
     },
     async leaveRoom() {
       await rpc('room_leave');
@@ -560,10 +562,11 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async chatSend(text) {
       const d = await rpc('chat_send', { p_text: text });
       if (d.ok) return { ok: true };
-      return { ok: false, reason: d.banned ? 'banned' : d.warning ? 'warning' : d.private ? 'private' : 'slow' };
+      return { ok: false, reason: d.banned ? 'banned' : d.warning ? 'warning' : d.private ? 'private' : d.no_class ? 'no_class' : 'slow' };
     },
     async chatRead() {
-      return rpc('chat_read');
+      const d = await rpc('chat_read');
+      return { banned: d.banned, canChat: d.can_chat !== false, messages: d.messages };
     },
     async childChat(childId) {
       return rpc('child_chat', { p_child: childId });
@@ -573,6 +576,9 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     },
     async senseiChatRequests() {
       return ((await rpc('sensei_chat_requests')) as any[]).map((r) => ({ childId: r.child_id, name: r.name, grade: r.grade, requested: r.requested }));
+    },
+    async senseiChatLog(childId) {
+      return ((await rpc('sensei_chat_log', { p_child: childId })) as any[]).map((l) => ({ name: l.name, child: l.child, body: l.body, at: l.at }));
     },
     async chatUnlock(childId) {
       await rpc('chat_unlock', { p_child: childId });

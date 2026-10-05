@@ -1897,6 +1897,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const chat = (db.chat ??= { messages: [], status: {} });
       const st = (chat.status[me.id] ??= { strikes: 0, banned: false, requested: false });
       const body = text.trim().replace(/\s+/g, ' ');
+      if (!db.members.some((m) => m.childId === me.id)) return { ok: false, reason: 'no_class' };
       if (!body || body.length > 80) throw new Error('messages are 1 to 80 letters');
       if (st.banned) return { ok: false, reason: 'banned' };
       const mine = chat.messages.filter((m) => m.childId === me.id).pop();
@@ -1917,8 +1918,13 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const chat = (db.chat ??= { messages: [], status: {} });
       return {
         banned: !!chat.status[me]?.banned,
+        canChat: db.members.some((m) => m.childId === me),
         messages: chat.messages.slice(-25).map((m) => ({ id: m.id, name: m.name, me: m.childId === me, body: m.body })),
       };
+    },
+    async senseiChatLog() {
+      meAdult('sensei');
+      return (db.chat ??= { messages: [], status: {} }).messages.slice(-25).map((m) => ({ name: m.name, child: false, body: m.body, at: new Date(m.at).toISOString() }));
     },
     async childChat(childId) {
       if (!isParentOf(childId)) throw new Error('not your child');

@@ -796,9 +796,13 @@ describe('demo backend: grown-ups and missions', () => {
 
   describe('chat', () => {
     it('warns once, pauses on the second swear, and lets the Sensei unlock after a parent asks', async () => {
-      const b = make();
-      const hero = await b.signUp(input);
+      const { b, hero, cls } = await setup();
+      await b.signIn(hero.heroCode, [0, 4, 8]);
       await b.createRoom('trivia-clash');
+      expect(await b.chatSend('good luck!')).toEqual({ ok: false, reason: 'no_class' });
+      expect((await b.chatRead()).canChat).toBe(false);
+      await b.joinClass(cls.joinCode!);
+      expect((await b.chatRead()).canChat).toBe(true);
       expect(await b.chatSend('good luck!')).toEqual({ ok: true });
       clock = new Date(clock.getTime() + 2000);
       expect(await b.chatSend('what the f u c k')).toEqual({ ok: false, reason: 'warning' });
@@ -819,6 +823,7 @@ describe('demo backend: grown-ups and missions', () => {
       await b.signOut();
       await b.adultSignIn('sensei@demo.test', 'sensei');
       expect((await b.senseiChatRequests())[0]).toMatchObject({ childId: hero.id, requested: true });
+      expect((await b.senseiChatLog(hero.id)).map((l) => l.body)).toEqual(['good luck!', 'Hello classmates, assignment time']);
       await b.chatUnlock(hero.id);
       expect(await b.senseiChatRequests()).toEqual([]);
     });

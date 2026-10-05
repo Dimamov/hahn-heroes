@@ -72,10 +72,18 @@ begin
   assert (r->>'round')::int = 1 and r->>'phase' = 'draw' and (r->>'is_artist')::boolean, 'second artist';
   assert jsonb_array_length(r->'strokes') = 0, 'fresh page';
 
-  -- two reports void a drawing
+  -- the first report hides the drawing at once; two reports void it
+  perform as_user_id(gu);
+  perform drawing_stroke(1, '#ff0000', 4, '[[1,1],[2,2]]'::jsonb);
   perform as_user_id(art);
+  assert jsonb_array_length(drawing_view(v_code)->'strokes') = 1, 'the drawing shows before a report';
   perform drawing_report();
   r := drawing_view(v_code);
+  assert jsonb_array_length(r->'strokes') = 0, 'a reported drawing disappears';
+  perform as_user_id(gu);
+  perform drawing_stroke(2, '#00ff00', 4, '[[3,3],[4,4]]'::jsonb);
+  perform as_user_id(art);
+  assert jsonb_array_length(drawing_view(v_code)->'strokes') = 0, 'and stays hidden while the artist keeps drawing';
   assert not (r->>'voided')::boolean, 'one report is not enough with two guessers';
   perform as_user_id(other);
   perform drawing_report();
