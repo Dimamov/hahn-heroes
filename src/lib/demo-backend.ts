@@ -1,5 +1,6 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
+import { GOOFY, GOOFY_REWARD } from './goofy.ts';
 import { isSpyEmoji } from './spy.ts';
 import { KIND_REASONS, KIND_REWARD, KIND_WEEKLY_MAX } from './kindness.ts';
 import { DRAWING_WORDS, isRightGuess, maskWord, scribble, type DrawStroke } from './drawing-rules.ts';
@@ -291,6 +292,7 @@ interface Db {
   trivia?: { date: string; heroId: string; going: boolean }[];
   looks?: { heroId: string; hair: string; makeup: string; aura: string; outfit: string | null; accessory: string | null; pinned: boolean; version: number; at: number }[];
   lookLikes?: { owner: string; liker: string; version: number }[];
+  goofy?: { heroId: string; day: string; prompt: number; status: 'accepted' | 'done' | 'skipped' }[];
   kind?: { id: number; nominator: string; nominee: string; reason: string; day: string; at: number; status: 'pending' | 'approved' | 'skipped' }[];
   squadBase?: { squadId: string; cell: number; item: string; by: string }[];
   treasure?: { week: string; heroId: string; step: number; claimed: boolean }[];
@@ -1710,6 +1712,25 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const given = db.kind!.filter((x) => x.nominee === k.nominee && x.status === 'approved' && x.id !== k.id && schoolWeek(new Date(x.at)) === week).length;
       if (given >= KIND_WEEKLY_MAX) return { awarded: 0 };
       return { awarded: award(k.nominee, 'coins', KIND_REWARD, 'event', `kind:${k.id}`).awarded };
+    },
+    async goofyState() {
+      const me = meHero().id, day = schoolDate(now());
+      const g = (db.goofy ??= []).find((x) => x.heroId === me && x.day === day);
+      return { status: g?.status ?? null, prompt: g?.prompt ?? null, doneToday: db.goofy!.filter((x) => x.day === day && x.status === 'done').length };
+    },
+    async goofyAccept() {
+      const me = meHero().id, day = schoolDate(now());
+      const list = (db.goofy ??= []);
+      if (!list.some((x) => x.heroId === me && x.day === day)) { list.push({ heroId: me, day, prompt: Math.floor(Math.random() * GOOFY.length), status: 'accepted' }); commit(); }
+      return this.goofyState();
+    },
+    async goofyFinish(done) {
+      const me = meHero().id, day = schoolDate(now());
+      const g = (db.goofy ??= []).find((x) => x.heroId === me && x.day === day);
+      if (!g || g.status !== 'accepted') throw new Error('no challenge waiting');
+      g.status = done ? 'done' : 'skipped';
+      commit();
+      return { awarded: done ? award(me, 'coins', GOOFY_REWARD, 'event', `goofy:${day}`).awarded : 0 };
     },
     async raceState(back = 0) {
       const hero = meHero();

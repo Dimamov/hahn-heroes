@@ -377,6 +377,24 @@ describe('demo backend: grown-ups and missions', () => {
     expect((await b.kindState()).received).toEqual([{ reason: 'cheered', day: expect.any(String) }]);
   });
 
+  it('runs the goofy challenge once a day, no swapping, honor system pays once', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    expect((await b.goofyState()).status).toBeNull();
+    await expect(b.goofyFinish(true)).rejects.toThrow('no challenge');
+    const first = await b.goofyAccept();
+    expect(first.status).toBe('accepted');
+    expect((await b.goofyAccept()).prompt).toBe(first.prompt);
+    const coins = (await b.balances()).coins;
+    expect((await b.goofyFinish(true)).awarded).toBe(5);
+    expect((await b.balances()).coins).toBe(coins + 5);
+    await expect(b.goofyFinish(true)).rejects.toThrow('no challenge');
+    clock = new Date(clock.getTime() + DAY_MS);
+    expect((await b.goofyState()).status).toBeNull();
+    await b.goofyAccept();
+    expect((await b.goofyFinish(false)).awarded).toBe(0);
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);
