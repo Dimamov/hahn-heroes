@@ -1,5 +1,6 @@
 import type { DrawStroke } from './drawing-rules.ts';
 import type { Currency } from '../../supabase/functions/_shared/rewards.ts';
+import type { AdvAnswerResult, AdvDone, AdvProgress } from './adventures.ts';
 import type { StoryAnswerResult, StoryChoiceResult, StoryDone, StoryProgress } from './story.ts';
 
 export interface Hero {
@@ -529,6 +530,9 @@ export interface Backend {
   storyChoose(episode: string, panelId: string, option: string): Promise<StoryChoiceResult>;
   storyAnswer(episode: string, checkpoint: string, choice: number): Promise<StoryAnswerResult>;
   storyComplete(episode: string): Promise<StoryDone>;
+  advState(): Promise<AdvProgress[]>;
+  advAnswer(caseId: string, step: string, choice: number): Promise<AdvAnswerResult>;
+  advComplete(caseId: string): Promise<AdvDone>;
   /** Gives every hero who said yes the same prize, once per night. Returns how many got it. */
   senseiTriviaPrize(coins: number): Promise<number>;
 }

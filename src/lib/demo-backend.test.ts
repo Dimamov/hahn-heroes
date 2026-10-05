@@ -764,6 +764,25 @@ describe('demo backend: grown-ups and missions', () => {
     });
   });
 
+  describe('mystery lab and chronicle quest', () => {
+    it('pays each step once, opens the trail in order and gives a card per finished case', async () => {
+      const b = make();
+      await b.signUp(input);
+      expect((await b.advState()).map((c) => c.case)).toEqual(['lab1', 'lab2', 'chron1']);
+      expect(await b.advAnswer('lab1', 'q1', 0)).toEqual({ correct: false });
+      expect(await b.advAnswer('lab1', 'q1', 1)).toMatchObject({ correct: true, first: true });
+      expect(await b.advAnswer('lab1', 'q1', 1)).toMatchObject({ first: false });
+      await expect(b.advComplete('lab1')).rejects.toThrow('every question');
+      await b.advAnswer('lab1', 'q2', 0);
+      await b.advAnswer('lab1', 'q3', 2);
+      expect(await b.advComplete('lab1')).toEqual({ repeat: false, card: 'u-key', coins: 15 });
+      expect(await b.advComplete('lab1')).toEqual({ repeat: true, card: 'u-key' });
+      await expect(b.advAnswer('chron1', 's2', 0)).rejects.toThrow('sealed');
+      await b.advAnswer('chron1', 's1', 1);
+      expect(await b.advAnswer('chron1', 's2', 0)).toMatchObject({ correct: true });
+    });
+  });
+
   describe('trivia night', () => {
     it('takes an RSVP and pays the prize once, to the heroes who said yes', async () => {
       const b = make();
