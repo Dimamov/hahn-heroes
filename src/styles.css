@@ -307,3 +307,10 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .progress-card.learn { grid-template-columns: repeat(2, 1fr); }
 .skill-row { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; font-size: .9rem; }
 .skill-row.weak { color: var(--gold); }
+
+/* Sensei traffic charts */
+.bars { display: flex; align-items: flex-end; gap: 3px; height: 28vh; max-height: 220px; min-height: 110px; padding: 4px 2px 0; }
+.bar-col { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; }
+.tbar { width: 100%; max-width: 22px; background: linear-gradient(180deg, #22d3ee, #8b5cff); border-radius: 4px 4px 0 0; }
+.bar-n { font-size: .7rem; color: var(--muted, #94a3b8); min-height: .9em; }
+.bar-col small { font-size: .62rem; color: var(--muted, #94a3b8); white-space: nowrap; }

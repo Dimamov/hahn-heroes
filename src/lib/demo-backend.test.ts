@@ -292,4 +292,26 @@ describe('demo backend: grown-ups and missions', () => {
       expect(math.skills.length).toBeGreaterThan(2);
     });
   });
+
+  describe('traffic', () => {
+    it('counts heroes online, throttles repeats and shows only the Sensei', async () => {
+      const b = make();
+      const hero = await b.signUp(input);
+      await b.ping('home');
+      await b.ping('home');
+      clock = new Date(clock.getTime() + 60_000);
+      await b.ping('learn');
+      await b.signOut();
+      await expect(b.senseiTraffic()).rejects.toThrow();
+      await b.adultSignIn('sensei@demo.test', 'sensei');
+      const t = await b.senseiTraffic();
+      expect(t).toMatchObject({ nowHeroes: 1, todayHeroes: 1, weekHeroes: 1, totalHeroes: 1 });
+      expect(t.active[0]).toMatchObject({ name: hero.displayName, screen: 'learn' });
+      expect(t.days).toHaveLength(14);
+      expect(t.days[13].minutes).toBe(2);
+      expect(t.hours).toHaveLength(24);
+      clock = new Date(clock.getTime() + 10 * 60_000);
+      expect((await b.senseiTraffic()).nowHeroes).toBe(0);
+    });
+  });
 });

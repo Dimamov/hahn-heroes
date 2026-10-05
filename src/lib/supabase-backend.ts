@@ -247,6 +247,19 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
         pendingTeachers: d.pending_teachers, classes: d.classes, triviaNight: d.trivia_night,
       };
     },
+    async ping(screen) {
+      await rpc('ping', { p_screen: screen });
+    },
+    async senseiTraffic() {
+      const d = await rpc('sensei_traffic');
+      return {
+        totalHeroes: d.total_heroes, nowHeroes: d.now_heroes, nowAdults: d.now_adults, todayHeroes: d.today_heroes,
+        weekHeroes: d.week_heroes, monthHeroes: d.month_heroes,
+        active: d.active.map((a: any) => ({ name: a.name, grade: a.grade, screen: a.screen, secondsAgo: a.seconds_ago })),
+        days: d.days.map((x: any) => ({ day: x.day, heroes: x.heroes, adults: x.adults, minutes: x.minutes, newHeroes: x.new_heroes })),
+        hours: d.hours, screens: d.screens,
+      };
+    },
     async pendingTeachers() {
       return ((await rpc('list_pending_teachers')) as any[]).map((t) => ({ id: t.id, displayName: t.display_name, email: t.email }));
     },

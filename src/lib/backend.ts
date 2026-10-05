@@ -142,6 +142,20 @@ export interface SenseiOverview {
   classes: number;
   triviaNight: { weekday: string; time: string };
 }
+export interface TrafficDay { day: string; heroes: number; adults: number; minutes: number; newHeroes: number }
+export interface ActivePlayer { name: string; grade: number; screen: string; secondsAgo: number }
+export interface SenseiTraffic {
+  totalHeroes: number;
+  nowHeroes: number;
+  nowAdults: number;
+  todayHeroes: number;
+  weekHeroes: number;
+  monthHeroes: number;
+  active: ActivePlayer[];
+  days: TrafficDay[];
+  hours: { hour: number; heroes: number }[];
+  screens: { screen: string; count: number }[];
+}
 export interface PendingTeacher {
   id: string;
   displayName: string;
@@ -222,6 +236,9 @@ export interface Backend {
   classResults(classId: string): Promise<ClassMissionResults[]>;
   resetSubmission(missionId: string, childId: string): Promise<void>;
   senseiOverview(): Promise<SenseiOverview>;
+  /** Tells the Sensei this person is here. Safe to call often; the server throttles it. */
+  ping(screen: string): Promise<void>;
+  senseiTraffic(): Promise<SenseiTraffic>;
   pendingTeachers(): Promise<PendingTeacher[]>;
   approveTeacher(id: string, approve: boolean): Promise<void>;
   postAnnouncement(title: string, body: string): Promise<void>;

@@ -68,6 +68,17 @@ export default function App() {
     if (hero) refresh().catch(() => undefined);
   }, [hero, refresh]);
 
+  // Tell the Sensei this person is here: on every screen change, then about once a minute while visible.
+  const who = hero ? 'hero' : adult && adult.role !== 'sensei' ? 'adult' : null;
+  useEffect(() => {
+    if (!who) return;
+    const send = () => { if (document.visibilityState === 'visible') backend.ping(who === 'hero' ? screen : 'adult').catch(() => undefined); };
+    send();
+    const id = setInterval(send, 60000);
+    document.addEventListener('visibilitychange', send);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', send); };
+  }, [backend, who, screen]);
+
   const enterHero = (h: Hero) => { setHero(h); setScreen('home'); };
   const signOut = useCallback(async () => {
     await backend.signOut();
