@@ -1,3 +1,4 @@
+import { GOOFY } from './goofy.ts';
 import { createClient } from '@supabase/supabase-js';
 import {
   AdultAuthError, SignInError, emptyBalances,
@@ -490,6 +491,18 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     },
     async kindDecide(id, approve) {
       const d = await rpc('kind_decide', { p_id: id, p_approve: approve });
+      return { awarded: d.awarded };
+    },
+    async goofyState() {
+      const d = await rpc('goofy_state');
+      return { status: d.status, prompt: d.prompt, doneToday: d.done_today };
+    },
+    async goofyAccept() {
+      const d = await rpc('goofy_accept', { p_count: GOOFY.length });
+      return { status: d.status, prompt: d.prompt, doneToday: d.done_today };
+    },
+    async goofyFinish(done) {
+      const d = await rpc('goofy_finish', { p_done: done });
       return { awarded: d.awarded };
     },
     async raceState(back = 0) {
