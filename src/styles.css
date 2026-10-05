@@ -636,3 +636,5 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 
 /* Seasonal events */
 .event-banner { margin: 0; padding: 6px 12px; border-radius: 12px; background: #f59e0b22; border: 1px solid #f59e0b55; font-size: .85rem; text-align: center; }
+@media (max-height: 480px) and (orientation: landscape) { .profile-hero { max-height: 38vh; } .profile-info { gap: 3px; } .profile-info strong { font-size: 1.2rem; } .profile .stats > div { padding: 4px 10px; } }
+@media (max-height: 480px) and (orientation: landscape) { .big-code b { font-size: 1.3rem; } .big-code { margin: 0; } }

@@ -371,6 +371,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (raw) {
         const parsed = JSON.parse(raw) as Db;
         if (parsed.room) parsed.room.game ??= 'trivia-clash';
+        for (const a of Object.values(parsed.accounts ?? {})) a.friendCode ??= generateCode(6);
         return parsed;
       }
     } catch { /* corrupted or blocked storage: start fresh */ }
@@ -597,7 +598,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       let code = generateHeroCode();
       while (db.accounts[code]) code = generateHeroCode();
       const acct: Account = {
-        id: crypto.randomUUID(), heroCode: code, displayName: name, grade: input.grade, starter: input.hero,
+        id: crypto.randomUUID(), heroCode: code, friendCode: generateCode(6), displayName: name, grade: input.grade, starter: input.hero,
         picture: input.picture, failures: [],
       };
       db.accounts[code] = acct;
@@ -960,7 +961,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     },
     async requestFriend(code) {
       const me = meHero();
-      const other = db.accounts[normalizeHeroCode(code)];
+      const other = Object.values(db.accounts).find((a) => a.friendCode === normalizeHeroCode(code));
       if (!other) throw new Error('no hero has that code');
       if (other.id === me.id) throw new Error('that is your own code');
       const list = (db.friendships ??= []);
@@ -970,6 +971,12 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       else list.push({ id: generateCode(10), a: me.id, b: other.id, status: 'pending' });
       commit();
       return other.displayName;
+    },
+    async friendCodeReset() {
+      const acct = Object.values(db.accounts).find((a) => a.id === meHero().id)!;
+      acct.friendCode = generateCode(6);
+      commit();
+      return acct.friendCode;
     },
     async respondFriend(id, accept) {
       const me = meHero().id;

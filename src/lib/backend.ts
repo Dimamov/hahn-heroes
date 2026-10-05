@@ -7,6 +7,7 @@ import type { StoryAnswerResult, StoryChoiceResult, StoryDone, StoryProgress } f
 export interface Hero {
   id: string;
   heroCode: string;
+  friendCode: string;
   displayName: string;
   grade: 5 | 6;
   starter: string;
@@ -467,6 +468,7 @@ export interface Backend {
   arcadeClaim(game: string): Promise<{ awarded: number; duplicate: boolean; capped: boolean }>;
   friends(): Promise<Friends>;
   /** Ask another hero to be friends using their hero code. Resolves with their name. */
+  friendCodeReset(): Promise<string>;
   requestFriend(code: string): Promise<string>;
   respondFriend(id: string, accept: boolean): Promise<void>;
   removeFriend(id: string): Promise<void>;

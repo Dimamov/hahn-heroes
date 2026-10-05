@@ -43,7 +43,7 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     if (!session) return null;
     const { data, error } = await sb.from('heroes').select('*').eq('id', session.user.id).maybeSingle();
     if (error || !data) return null;
-    return { id: data.id, heroCode: data.hero_code, displayName: data.display_name, grade: data.grade, starter: data.starter_hero };
+    return { id: data.id, heroCode: data.hero_code, friendCode: data.friend_code, displayName: data.display_name, grade: data.grade, starter: data.starter_hero };
   }
 
   async function loadAdult(): Promise<Adult | null> {
@@ -272,7 +272,12 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       };
     },
     async requestFriend(code) {
-      return (await rpc('friend_request', { p_code: code })).name;
+      const d = await rpc('friend_request', { p_code: code });
+      if (!d.name) throw new Error('no hero has that code');
+      return d.name;
+    },
+    async friendCodeReset() {
+      return rpc('friend_code_reset');
     },
     async respondFriend(id, accept) {
       await rpc('friend_respond', { p_id: id, p_accept: accept });

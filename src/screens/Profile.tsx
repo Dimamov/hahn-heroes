@@ -7,6 +7,7 @@ import { titleById, type ShowcaseState } from '../lib/showcase.ts';
 export function Profile() {
   const { hero, balances, go, signOut, backend } = useSession();
   const [show, setShow] = useState<ShowcaseState | null>(null);
+  const [reveal, setReveal] = useState(false);
   useEffect(() => { backend.showcaseState().then(setShow).catch(() => undefined); }, [backend]);
   return (
     <main className="screen">
@@ -17,7 +18,9 @@ export function Profile() {
           <strong>{hero.displayName}</strong>
           {show && <span className="title-badge">{titleById(show.title).icon} {titleById(show.title).label}</span>}
           <span>Grade {hero.grade}</span>
-          <code aria-label="Your hero code">{formatHeroCode(hero.heroCode)}</code>
+          {reveal
+            ? <code aria-label="Your secret sign-in code">{formatHeroCode(hero.heroCode)}</code>
+            : <button className="btn link" onClick={() => setReveal(true)}>Show my secret sign-in code</button>}
           <dl className="stats">
             <div><dt>💎 Nexus points</dt><dd>{balances.coins}</dd></div>
             <div><dt>⭐ XP</dt><dd>{balances.xp}</dd></div>
@@ -27,9 +30,11 @@ export function Profile() {
       </div>
       {backend.mode === 'demo' && <p className="note">Demo mode: this hero lives on this device only.</p>}
       <div className="grow" />
-      <button className="btn ghost" onClick={() => go('showcase')}>⭐ Showcase</button>
-      <button className="btn ghost" onClick={() => go('parentcode')}>👪 Grown-up code</button>
-      <button className="btn ghost" onClick={signOut}>Switch hero</button>
+      <div className="btn-grid">
+        <button className="btn ghost" onClick={() => go('showcase')}>⭐ Showcase</button>
+        <button className="btn ghost" onClick={() => go('parentcode')}>👪 Grown-up code</button>
+        <button className="btn ghost" onClick={signOut}>Switch hero</button>
+      </div>
     </main>
   );
 }

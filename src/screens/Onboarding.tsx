@@ -5,7 +5,7 @@ import { HEROES } from '../lib/heroes.ts';
 import { HeroArt } from '../components/HeroArt.tsx';
 import { Pager } from '../components/Pager.tsx';
 import { PicturePad } from '../components/PicturePad.tsx';
-import { NAME_ADJECTIVES, NAME_NOUNS, formatHeroCode } from '../../supabase/functions/_shared/kid-auth.ts';
+import { NAME_ADJECTIVES, NAME_NOUNS, PICTURE_LENGTH, formatHeroCode } from '../../supabase/functions/_shared/kid-auth.ts';
 
 type Step = 'grade' | 'hero' | 'name' | 'picture' | 'confirm' | 'card';
 const STEPS: Step[] = ['grade', 'hero', 'name', 'picture', 'confirm'];
@@ -113,10 +113,10 @@ export function Onboarding({ backend, onDone, onBack }: { backend: Backend; onDo
       {step === 'picture' && (
         <>
           <h2>Make your secret pictures</h2>
-          <p className="hint">Tap 3 pictures in an order you will remember. Don't tell anyone!</p>
+          <p className="hint">Tap 4 pictures in an order you will remember. Don't tell anyone!</p>
           <PicturePad value={picture} onChange={setPicture} />
           <div className="grow" />
-          <button className="btn primary" disabled={picture.length !== 3} onClick={() => { setAgain([]); setStep('confirm'); }}>Next</button>
+          <button className="btn primary" disabled={picture.length !== PICTURE_LENGTH} onClick={() => { setAgain([]); setStep('confirm'); }}>Next</button>
         </>
       )}
 
@@ -130,15 +130,15 @@ export function Onboarding({ backend, onDone, onBack }: { backend: Backend; onDo
 function ConfirmStep({ picture, again, setAgain, error, busy, onCreate }: {
   picture: number[]; again: number[]; setAgain: (v: number[]) => void; error: string; busy: boolean; onCreate: () => void;
 }) {
-  const match = again.length === 3 && again.join() === picture.join();
-  const miss = again.length === 3 && !match;
+  const match = again.length === PICTURE_LENGTH && again.join() === picture.join();
+  const miss = again.length === PICTURE_LENGTH && !match;
   useEffect(() => {
     if (miss) { const t = setTimeout(() => setAgain([]), 900); return () => clearTimeout(t); }
   }, [miss, setAgain]);
   return (
     <>
       <h2>Tap them again</h2>
-      <p className="hint">{miss ? "Not quite. Let's try again!" : match ? 'Perfect! You remembered.' : 'Tap your 3 pictures in the same order.'}</p>
+      <p className="hint">{miss ? "Not quite. Let's try again!" : match ? 'Perfect! You remembered.' : 'Tap your 4 pictures in the same order.'}</p>
       <PicturePad value={again} onChange={setAgain} />
       <p className="error" role="alert">{error}</p>
       <div className="grow" />

@@ -5,11 +5,13 @@
 export const HERO_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 export const HERO_CODE_LENGTH = 8;
 
-/** Picture password: tap 3 different pictures out of 9, in order (504 combinations). */
+/** Picture password: tap 4 different pictures out of 9, in order (3,024 combinations). Heroes made
+ *  before 2026-10-05 still sign in with their 3 pictures (504 combinations). */
 export const PICTURE_CHOICES = 9;
-export const PICTURE_LENGTH = 3;
+export const PICTURE_LENGTH = 4;
+export const LEGACY_PICTURE_LENGTH = 3;
 
-/** After 5 wrong tries a hero code rests for 15 minutes. */
+/** After 5 wrong tries a hero code rests for 15 minutes; 10 in a row an hour; 15 a day. */
 export const MAX_FAILED_TRIES = 5;
 export const LOCKOUT_MINUTES = 15;
 
@@ -46,12 +48,13 @@ export function isGrade(grade: unknown): grade is 5 | 6 {
   return grade === 5 || grade === 6;
 }
 
-export function isValidPicture(picture: unknown): picture is number[] {
+/** New passwords are 4 pictures; sign-in also accepts the 3-picture passwords made earlier. */
+export function isValidPicture(picture: unknown, lengths: number[] = [PICTURE_LENGTH]): picture is number[] {
   return (
     Array.isArray(picture) &&
-    picture.length === PICTURE_LENGTH &&
+    lengths.includes(picture.length) &&
     picture.every((p) => Number.isInteger(p) && p >= 0 && p < PICTURE_CHOICES) &&
-    new Set(picture).size === PICTURE_LENGTH
+    new Set(picture).size === picture.length
   );
 }
 

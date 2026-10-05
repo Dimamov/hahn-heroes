@@ -40,7 +40,7 @@ export function Squad() {
       <p className="error" role="alert">{error}</p>
       {tab === 'squad' && <SquadTab squad={squad} friends={friends} run={run} backend={backend} />}
       {tab === 'friends' && <FriendsTab friends={friends} squad={squad} run={run} backend={backend} />}
-      {tab === 'add' && <AddTab code={hero.heroCode} backend={backend} onSent={load} />}
+      {tab === 'add' && <AddTab code={hero.friendCode} backend={backend} onSent={load} />}
     </main>
   );
 }
@@ -130,6 +130,7 @@ function FriendsTab({ friends, squad, run, backend }: { friends: Friends | null;
 }
 
 function AddTab({ code, backend, onSent }: { code: string; backend: B; onSent: () => void }) {
+  const [mine, setMine] = useState(code);
   const [value, setValue] = useState('');
   const [msg, setMsg] = useState('');
   const [bad, setBad] = useState(false);
@@ -139,14 +140,15 @@ function AddTab({ code, backend, onSent }: { code: string; backend: B; onSent: (
   };
   return (
     <>
-      <p className="hint">Your hero code. Share it with a friend so they can add you:</p>
-      <div className="big-code"><b>{code}</b></div>
-      <label className="field plain"><span>Your friend's hero code</span>
-        <input value={value} maxLength={8} autoCapitalize="characters" onChange={(e) => setValue(e.target.value.toUpperCase())} />
+      <p className="hint">Your friend code. Share it with a friend so they can add you. It is not your sign-in code.</p>
+      <div className="big-code"><b>{mine}</b></div>
+      <button className="btn link" onClick={async () => { try { setMine(await backend.friendCodeReset()); setMsg('New friend code! Friends you already have stay friends.'); setBad(false); } catch { setMsg("Couldn't change it."); setBad(true); } }}>Get a new friend code</button>
+      <label className="field plain"><span>Your friend's friend code</span>
+        <input value={value} maxLength={6} autoCapitalize="characters" onChange={(e) => setValue(e.target.value.toUpperCase())} />
       </label>
       <p className={bad ? 'error' : 'hint'} role="status">{msg}</p>
       <div className="grow" />
-      <button className="btn primary" disabled={value.length < 8} onClick={send}>Send friend request</button>
+      <button className="btn primary" disabled={value.length < 6} onClick={send}>Send friend request</button>
     </>
   );
 }

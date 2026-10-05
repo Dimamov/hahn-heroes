@@ -3,7 +3,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders, json } from '../_shared/http.ts';
 import { getKidSecret } from '../_shared/secret.ts';
-import { deriveKidPassword, isValidHeroCode, isValidPicture, kidAuthEmail, normalizeHeroCode } from '../_shared/kid-auth.ts';
+import { LEGACY_PICTURE_LENGTH, PICTURE_LENGTH, deriveKidPassword, isValidHeroCode, isValidPicture, kidAuthEmail, normalizeHeroCode } from '../_shared/kid-auth.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
 
   const body = await req.json().catch(() => null);
   const code = normalizeHeroCode(String(body?.heroCode ?? ''));
-  if (!isValidHeroCode(code) || !isValidPicture(body?.picture)) return json({ error: 'invalid_request' }, 400);
+  if (!isValidHeroCode(code) || !isValidPicture(body?.picture, [LEGACY_PICTURE_LENGTH, PICTURE_LENGTH])) return json({ error: 'invalid_request' }, 400);
 
   const url = Deno.env.get('SUPABASE_URL')!;
   const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
