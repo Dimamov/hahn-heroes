@@ -31,6 +31,7 @@ import { Nexlings } from './screens/Nexlings.tsx';
 import { Cards } from './screens/Cards.tsx';
 import { Arcade } from './screens/Arcade.tsx';
 import { PatternPulse } from './games/PatternPulse.tsx';
+import { Arena } from './games/Arena.tsx';
 import { RhythmTap } from './games/RhythmTap.tsx';
 import { MemoryFlip } from './games/MemoryFlip.tsx';
 import { WordBuilder } from './games/WordBuilder.tsx';
@@ -193,6 +194,7 @@ export default function App() {
       {secret && !secret.found && secret.place === screen && <SecretSpot week={Math.floor(Date.parse(new Date().toISOString().slice(0, 10)) / 604800000)} onFound={() => backend.secretState().then(setSecret).catch(() => undefined)} />}
       {screen === 'game:pattern-pulse' && <PatternPulse />}
       {screen === 'game:rhythm-tap' && <RhythmTap />}
+      {screen === 'game:arena' && <Arena />}
       {screen === 'game:memory-flip' && <MemoryFlip />}
       {screen === 'game:word-builder' && <WordBuilder />}
       {screen === 'game:spot-difference' && <SpotDifference />}
