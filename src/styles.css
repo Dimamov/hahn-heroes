@@ -892,3 +892,17 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .dash-canvas { max-width: 100%; max-height: 100%; aspect-ratio: 2 / 1; border-radius: 16px; background: #0b0a24; touch-action: none; }
 .dash-pads { display: flex; gap: 10px; height: min(15vh, 96px); }
 .dash-pad { flex: 1; font-size: 1.2rem; touch-action: manipulation; }
+
+/* Jam Session */
+.jam-kits { justify-content: center; }
+.jam-pads { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); gap: 10px; }
+.jam-pad { border: 0; border-radius: 18px; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 2rem; touch-action: manipulation; transition: transform 0.08s, filter 0.08s; background: #3b2a7a; }
+.jam-pad small { font-size: 0.7rem; font-weight: 700; }
+.jam-pad.k0 { background: linear-gradient(160deg, #ff3fa4, #a21caf); }
+.jam-pad.k1 { background: linear-gradient(160deg, #22d3ee, #4f46e5); }
+.jam-pad.k2 { background: linear-gradient(160deg, #fbbf24, #ea580c); }
+.jam-pad.lit { transform: scale(0.93); filter: brightness(1.5); }
+.jam-bar .btn { white-space: nowrap; padding-inline: 14px; }
+.jam-bar { display: flex; gap: 8px; justify-content: center; }
+.jam-note { min-height: 2.4em; text-align: center; }
+@media (orientation: landscape) and (max-height: 500px) { .jam-pads { grid-template-columns: repeat(8, 1fr); grid-template-rows: 1fr; } .jam-pad { font-size: 1.4rem; } }

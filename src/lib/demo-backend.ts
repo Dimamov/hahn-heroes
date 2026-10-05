@@ -295,6 +295,7 @@ interface Db {
   lookLikes?: { owner: string; liker: string; version: number }[];
   goofy?: { heroId: string; day: string; prompt: number; status: 'accepted' | 'done' | 'skipped' }[];
   kind?: { id: number; nominator: string; nominee: string; reason: string; day: string; at: number; status: 'pending' | 'approved' | 'skipped' }[];
+  jam?: { squadId: string; heroId: string; seq: number; pads: number[]; at: number }[];
   squadBase?: { squadId: string; cell: number; item: string; by: string }[];
   treasure?: { week: string; heroId: string; step: number; claimed: boolean }[];
   codes?: { id: number; code: string; by: string; classId: string | null; coins: number; xp: number; day: string; expires: number; used: string[] }[];
@@ -1825,6 +1826,28 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (db.squadBase.filter((b) => b.squadId === sq && b.by === me).length >= 6) throw new Error('you can place up to 6 decorations');
       db.squadBase.push({ squadId: sq, cell, item, by: me });
       commit();
+    },
+    async jamHit(pads) {
+      const me = meHero().id;
+      const sq = mySquadId(me);
+      if (sq === undefined) throw new Error('join a squad first');
+      const clean = pads.filter((p) => Number.isInteger(p) && p >= 0 && p < 24).slice(0, 8);
+      if (!clean.length) return;
+      const all = (db.jam ??= []);
+      const mine = all.find((j) => j.squadId === sq && j.heroId === me);
+      if (mine) { mine.seq += clean.length; mine.pads = [...mine.pads, ...clean].slice(-8); mine.at = Date.now(); }
+      else all.push({ squadId: sq, heroId: me, seq: clean.length, pads: clean, at: Date.now() });
+      commit();
+    },
+    async jamFeed() {
+      const me = meHero().id;
+      const sq = mySquadId(me);
+      if (sq === undefined) return { squad: null, mates: [] };
+      return {
+        squad: (db.squads ?? []).find((q) => q.id === sq)!.name,
+        mates: (db.jam ??= []).filter((j) => j.squadId === sq && j.heroId !== me && Date.now() - j.at < 300000)
+          .map((j) => ({ id: j.heroId, name: heroById(j.heroId)?.displayName ?? 'Hero', seq: j.seq, pads: j.pads, live: Date.now() - j.at < 20000 })),
+      };
     },
     async baseRemove(cell) {
       const me = meHero().id;

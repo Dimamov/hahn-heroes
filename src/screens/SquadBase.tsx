@@ -57,6 +57,7 @@ export function SquadBase() {
         const it = itemById(id)!;
         return <button key={id} className={`item-tile small${held === id ? ' on' : ''}`} onClick={() => { setNote(''); setHeld(held === id ? null : id); }}><span className="item-icon">{it.icon}</span><small>{it.name}</small></button>;
       }} />
+      {!held && <button className="btn ghost" onClick={() => go('game:jam')}>🎛️ Jam Session with your squad</button>}
       {held && placed.has(held) && <button className="btn ghost" onClick={putAway}>Put it away</button>}
     </main>
   );
