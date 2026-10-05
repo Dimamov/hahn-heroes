@@ -22,7 +22,14 @@ begin
   delete from class_members where child_id = u(11);
   perform as_user(11);
   assert (chat_send('hello')->>'no_class')::boolean and not (chat_read()->>'can_chat')::boolean, 'no class, no chat';
+  -- no class, but a friend in the room: chat opens; a stranger joining closes it again
   perform as_admin();
+  insert into friendships (a, b, status) values (u(11), u(13), 'accepted');
+  perform as_user(11);
+  assert (chat_read()->>'can_chat')::boolean, 'only a friend in the room: chat open';
+  perform as_user(13);  -- put the friend's stranger test aside: friendship is mutual for chat
+  perform as_admin();
+  delete from friendships where a = u(11) and b = u(13);
   insert into class_members select * from saved_members;
   drop table saved_members;
 

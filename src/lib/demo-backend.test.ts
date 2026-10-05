@@ -1057,6 +1057,7 @@ describe('demo backend: grown-ups and missions', () => {
       const { b, hero, cls } = await setup();
       await b.signIn(hero.heroCode, [0, 4, 8, 2]);
       await b.createRoom('trivia-clash');
+      await b.addPracticeBuddy!();
       expect(await b.chatSend('good luck!')).toEqual({ ok: false, reason: 'no_class' });
       expect((await b.chatRead()).canChat).toBe(false);
       await b.joinClass(cls.joinCode!);
