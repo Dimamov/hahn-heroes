@@ -19,6 +19,7 @@ import { MyWeek } from './screens/MyWeek.tsx';
 import { Raid } from './screens/Raid.tsx';
 import { Stickers } from './screens/Stickers.tsx';
 import { Comics } from './screens/Comics.tsx';
+import { Badges } from './screens/Badges.tsx';
 import { Codes } from './screens/Codes.tsx';
 import { Contest } from './screens/Contest.tsx';
 import { Secret, SecretSpot } from './screens/Secret.tsx';
@@ -192,6 +193,7 @@ export default function App() {
       {screen === 'comics' && <Comics />}
       {screen === 'contest' && <Contest />}
       {screen === 'codes' && <Codes />}
+      {screen === 'badges' && <Badges />}
       {screen === 'secret' && <Secret />}
       {secret && !secret.found && secret.place === screen && <SecretSpot week={Math.floor(Date.parse(new Date().toISOString().slice(0, 10)) / 604800000)} onFound={() => backend.secretState().then(setSecret).catch(() => undefined)} />}
       {screen === 'game:pattern-pulse' && <PatternPulse />}
@@ -210,7 +212,7 @@ export default function App() {
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'badges', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }
