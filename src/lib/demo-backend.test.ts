@@ -373,4 +373,34 @@ describe('demo backend: grown-ups and missions', () => {
       await b.adultSignIn('p@x.test', 'newpassword1');
     });
   });
+
+  describe('rooms', () => {
+    it('runs Trivia Clash with practice buddies from lobby to standings', async () => {
+      const b = make();
+      await b.signUp(input);
+      const code = await b.createRoom('trivia-clash');
+      await expect(b.createRoom('trivia-clash')).rejects.toThrow('leave your room first');
+      await expect(b.startRoom()).rejects.toThrow('at least 2');
+      await b.addPracticeBuddy!();
+      expect((await b.roomState(code)).players).toHaveLength(2);
+      await b.startRoom();
+      for (let i = 0; i < 8; i++) {
+        const q = await b.roomState(code);
+        expect(q.phase).toBe('question');
+        expect(q.rightChoice).toBeUndefined();
+        const right = (bank as { id: string; prompt: string; answer: number }[]).find((x) => x.prompt === q.question!.prompt)!.answer;
+        await b.roomAnswer(right);
+        clock = new Date(clock.getTime() + 11_000);
+        const reveal = await b.roomState(code);
+        expect(reveal.phase).toBe('reveal');
+        expect(reveal.rightChoice).toBe(right);
+        expect(reveal.myPoints).toBeGreaterThanOrEqual(100);
+        clock = new Date(clock.getTime() + 6_000);
+      }
+      const end = await b.roomState(code);
+      expect(end.state).toBe('done');
+      expect(end.players[0].score).toBeGreaterThanOrEqual(800);
+      expect(await b.currentRoom()).toBeNull();
+    });
+  });
 });
