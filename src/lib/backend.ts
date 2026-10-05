@@ -3,6 +3,7 @@ import type { Currency } from '../../supabase/functions/_shared/rewards.ts';
 import type { ShowcaseState } from './showcase.ts';
 import type { StickerBook, StickerDesign } from './stickers.ts';
 import type { Comic, ComicPanels } from './comics.ts';
+import type { ContestState } from './contest.ts';
 import type { AdvAnswerResult, AdvDone, AdvProgress } from './adventures.ts';
 import type { StoryAnswerResult, StoryChoiceResult, StoryDone, StoryProgress } from './story.ts';
 
@@ -577,6 +578,11 @@ export interface Backend {
   stickerList(): Promise<StickerBook>;
   stickerMake(design: StickerDesign): Promise<{ ok: boolean; reason?: 'daily_limit' | 'full' }>;
   stickerGive(stickerId: number, toHero: string): Promise<{ ok: boolean; reason?: 'full' }>;
+  /** Weekly room contest: enter your room, vote once for a squad or House mate's room. */
+  contestState(): Promise<ContestState>;
+  contestEnter(): Promise<void>;
+  contestVote(heroId: string): Promise<void>;
+  contestClaim(): Promise<{ ok: boolean }>;
   /** Comics: three panels from fixed lists, shareable with your squad. */
   comicList(): Promise<Comic[]>;
   comicSquad(): Promise<Comic[]>;
