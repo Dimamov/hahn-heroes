@@ -1651,6 +1651,28 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       commit();
       return { ok: true };
     },
+    async badgeWall() {
+      const me = meHero().id;
+      const out: string[] = [];
+      const hist = db.history.filter((h) => h.childId === me);
+      if (hist.length) out.push('first-steps');
+      if (hist.filter((h) => h.correct).length >= 50) out.push('brainiac');
+      if (db.ledger.filter((l) => l.heroId === me && l.source === 'daily').length >= 7) out.push('streak-master');
+      if (mySquadId(me) !== undefined) out.push('squad-up');
+      if ((db.friendships ??= []).filter((f) => f.status === 'accepted' && (f.a === me || f.b === me)).length >= 3) out.push('friendly');
+      if ((db.cardInv ??= []).filter((c) => c.heroId === me && c.qty > 0).length >= 10) out.push('collector');
+      if ((db.owned ??= []).filter((o) => o.heroId === me).length >= 3) out.push('fashionista');
+      if ((db.nexlings ??= []).some((n) => n.heroId === me)) out.push('pet-parent');
+      if ((db.story ??= []).some((x) => x.heroId === me && x.done)) out.push('story-finisher');
+      if (db.raid?.strikes.some((x) => x.heroId === me)) out.push('boss-buster');
+      if (db.secret?.finds.includes(me)) out.push('sparkle-spotter');
+      if ((db.comics ??= []).some((c) => c.maker === me)) out.push('comic-creator');
+      if ((db.stickers ??= []).some((x) => x.maker === me)) out.push('sticker-star');
+      if ((db.codes ??= []).some((c) => c.used.includes(me))) out.push('code-cracker');
+      if ((db.contest ??= { entries: [], votes: [], claims: [] }).entries.some((e) => e.heroId === me)) out.push('room-showoff');
+      if (db.ledger.some((l) => l.heroId === me && l.source === 'purchase')) out.push('big-spender');
+      return out;
+    },
     async codeCreate(classId, coins, xp, announce = false) {
       const a = meAdult();
       if (a.role !== 'sensei' && a.role !== 'teacher') throw new Error('only teachers and the Sensei');

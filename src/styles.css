@@ -765,3 +765,7 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 @media (max-height: 480px) and (orientation: landscape) { .arena { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: auto auto 1fr; gap: 4px 12px; } .arena-field { grid-row: 1 / 4; } .arena-moves { grid-column: 2; } .arena-hero { height: min(40vh, 150px); } }
 .screen.scrolly .panel { height: auto; }
 .code-word { letter-spacing: .04em; margin: 0; }
+
+/* Achievement wall */
+.item-tile.badge.locked { opacity: .5; filter: grayscale(1); }
+.item-tile.badge.picked { outline: 3px solid var(--cyan, #22d3ee); }

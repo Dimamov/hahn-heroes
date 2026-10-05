@@ -294,6 +294,14 @@ describe('demo backend: grown-ups and missions', () => {
     expect(await b.codeRedeem(code)).toEqual({ ok: false, reason: 'already_used' });
   });
 
+  it('shows achievement badges once the matching thing has been done', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    expect(await b.badgeWall()).toEqual([]);
+    await b.comicMake([0, 1, 2].map(() => ({ hero: 'ana', scene: 'hall', pose: 'stand', line: 'Awesome!' })) as never);
+    expect(await b.badgeWall()).toEqual(['comic-creator']);
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);
