@@ -240,6 +240,14 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async resetSubmission(missionId, childId) {
       await rpc('teacher_reset_submission', { p_mission: missionId, p_child: childId });
     },
+    async arcadeStatus() {
+      const d = await rpc('arcade_status');
+      return { coins: d.coins, games: d.games, claimed: d.claimed };
+    },
+    async arcadeClaim(game) {
+      const d = await rpc('arcade_claim', { p_game: game });
+      return { awarded: d.awarded, duplicate: d.duplicate, capped: d.capped };
+    },
     async senseiOverview() {
       const d = await rpc('sensei_overview');
       return {

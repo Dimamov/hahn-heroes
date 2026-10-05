@@ -5,7 +5,7 @@ import { HeroArt } from '../components/HeroArt.tsx';
 import { DESTINATIONS } from '../lib/destinations.ts';
 
 export function Home() {
-  const { hero, balances, dailyAvailable, unread, missionDot, backend, refresh, go } = useSession();
+  const { hero, balances, dailyAvailable, unread, missionDot, arcadeDot, backend, refresh, go } = useSession();
   const [popped, setPopped] = useState<number | null>(null);
 
   const claim = async () => {
@@ -43,6 +43,7 @@ export function Home() {
             <div className="tiles" key={p}>
               {list.map((d) => (
                 <button key={d.id} className="tile" style={{ ['--tint' as string]: d.tint }} onClick={() => go(d.id)}>
+                  {d.id === 'arcade' && arcadeDot && <i className="red-dot" aria-label="Arcade rewards waiting" />}
                   {d.id === 'missions' && missionDot && <i className="red-dot" aria-label="Missions waiting" />}
                   <span className="tile-icon" aria-hidden>{d.icon}</span>
                   <span className="tile-label">{d.label}</span>

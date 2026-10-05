@@ -1,7 +1,7 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
 import {
-  CLASS_PASS_PERCENT, DAILY_LOGIN_COINS, LEARNING_REWARDS, WEEKLY_CAPS, classMissionCoins, schoolDate, schoolWeek,
+  ARCADE_REWARDS, CLASS_PASS_PERCENT, DAILY_LOGIN_COINS, LEARNING_REWARDS, WEEKLY_CAPS, classMissionCoins, schoolDate, schoolWeek,
   type Currency, type RewardSource,
 } from '../../supabase/functions/_shared/rewards.ts';
 import {
@@ -528,6 +528,20 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (!m || !teaches(m.classId)) throw new Error('not your class');
       db.submissions = db.submissions.filter((s) => !(s.missionId === missionId && s.childId === childId));
       commit();
+    },
+    async arcadeStatus() {
+      const id = meHero().id;
+      const today = schoolDate(now());
+      const claimed = ARCADE_REWARDS.games.filter((g) => db.ledger.some((r) => r.heroId === id && r.currency === 'coins' && r.key === `arcade:${g}:${today}`));
+      return { coins: ARCADE_REWARDS.coins, games: [...ARCADE_REWARDS.games], claimed };
+    },
+    async arcadeClaim(game) {
+      const id = meHero().id;
+      if (!(ARCADE_REWARDS.games as readonly string[]).includes(game)) throw new Error('unknown game');
+      const key = `arcade:${game}:${schoolDate(now())}`;
+      const r = award(id, 'coins', ARCADE_REWARDS.coins, 'game', key);
+      if (!r.duplicate) award(id, 'xp', ARCADE_REWARDS.xp, 'game', key);
+      return { awarded: r.awarded, duplicate: r.duplicate, capped: r.capped };
     },
     async senseiOverview() {
       meAdult('sensei');
