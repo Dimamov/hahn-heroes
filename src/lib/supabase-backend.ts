@@ -334,6 +334,24 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async odinMove(card, color) {
       await rpc('odin_move', { p_card: card, p_color: color ?? null });
     },
+    async shadowView(code) {
+      const d = await rpc('shadow_view', { p_code: code });
+      return {
+        state: d.state, phase: d.phase, category: d.category, turn: d.turn, secondsLeft: d.seconds_left ?? 0, seconds: d.seconds ?? 0,
+        isShadow: !!d.is_shadow, word: d.word ?? null, options: d.options ?? null, myVote: d.my_vote ?? null,
+        players: d.players ?? [],
+        result: d.result ? { caught: !!d.result.caught, shadowWon: !!d.result.shadow_won, guess: d.result.guess ?? null, word: d.result.word } : null,
+      };
+    },
+    async shadowClue(text) {
+      await rpc('shadow_clue', { p_text: text });
+    },
+    async shadowVote(index) {
+      await rpc('shadow_vote', { p_index: index });
+    },
+    async shadowGuess(word) {
+      await rpc('shadow_guess', { p_word: word });
+    },
     async chatSend(text) {
       const d = await rpc('chat_send', { p_text: text });
       if (d.ok) return { ok: true };

@@ -1,5 +1,6 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
+import { BOT_CLUES, isCaught, newRound, tallyVotes } from './shadow-rules.ts';
 import { botMove, deal, move as odinMoveRule, type OdinGame } from './odin-rules.ts';
 import {
   ARCADE_REWARDS, CLASS_PASS_PERCENT, DAILY_LOGIN_COINS, LEARNING_REWARDS, WEEKLY_CAPS, classMissionCoins, schoolDate, schoolWeek,
@@ -88,10 +89,68 @@ function chatFlagged(text: string): boolean {
   return BLOCK_ANYWHERE.some((w) => squashed.includes(w)) || BLOCK_WHOLE.some((w) => new RegExp(`(^| )${w}( |$)`).test(clean));
 }
 
+interface DemoShadow {
+  category: string;
+  word: string;
+  options: string[];
+  shadowId: string;
+  order: string[];
+  phase: 'clue' | 'vote' | 'guess' | 'done';
+  turn: number;
+  phaseStart: number;
+  clues: { i: number; text: string }[];
+  votes: Record<number, number>;
+  caught: boolean | null;
+  guess: string | null;
+  shadowWon: boolean | null;
+}
+const SHADOW_SECONDS = { clue: 30, vote: 45, guess: 30 };
+const SHADOW_BOT_MS = 3_000;
+
+function demoShadowFinish(r: DemoRoom, sh: DemoShadow, shadowWon: boolean, now: number) {
+  sh.phase = 'done'; sh.shadowWon = shadowWon; sh.phaseStart = now; r.state = 'done';
+  for (const p of r.players) p.score += p.id === sh.shadowId ? (shadowWon ? 3 : 0) : shadowWon ? 0 : 2;
+}
+
+/** Runs the Shadow Signal clock: bots give clues, vote and guess; slow humans are skipped. */
+function demoShadowTick(r: DemoRoom, now: number) {
+  const sh = r.shadow;
+  if (!sh) return;
+  const bot = (id: string) => !!r.players.find((p) => p.id === id)?.bot;
+  const shadowIdx = sh.order.indexOf(sh.shadowId);
+  for (let guard = 0; guard < 60 && sh.phase !== 'done'; guard++) {
+    if (sh.phase === 'clue') {
+      if (sh.turn >= sh.order.length) { sh.phase = 'vote'; sh.phaseStart = now; continue; }
+      const wait = bot(sh.order[sh.turn]) ? SHADOW_BOT_MS : SHADOW_SECONDS.clue * 1000;
+      if (now < sh.phaseStart + wait) break;
+      const at = sh.phaseStart + wait;
+      sh.clues.push({ i: sh.turn, text: bot(sh.order[sh.turn]) ? BOT_CLUES[Math.floor(Math.random() * BOT_CLUES.length)] : '' });
+      sh.turn += 1; sh.phaseStart = at;
+    } else if (sh.phase === 'vote') {
+      for (const [i, id] of sh.order.entries()) {
+        if (!bot(id) || sh.votes[i] !== undefined || now < sh.phaseStart + SHADOW_BOT_MS + i * 700) continue;
+        const others = sh.order.map((_, k) => k).filter((k) => k !== i);
+        sh.votes[i] = i !== shadowIdx && Math.random() < 0.6 ? shadowIdx : others[Math.floor(Math.random() * others.length)];
+      }
+      if (Object.keys(sh.votes).length >= sh.order.length || now > sh.phaseStart + SHADOW_SECONDS.vote * 1000) {
+        sh.caught = isCaught(sh.votes, shadowIdx);
+        if (sh.caught) { sh.phase = 'guess'; sh.phaseStart = now; } else demoShadowFinish(r, sh, true, now);
+      } else break;
+    } else if (sh.phase === 'guess') {
+      if (bot(sh.shadowId) && now >= sh.phaseStart + SHADOW_BOT_MS) {
+        sh.guess = sh.options[Math.floor(Math.random() * sh.options.length)];
+        demoShadowFinish(r, sh, sh.guess === sh.word, now);
+      } else if (now > sh.phaseStart + SHADOW_SECONDS.guess * 1000) demoShadowFinish(r, sh, false, now);
+      else break;
+    }
+  }
+}
+
 interface DemoRoom {
   code: string;
   game: string;
   odin?: OdinGame;
+  shadow?: DemoShadow;
   hostId: string;
   state: 'lobby' | 'playing' | 'done' | 'closed';
   phase: 'question' | 'reveal';
@@ -727,7 +786,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     },
     async createRoom(game) {
       const me = meHero();
-      if (game !== 'trivia-clash' && game !== 'odin') throw new Error('unknown game');
+      if (!['trivia-clash', 'odin', 'shadow-signal'].includes(game)) throw new Error('unknown game');
       if (await this.currentRoom!()) throw new Error('leave your room first');
       const code = generateCode(4).replace(/[^A-Z]/g, 'K');
       db.room = { code, game, hostId: me.id, state: 'lobby', phase: 'question', idx: 0, phaseStart: at(), questions: [], players: [{ id: me.id, name: me.displayName, starter: me.starter, score: 0, bot: false, answers: {} }] };
@@ -753,7 +812,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (!r || r.state !== 'lobby') return;
       const n = r.players.filter((p) => p.bot).length;
       if (r.players.length >= ROOM_RULES.max) return;
-      r.players.push({ id: `bot-${n}`, name: ['Bot Fox', 'Bot Owl', 'Bot Wolf'][n % 3], starter: 'ana', score: 0, bot: true, answers: {} });
+      r.players.push({ id: `bot-${n}`, name: ['Bot Fox', 'Bot Owl', 'Bot Wolf', 'Bot Lynx', 'Bot Hawk'][n % 5], starter: 'ana', score: 0, bot: true, answers: {} });
       commit();
     },
     async startRoom() {
@@ -761,6 +820,18 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const r = db.room;
       if (!r || r.hostId !== me.id || r.state !== 'lobby') throw new Error('you are not hosting a room');
       if (r.players.length < ROOM_RULES.min) throw new Error('you need at least 2 players');
+      if (r.game === 'shadow-signal') {
+        if (r.players.length < 3) throw new Error('you need at least 3 players');
+        const round = newRound(r.players.length);
+        const order = r.players.map((p) => p.id).sort(() => Math.random() - 0.5);
+        r.shadow = {
+          category: round.category, word: round.word, options: round.options, shadowId: order[Math.floor(Math.random() * order.length)], order,
+          phase: 'clue', turn: 0, phaseStart: at(), clues: [], votes: {}, caught: null, guess: null, shadowWon: null,
+        };
+        r.state = 'playing'; r.phase = 'question'; r.idx = 0; r.phaseStart = at();
+        commit();
+        return;
+      }
       if (r.game === 'odin') {
         r.odin = deal(r.players.map((p) => p.id));
         r.odin.turnStart = at();
@@ -847,6 +918,76 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       odinMoveRule(r.odin, me, card, color ?? null, at());
       if (r.odin.winner) r.state = 'done';
       demoOdinTick(r, at());
+      commit();
+    },
+    async shadowView(code) {
+      const me = meHero().id;
+      const r = db.room;
+      if (!r || r.game !== 'shadow-signal' || r.code !== code.trim().toUpperCase() || !r.players.some((p) => p.id === me)) throw new Error('you are not in that room');
+      const sh = r.shadow;
+      if (!sh) return { state: r.state, phase: 'clue', category: '', turn: 0, secondsLeft: 0, seconds: 0, isShadow: false, word: null, options: null, myVote: null, players: [], result: null };
+      demoShadowTick(r, at());
+      commit();
+      const done = sh.phase === 'done';
+      const myIdx = sh.order.indexOf(me);
+      const seconds = sh.phase === 'done' ? 0 : SHADOW_SECONDS[sh.phase];
+      const isShadow = sh.shadowId === me;
+      const botTurn = sh.phase === 'clue' && r.players.find((p) => p.id === sh.order[sh.turn])?.bot;
+      const wait = botTurn ? SHADOW_BOT_MS / 1000 : seconds;
+      const votes = tallyVotes(sh.votes, sh.order.length);
+      return {
+        state: r.state, phase: sh.phase, category: sh.category, turn: sh.turn,
+        secondsLeft: Math.max(0, Math.ceil(wait - (at() - sh.phaseStart) / 1000)), seconds,
+        isShadow, word: !isShadow || done ? sh.word : null, options: isShadow && sh.phase === 'guess' ? sh.options : null,
+        myVote: sh.votes[myIdx] ?? null,
+        players: sh.order.map((id, i) => {
+          const p = r.players.find((x) => x.id === id)!;
+          return {
+            i, name: p.name, starter: p.starter, me: id === me, left: false, speaking: sh.phase === 'clue' && i === sh.turn,
+            clue: sh.clues.find((c) => c.i === i)?.text ?? null, voted: sh.votes[i] !== undefined,
+            votes: done ? votes[i] : undefined, shadow: done ? id === sh.shadowId : undefined,
+          };
+        }),
+        result: done ? { caught: !!sh.caught, shadowWon: !!sh.shadowWon, guess: sh.guess, word: sh.word } : null,
+      };
+    },
+    async shadowClue(text) {
+      const me = meHero().id;
+      const sh = db.room?.shadow;
+      const r = db.room;
+      if (!r || !sh || r.state !== 'playing') throw new Error('you are not in a game');
+      demoShadowTick(r, at());
+      if (sh.phase !== 'clue' || sh.order[sh.turn] !== me) throw new Error('it is not your turn');
+      const clue = text.trim().toLowerCase();
+      if (!/^[a-z][a-z'-]{0,15}$/.test(clue)) throw new Error('one word, letters only');
+      if (chatFlagged(clue)) throw new Error('pick a different word');
+      if (me !== sh.shadowId && clue.replace(/-/g, '').includes(sh.word.replace(/ /g, ''))) throw new Error('that gives it away');
+      sh.clues.push({ i: sh.turn, text: clue }); sh.turn += 1; sh.phaseStart = at();
+      demoShadowTick(r, at());
+      commit();
+    },
+    async shadowVote(index) {
+      const me = meHero().id;
+      const r = db.room;
+      const sh = r?.shadow;
+      if (!r || !sh || r.state !== 'playing') throw new Error('you are not in a game');
+      demoShadowTick(r, at());
+      const mine = sh.order.indexOf(me);
+      if (sh.phase !== 'vote') throw new Error('it is not time to vote');
+      if (!Number.isInteger(index) || index < 0 || index >= sh.order.length || index === mine) throw new Error('pick someone else');
+      sh.votes[mine] = index;
+      demoShadowTick(r, at());
+      commit();
+    },
+    async shadowGuess(word) {
+      const me = meHero().id;
+      const r = db.room;
+      const sh = r?.shadow;
+      if (!r || !sh || r.state !== 'playing') throw new Error('you are not in a game');
+      demoShadowTick(r, at());
+      if (sh.phase !== 'guess' || sh.shadowId !== me) throw new Error('it is not time to guess');
+      sh.guess = word;
+      demoShadowFinish(r, sh, word.toLowerCase() === sh.word.toLowerCase(), at());
       commit();
     },
     async chatSend(text) {

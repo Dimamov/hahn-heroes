@@ -201,6 +201,23 @@ export interface OdinView {
   winner: string | null;
   players: OdinPlayer[];
 }
+export interface ShadowPlayer { i: number; name: string; starter: string; me: boolean; left: boolean; speaking: boolean; clue: string | null; voted: boolean; votes?: number; shadow?: boolean }
+export interface ShadowView {
+  state: 'lobby' | 'playing' | 'done' | 'closed';
+  phase: 'clue' | 'vote' | 'guess' | 'done';
+  category: string;
+  turn: number;
+  secondsLeft: number;
+  seconds: number;
+  isShadow: boolean;
+  /** The secret word: hidden from the Shadow until the game ends. */
+  word: string | null;
+  /** Words the Shadow can pick from when guessing. */
+  options: string[] | null;
+  myVote: number | null;
+  players: ShadowPlayer[];
+  result: { caught: boolean; shadowWon: boolean; guess: string | null; word: string } | null;
+}
 export interface ChatMessage { id: number; name: string; me: boolean; body: string }
 export type ChatResult = { ok: true } | { ok: false; reason: 'warning' | 'banned' | 'slow' | 'private' };
 export interface ChatChild { banned: boolean; requested: boolean }
@@ -316,6 +333,10 @@ export interface Backend {
   odinView(code: string): Promise<OdinView>;
   /** ODIN: play a card (with a colour for wilds), or pass null to draw one card and end the turn. */
   odinMove(card: string | null, color?: string): Promise<void>;
+  shadowView(code: string): Promise<ShadowView>;
+  shadowClue(text: string): Promise<void>;
+  shadowVote(index: number): Promise<void>;
+  shadowGuess(word: string): Promise<void>;
   chatSend(text: string): Promise<ChatResult>;
   chatRead(): Promise<{ banned: boolean; messages: ChatMessage[] }>;
   childChat(childId: string): Promise<ChatChild>;
