@@ -512,3 +512,33 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
   .passage.short .passage-text { font-size: .95rem; }
   .feedback { font-size: .95rem; }
 }
+
+/* Cards and trading */
+.tcard { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; position: relative; padding: 6px 4px; min-height: 96px; border-radius: 14px; border: 3px solid; background: linear-gradient(160deg, #241a55, #120d2e); color: inherit; text-align: center; }
+.tcard.small { min-height: 74px; padding: 4px; }
+.tcard.hidden { opacity: .45; background: #11102a; }
+.tcard.legend { box-shadow: 0 0 14px #fbbf2488; }
+.tcard.on { background: #22d3ee22; }
+.card-icon { font-size: 2rem; line-height: 1; }
+.tcard.small .card-icon { font-size: 1.5rem; }
+.card-name { font-size: .78rem; line-height: 1.05; }
+.card-rarity { font-size: .68rem; font-weight: 800; }
+.card-qty { position: absolute; top: 2px; right: 6px; font: 800 .8rem 'Baloo 2', system-ui; color: var(--gold); }
+.showcase { display: flex; justify-content: center; gap: 8px; }
+.showcase .tcard { width: 84px; }
+.pack-row { display: flex; gap: 8px; justify-content: center; }
+.flip { position: relative; width: 92px; height: 130px; perspective: 600px; background: none; border: 0; padding: 0; }
+.flip > span { position: absolute; inset: 0; display: grid; place-items: center; backface-visibility: hidden; transition: transform .5s; border-radius: 14px; }
+.flip-back { background: linear-gradient(160deg, #5b3fd0, #ff3fa4); font-size: 2.4rem; }
+.flip-front { transform: rotateY(180deg); }
+.flip.open .flip-back { transform: rotateY(180deg); }
+.flip.open .flip-front { transform: rotateY(0); }
+.flip-front .tcard { width: 100%; height: 100%; }
+.new-badge { position: absolute; top: -8px; left: -4px; padding: 1px 6px; border-radius: 8px; background: var(--gold); color: #1a0f3a; font: 800 .7rem 'Baloo 2', system-ui; font-style: normal; }
+.trade-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.trade-side { display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 14px; background: var(--panel-2); min-height: 84px; }
+.trade-cards { display: flex; flex-wrap: wrap; gap: 4px; }
+.mini-card { position: relative; width: 40px; height: 40px; border-radius: 10px; background: #ffffff14; font-size: 1.4rem; border: 0; color: inherit; }
+.mini-card i { position: absolute; right: 1px; bottom: 0; font: 800 .65rem 'Baloo 2', system-ui; color: var(--gold); }
+.warn { margin: 0; text-align: center; font-weight: 800; color: #fbbf24; }
+@media (max-height: 480px) and (orientation: landscape) { .tcard { min-height: 70px; } .tcard.small { min-height: 60px; } }

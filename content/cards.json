@@ -1,0 +1,289 @@
+[
+ {
+  "id": "c-hall",
+  "name": "Hahn Front Hall",
+  "rarity": "common",
+  "icon": "🏫",
+  "flavor": "Where every hero first steps into the Nexus."
+ },
+ {
+  "id": "c-locker",
+  "name": "Lucky Locker",
+  "rarity": "common",
+  "icon": "🔐",
+  "flavor": "It always opens on the first try. Almost."
+ },
+ {
+  "id": "c-pencil",
+  "name": "Power Pencil",
+  "rarity": "common",
+  "icon": "✏️",
+  "flavor": "Sharpened by a thousand good ideas."
+ },
+ {
+  "id": "c-notebook",
+  "name": "Quest Notebook",
+  "rarity": "common",
+  "icon": "📓",
+  "flavor": "Every great quest starts on page one."
+ },
+ {
+  "id": "c-lunch",
+  "name": "Hero Lunch",
+  "rarity": "common",
+  "icon": "🥪",
+  "flavor": "Snack power restored."
+ },
+ {
+  "id": "c-bell",
+  "name": "Nexus Bell",
+  "rarity": "common",
+  "icon": "🔔",
+  "flavor": "Rings when something awesome is about to happen."
+ },
+ {
+  "id": "c-backpack",
+  "name": "Magic Backpack",
+  "rarity": "common",
+  "icon": "🎒",
+  "flavor": "Holds more than it should."
+ },
+ {
+  "id": "c-clock",
+  "name": "Time Clock",
+  "rarity": "common",
+  "icon": "⏰",
+  "flavor": "Never late, never early."
+ },
+ {
+  "id": "c-map",
+  "name": "Academy Map",
+  "rarity": "common",
+  "icon": "🗺️",
+  "flavor": "Some rooms are only on the secret side."
+ },
+ {
+  "id": "c-lamp",
+  "name": "Study Lamp",
+  "rarity": "common",
+  "icon": "💡",
+  "flavor": "Glows brighter with every right answer."
+ },
+ {
+  "id": "c-book",
+  "name": "Dusty Tome",
+  "rarity": "common",
+  "icon": "📖",
+  "flavor": "The pages turn on their own."
+ },
+ {
+  "id": "c-compass",
+  "name": "Lost Compass",
+  "rarity": "common",
+  "icon": "🧭",
+  "flavor": "Points to whatever you need most."
+ },
+ {
+  "id": "c-sneakers",
+  "name": "Sprint Sneakers",
+  "rarity": "common",
+  "icon": "👟",
+  "flavor": "Hallway speed record holder."
+ },
+ {
+  "id": "c-calc",
+  "name": "Crystal Calculator",
+  "rarity": "common",
+  "icon": "🧮",
+  "flavor": "Adds up to adventure."
+ },
+ {
+  "id": "c-globe",
+  "name": "Wonder Globe",
+  "rarity": "common",
+  "icon": "🌍",
+  "flavor": "Spin it and pick a mystery."
+ },
+ {
+  "id": "c-flask",
+  "name": "Bubbly Flask",
+  "rarity": "common",
+  "icon": "🧪",
+  "flavor": "Do not shake. Okay, shake a little."
+ },
+ {
+  "id": "c-trophy",
+  "name": "Tiny Trophy",
+  "rarity": "common",
+  "icon": "🏆",
+  "flavor": "Small, shiny and well earned."
+ },
+ {
+  "id": "c-star",
+  "name": "Wish Star",
+  "rarity": "common",
+  "icon": "⭐",
+  "flavor": "Make a wish for a friend."
+ },
+ {
+  "id": "u-ember",
+  "name": "Emberling Egg",
+  "rarity": "uncommon",
+  "icon": "🥚",
+  "flavor": "Warm to the touch, and humming."
+ },
+ {
+  "id": "u-gale",
+  "name": "Zephling Breeze",
+  "rarity": "uncommon",
+  "icon": "🌬️",
+  "flavor": "Carries giggles across the playground."
+ },
+ {
+  "id": "u-tide",
+  "name": "Tideling Splash",
+  "rarity": "uncommon",
+  "icon": "💧",
+  "flavor": "Calm on top, deep underneath."
+ },
+ {
+  "id": "u-moss",
+  "name": "Mossling Sprout",
+  "rarity": "uncommon",
+  "icon": "🌱",
+  "flavor": "Grows when you help someone."
+ },
+ {
+  "id": "u-frost",
+  "name": "Frostling Flake",
+  "rarity": "uncommon",
+  "icon": "❄️",
+  "flavor": "Every one is different. Just like you."
+ },
+ {
+  "id": "u-spark",
+  "name": "Sparkling Zap",
+  "rarity": "uncommon",
+  "icon": "⚡",
+  "flavor": "Quick as a good idea."
+ },
+ {
+  "id": "u-glim",
+  "name": "Glimmerling Gleam",
+  "rarity": "uncommon",
+  "icon": "✨",
+  "flavor": "Shines brightest at big moments."
+ },
+ {
+  "id": "u-owl",
+  "name": "Library Owl",
+  "rarity": "uncommon",
+  "icon": "🦉",
+  "flavor": "Knows where every book is hiding."
+ },
+ {
+  "id": "u-wolf",
+  "name": "Gray Wolf Pup",
+  "rarity": "uncommon",
+  "icon": "🐺",
+  "flavor": "A guardian in training."
+ },
+ {
+  "id": "u-bridge",
+  "name": "Rainbow Bridge",
+  "rarity": "uncommon",
+  "icon": "🌈",
+  "flavor": "Connects two worlds and two friends."
+ },
+ {
+  "id": "u-cloak",
+  "name": "Storm Cloak",
+  "rarity": "uncommon",
+  "icon": "🧣",
+  "flavor": "Weathers any pop quiz."
+ },
+ {
+  "id": "u-key",
+  "name": "Silver Key",
+  "rarity": "uncommon",
+  "icon": "🗝️",
+  "flavor": "Fits a door nobody has found yet."
+ },
+ {
+  "id": "r-isabella",
+  "name": "Isabella, Swift Scout",
+  "rarity": "rare",
+  "icon": "🏃‍♀️",
+  "flavor": "First to every clue, last to give up."
+ },
+ {
+  "id": "r-anayah",
+  "name": "Anayah, Kind Heart",
+  "rarity": "rare",
+  "icon": "💖",
+  "flavor": "Her kindness is her strongest power."
+ },
+ {
+  "id": "r-luna",
+  "name": "Luna, Moon Mage",
+  "rarity": "rare",
+  "icon": "🌙",
+  "flavor": "Her spells glow in the dark."
+ },
+ {
+  "id": "r-kacee",
+  "name": "Kacee, Bright Spark",
+  "rarity": "rare",
+  "icon": "🔥",
+  "flavor": "Turns a bad day into a good plan."
+ },
+ {
+  "id": "r-portal",
+  "name": "The Nexus Portal",
+  "rarity": "rare",
+  "icon": "🌀",
+  "flavor": "A swirl of violet light and possibility."
+ },
+ {
+  "id": "r-crystal",
+  "name": "Violet Crystal",
+  "rarity": "rare",
+  "icon": "🔮",
+  "flavor": "Hums when a hero is near."
+ },
+ {
+  "id": "e-ana",
+  "name": "Ana, Hero of the Nexus",
+  "rarity": "epic",
+  "icon": "🦸‍♀️",
+  "flavor": "She touched the symbol and the world woke up."
+ },
+ {
+  "id": "e-keeper",
+  "name": "The First Keeper",
+  "rarity": "epic",
+  "icon": "👑",
+  "flavor": "Guardian of the academy, flanked by two gray wolves."
+ },
+ {
+  "id": "e-squad",
+  "name": "The Founding Squad",
+  "rarity": "epic",
+  "icon": "🤝",
+  "flavor": "Five friends. One Nexus. Endless adventures."
+ },
+ {
+  "id": "l-sensei",
+  "name": "The Sensei",
+  "rarity": "legendary",
+  "icon": "🧙",
+  "flavor": "Creator of the Nexus. He only appears to those who are ready."
+ },
+ {
+  "id": "l-emblem",
+  "name": "The H.A.H.N. Emblem",
+  "rarity": "legendary",
+  "icon": "🛡️",
+  "flavor": "Heroes Awakening: Hidden Nexus."
+ }
+]

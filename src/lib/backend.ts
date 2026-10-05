@@ -214,6 +214,21 @@ export interface SkillState {
   surge: SurgeView;
   skills: { id: string; tree: string; tier: number; name: string; icon: string; cost: number; blurb: string; learned: boolean; ready: boolean }[];
 }
+export interface CardsState { packs: number; cards: { id: string; qty: number }[]; showcase: string[]; total: number }
+export interface PackResult { cards: { id: string; new: boolean }[]; packs: number }
+export interface TradeView {
+  id: string;
+  status: 'open' | 'done' | 'cancelled';
+  ver: number;
+  friend: string;
+  friendId: string;
+  myOffer: { card: string; qty: number }[];
+  theirOffer: { card: string; qty: number }[];
+  iConfirmed: boolean;
+  theyConfirmed: boolean;
+  fairness: { level: 'empty' | 'blocked' | 'uneven' | 'ok'; iGiveMore: boolean };
+}
+export interface TradeListItem { id: string; friend: string; friendId: string; startedByMe: boolean }
 export interface SquadMember { heroId: string; name: string; starter: string; status: 'member' | 'invited'; isLeader: boolean }
 export interface SquadView {
   squad: { id: string; name: string; leader: boolean; members: SquadMember[] } | null;
@@ -417,6 +432,19 @@ export interface Backend {
   inviteToSquad(friendHeroId: string): Promise<void>;
   respondSquadInvite(squadId: string, accept: boolean): Promise<void>;
   leaveSquad(): Promise<void>;
+  cardsState(): Promise<CardsState>;
+  openPack(): Promise<PackResult>;
+  setShowcase(cardIds: string[]): Promise<void>;
+  tradeOpen(friendHeroId: string): Promise<string>;
+  tradeList(): Promise<TradeListItem[]>;
+  tradeView(tradeId: string): Promise<TradeView>;
+  /** Replace your side of the offer. Any change clears both confirmations. */
+  tradeSet(tradeId: string, offer: { card: string; qty: number }[]): Promise<void>;
+  /** Confirm this exact version of the trade. `ack` must be true when the trade is uneven. */
+  tradeConfirm(tradeId: string, ver: number, ack: boolean): Promise<{ ok: boolean; done?: boolean; reason?: string }>;
+  tradeCancel(tradeId: string): Promise<void>;
+  /** Sensei only: hand any card to the hero with this code. Resolves with the hero's name. */
+  senseiGiveCard(heroCode: string, cardId: string): Promise<string>;
   skillState(): Promise<SkillState>;
   skillLearn(skillId: string): Promise<{ ok: true } | { ok: false; reason: 'locked' | 'already_learned' | 'not_enough_points' }>;
   nexlingState(): Promise<NexlingState>;

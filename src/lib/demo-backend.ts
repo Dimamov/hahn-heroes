@@ -12,6 +12,7 @@ import {
   isValidPicture, normalizeHeroCode,
 } from '../../supabase/functions/_shared/kid-auth.ts';
 import { SHOP_ITEMS, itemById } from './shop-catalog.ts';
+import { CARDS, cardById, fairness as tradeFairness, type OfferItem, type Rarity } from './cards.ts';
 import { SKILLS, dailyBonus, growthMultipliers, surgeRules } from './skills.ts';
 import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
@@ -278,6 +279,9 @@ interface Db {
   friendships?: { id: string; a: string; b: string; status: 'pending' | 'accepted' | 'declined' | 'removed' }[];
   squads?: { id: string; leader: string; name: string; disbanded: boolean; members: { childId: string; status: 'invited' | 'member' | 'declined' | 'left' }[] }[];
   nexlings?: { heroId: string; type: string; nickname: string; color: string; fromLedger: number }[];
+  cardInv?: { heroId: string; cardId: string; qty: number }[];
+  cardMeta?: { heroId: string; opened: number; showcase: string[] }[];
+  trades?: { id: string; a: string; b: string; offerA: OfferItem[]; offerB: OfferItem[]; ver: number; confA: number; confB: number; status: 'open' | 'done' | 'cancelled' }[];
   learnedSkills?: { heroId: string; skillId: string }[];
   surge?: { heroId: string; streak: number; until: number }[];
   owned?: { heroId: string; itemId: string }[];
@@ -403,6 +407,24 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     const r = surgeRules(hasSkill(heroId));
     return { active: row.until > at(), secondsLeft: Math.max(0, Math.ceil((row.until - at()) / 1000)), streak: row.streak, need: r.need, mult: r.mult, started };
   };
+  const qtyOf = (heroId: string, cardId: string) => (db.cardInv ??= []).find((c) => c.heroId === heroId && c.cardId === cardId)?.qty ?? 0;
+  const addCard = (heroId: string, cardId: string, n: number) => {
+    const row = (db.cardInv ??= []).find((c) => c.heroId === heroId && c.cardId === cardId);
+    if (row) row.qty += n; else db.cardInv.push({ heroId, cardId, qty: n });
+  };
+  const metaOf = (heroId: string) => (db.cardMeta ??= []).find((m) => m.heroId === heroId) ?? (db.cardMeta[db.cardMeta.push({ heroId, opened: 0, showcase: [] }) - 1]);
+  const packsLeft = (heroId: string) =>
+    1 + Math.floor(db.history.filter((h) => h.childId === heroId && h.correct).length / 15)
+    + db.homeMissions.filter((m) => m.childId === heroId && m.status === 'approved').length
+    + db.submissions.filter((x) => x.childId === heroId && x.scorePct >= 80).length - metaOf(heroId).opened;
+  const areFriends = (x: string, y: string) => (db.friendships ??= []).some((f) => f.status === 'accepted' && ((f.a === x && f.b === y) || (f.a === y && f.b === x)));
+  const tradeFor = (id: string) => {
+    const me = meHero().id;
+    const t = (db.trades ??= []).find((x) => x.id === id);
+    if (!t || (t.a !== me && t.b !== me)) throw new Error('not your trade');
+    return { t, me, mine: t.a === me };
+  };
+  const tradeFair = (t: NonNullable<Db['trades']>[number]) => tradeFairness(t.offerA, t.offerB, (c) => qtyOf(t.a, c) > 0, (c) => qtyOf(t.b, c) > 0);
   const skillBalance = (heroId: string) => db.ledger.filter((l) => l.heroId === heroId && l.currency === 'skill_points').reduce((s, l) => s + l.amount, 0);
   const heroWeekPoints = (heroId: string) => correctPoints(heroId, schoolWeek(now()));
   const heroSeasonPoints = (heroId: string) => correctPoints(heroId);
@@ -908,6 +930,108 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (squad.leader === me) squad.disbanded = true;
       else squad.members.find((m) => m.childId === me)!.status = 'left';
       commit();
+    },
+    async cardsState() {
+      const id = meHero().id;
+      return { packs: packsLeft(id), cards: (db.cardInv ??= []).filter((c) => c.heroId === id && c.qty > 0).map((c) => ({ id: c.cardId, qty: c.qty })).sort((a, b) => a.id.localeCompare(b.id)), showcase: metaOf(id).showcase, total: CARDS.length };
+    },
+    async openPack() {
+      const id = meHero().id;
+      if (packsLeft(id) <= 0) throw new Error('no packs to open');
+      metaOf(id).opened += 1;
+      const out: { id: string; new: boolean }[] = [];
+      for (let i = 0; i < 3; i++) {
+        const roll = Math.random() * 100;
+        const rarity: Rarity = roll < 70 ? 'common' : roll < 90 ? 'uncommon' : roll < 98 ? 'rare' : 'epic';
+        const pool = CARDS.filter((c) => c.rarity === rarity);
+        const card = pool[Math.floor(Math.random() * pool.length)];
+        out.push({ id: card.id, new: qtyOf(id, card.id) === 0 });
+        addCard(id, card.id, 1);
+      }
+      commit();
+      return { cards: out, packs: packsLeft(id) };
+    },
+    async setShowcase(cardIds) {
+      const id = meHero().id;
+      if (cardIds.length > 3) throw new Error('pick up to 3 favourites');
+      if (cardIds.some((c) => qtyOf(id, c) <= 0)) throw new Error('you do not own that card');
+      metaOf(id).showcase = [...new Set(cardIds)];
+      commit();
+    },
+    async tradeOpen(friendHeroId) {
+      const me = meHero().id;
+      if (friendHeroId === me || !areFriends(me, friendHeroId)) throw new Error('you can only trade with friends');
+      const open = (db.trades ??= []).find((t) => t.status === 'open' && ((t.a === me && t.b === friendHeroId) || (t.a === friendHeroId && t.b === me)));
+      if (open) return open.id;
+      const t = { id: crypto.randomUUID(), a: me, b: friendHeroId, offerA: [], offerB: [], ver: 1, confA: 0, confB: 0, status: 'open' as const };
+      db.trades.push(t);
+      commit();
+      return t.id;
+    },
+    async tradeList() {
+      const me = meHero().id;
+      return (db.trades ??= []).filter((t) => t.status === 'open' && (t.a === me || t.b === me)).map((t) => {
+        const other = heroById(t.a === me ? t.b : t.a)!;
+        return { id: t.id, friend: other.displayName, friendId: other.id, startedByMe: t.a === me };
+      });
+    },
+    async tradeView(tradeId) {
+      const { t, mine } = tradeFor(tradeId);
+      const f = tradeFair(t);
+      return {
+        id: t.id, status: t.status, ver: t.ver, friend: heroById(mine ? t.b : t.a)!.displayName, friendId: mine ? t.b : t.a,
+        myOffer: mine ? t.offerA : t.offerB, theirOffer: mine ? t.offerB : t.offerA,
+        iConfirmed: (mine ? t.confA : t.confB) === t.ver, theyConfirmed: (mine ? t.confB : t.confA) === t.ver,
+        fairness: { level: f.level, iGiveMore: f.givingMore === (mine ? 'a' : 'b') },
+      };
+    },
+    async tradeSet(tradeId, offer) {
+      const { t, me, mine } = tradeFor(tradeId);
+      if (t.status !== 'open') throw new Error('this trade is closed');
+      const seen = new Set<string>();
+      let total = 0;
+      for (const o of offer) {
+        if (!Number.isInteger(o.qty) || o.qty < 1 || o.qty > 5 || seen.has(o.card) || !cardById(o.card)) throw new Error('offer is not valid');
+        if (qtyOf(me, o.card) < o.qty) throw new Error('you do not have those cards');
+        seen.add(o.card); total += o.qty;
+      }
+      if (total > 6) throw new Error('a trade can hold up to 6 cards per side');
+      const next = offer.map((o) => ({ card: o.card, qty: o.qty })).sort((x, y) => x.card.localeCompare(y.card));
+      if (mine) t.offerA = next; else t.offerB = next;
+      t.ver += 1; t.confA = 0; t.confB = 0;
+      commit();
+    },
+    async tradeConfirm(tradeId, ver, ack) {
+      const { t, mine } = tradeFor(tradeId);
+      if (t.status !== 'open') throw new Error('this trade is closed');
+      if (t.ver !== ver) return { ok: false, reason: 'changed' };
+      const lvl = tradeFair(t).level;
+      if (lvl === 'empty' || lvl === 'blocked') throw new Error('this trade is too lopsided');
+      if (lvl === 'uneven' && !ack) throw new Error('please confirm the uneven trade');
+      if (mine) t.confA = t.ver; else t.confB = t.ver;
+      if (t.confA !== t.ver || t.confB !== t.ver) { commit(); return { ok: true, done: false }; }
+      if (t.offerA.some((o) => qtyOf(t.a, o.card) < o.qty) || t.offerB.some((o) => qtyOf(t.b, o.card) < o.qty)) {
+        t.confA = 0; t.confB = 0; commit();
+        return { ok: false, reason: 'missing_cards' };
+      }
+      for (const o of t.offerA) { addCard(t.a, o.card, -o.qty); addCard(t.b, o.card, o.qty); }
+      for (const o of t.offerB) { addCard(t.b, o.card, -o.qty); addCard(t.a, o.card, o.qty); }
+      t.status = 'done';
+      commit();
+      return { ok: true, done: true };
+    },
+    async tradeCancel(tradeId) {
+      const { t } = tradeFor(tradeId);
+      if (t.status === 'open') { t.status = 'cancelled'; commit(); }
+    },
+    async senseiGiveCard(heroCode, cardId) {
+      meAdult('sensei');
+      const acct = db.accounts[normalizeHeroCode(heroCode)];
+      if (!acct) throw new Error('no hero has that code');
+      if (!cardById(cardId)) throw new Error('no such card');
+      addCard(acct.id, cardId, 1);
+      commit();
+      return acct.displayName;
     },
     async skillState() {
       const id = meHero().id;

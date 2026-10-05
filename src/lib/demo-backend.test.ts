@@ -211,6 +211,34 @@ describe('demo backend: grown-ups and missions', () => {
     expect((await b.skillState()).surge.active).toBe(false);
   });
 
+  it('opens packs from verified progress and trades cards fairly between friends', async () => {
+    const a = make();
+    const heroA = await a.signUp(input);
+    expect((await a.cardsState()).packs).toBe(1);
+    const pack = await a.openPack();
+    expect(pack.cards).toHaveLength(3);
+    await expect(a.openPack()).rejects.toThrow();
+    expect((await a.cardsState()).cards.reduce((n, c) => n + c.qty, 0)).toBe(3);
+    await a.signOut();
+    const heroB = await a.signUp({ ...input, nameNoun: 'Nova', picture: [1, 5, 7] });
+    await a.openPack();
+    await a.requestFriend(heroA.heroCode);
+    await a.signOut();
+    await a.signIn(heroA.heroCode, [0, 4, 8]);
+    const [req] = (await a.friends()).incoming;
+    await a.respondFriend(req.id, true);
+    await expect(a.tradeOpen('stranger')).rejects.toThrow();
+    const id = await a.tradeOpen(heroB.id);
+    expect(await a.tradeOpen(heroB.id)).toBe(id);
+    const mine = (await a.cardsState()).cards[0];
+    await expect(a.tradeSet(id, [{ card: mine.id, qty: mine.qty + 1 }])).rejects.toThrow();
+    await a.tradeSet(id, [{ card: mine.id, qty: 1 }]);
+    // one-sided offers can't be confirmed
+    await expect(a.tradeConfirm(id, (await a.tradeView(id)).ver, true)).rejects.toThrow(/lopsided/);
+    await a.tradeCancel(id);
+    expect((await a.tradeList())).toHaveLength(0);
+  });
+
   it('links a parent with a one-time code and limits wrong guesses', async () => {
     const b = make();
     await b.signUp(input);
