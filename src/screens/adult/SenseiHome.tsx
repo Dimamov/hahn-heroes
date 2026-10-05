@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { ItemGrid } from '../../components/ItemGrid.tsx';
 import { CardFace } from '../../components/CardFace.tsx';
 import { CARDS } from '../../lib/cards.ts';
-import type { Adult, Backend, ChatRequest, DrawingReport, PendingTeacher, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
+import type { Adult, Backend, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
-type View = 'home' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings';
+type View = 'home' | 'challenge' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings';
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
@@ -23,6 +23,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
   if (view === 'card') return <GiveCard backend={backend} onBack={back} />;
   if (view === 'chat') return <ChatUnlocks backend={backend} onBack={back} />;
   if (view === 'traffic') return <Traffic backend={backend} onBack={back} />;
+  if (view === 'challenge') return <Challenge backend={backend} onBack={back} />;
   if (view === 'trivia') return <Trivia backend={backend} current={overview?.triviaNight} onBack={back} />;
 
   return (
@@ -39,13 +40,16 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
         </div>
       )}
       <div className="grow" />
-      <button className="btn" onClick={() => setView('card')}>🎁 Give a card</button>
-      <button className="btn" onClick={() => setView('chat')}>💬 Chat unlocks</button>
-      <button className="btn" onClick={() => setView('drawings')}>🚩 Drawing reports</button>
-      <button className="btn" onClick={() => setView('traffic')}>📈 Players and traffic</button>
-      <button className="btn" onClick={() => setView('teachers')}>Teachers to approve{overview && overview.pendingTeachers > 0 ? ` (${overview.pendingTeachers})` : ''}</button>
-      <button className="btn" onClick={() => setView('announce')}>📣 Post an announcement</button>
-      <button className="btn" onClick={() => setView('trivia')}>🎤 Trivia Night time</button>
+      <div className="btn-grid">
+        <button className="btn" onClick={() => setView('card')}>🎁 Give a card</button>
+        <button className="btn" onClick={() => setView('chat')}>💬 Chat unlocks</button>
+        <button className="btn" onClick={() => setView('drawings')}>🚩 Drawing reports</button>
+        <button className="btn" onClick={() => setView('traffic')}>📈 Players and traffic</button>
+        <button className="btn" onClick={() => setView('teachers')}>Teachers to approve{overview && overview.pendingTeachers > 0 ? ` (${overview.pendingTeachers})` : ''}</button>
+        <button className="btn" onClick={() => setView('announce')}>📣 Post an announcement</button>
+        <button className="btn" onClick={() => setView('challenge')}>🏁 Weekly House challenge</button>
+        <button className="btn" onClick={() => setView('trivia')}>🎤 Trivia Night time</button>
+      </div>
     </main>
   );
 }
@@ -116,6 +120,32 @@ function GiveCard({ backend, onBack }: { backend: Backend; onBack: () => void })
       <ItemGrid items={rarer} empty="" render={(c) => <CardFace key={c.id} id={c.id} small selected={pick === c.id} onClick={() => setPick(c.id)} />} />
       <p className="note" role="status">{note}</p>
       <button className="btn primary" disabled={code.trim().length < 8 || !pick} onClick={send}>Send the card</button>
+    </main>
+  );
+}
+
+function Challenge({ backend, onBack }: { backend: Backend; onBack: () => void }) {
+  const [view, setView] = useState<SenseiChallenge | null>(null);
+  const [theme, setTheme] = useState('');
+  const [goal, setGoal] = useState(20);
+  const [coins, setCoins] = useState(15);
+  const [note, setNote] = useState('');
+  const load = () => backend.senseiChallenge().then((c) => { setView(c); if (c.theme) { setTheme(c.theme); setGoal(c.goal ?? 20); setCoins(c.coins ?? 15); } }).catch(() => undefined);
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const save = async () => { try { await backend.senseiSetChallenge(theme, goal, coins); setNote('Saved for this week! 🏁'); load(); } catch { setNote('Check the theme (3 to 40 letters), goal (5 to 80) and reward (5 to 50).'); } };
+  return (
+    <main className="screen">
+      <ScreenBar title="House challenge" onBack={onBack} />
+      <p className="hint">Pick this week's theme and how many points per hero a House needs to reach.</p>
+      <label className="field plain"><span>Theme</span><input value={theme} maxLength={40} onChange={(e) => setTheme(e.target.value)} placeholder="Reading Week" /></label>
+      <div className="row2">
+        <label className="field plain"><span>Goal per hero</span><input type="number" min={5} max={80} value={goal} onChange={(e) => setGoal(Number(e.target.value))} /></label>
+        <label className="field plain"><span>Reward points</span><input type="number" min={5} max={50} value={coins} onChange={(e) => setCoins(Number(e.target.value))} /></label>
+      </div>
+      {view && view.houses.length > 0 && <small className="muted">{view.houses.slice(0, 4).map((h) => `${h.name} ${h.progress}`).join(' · ')}</small>}
+      <p className="note" role="status">{note}</p>
+      <div className="grow" />
+      <button className="btn primary" disabled={theme.trim().length < 3} onClick={save}>Save this week's challenge</button>
     </main>
   );
 }

@@ -607,3 +607,11 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .task span:nth-child(2) { flex: 1; }
 .task.ok span:nth-child(2) { opacity: .7; text-decoration: line-through; }
 @media (max-height: 480px) and (orientation: landscape) { .quest { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; align-content: start; } .quest > .bar { grid-column: 1 / -1; } .flame { font-size: 1.6rem; } }
+
+/* House challenge */
+.meter { height: 14px; border-radius: 8px; background: #ffffff1c; overflow: hidden; }
+.meter i { display: block; height: 100%; background: linear-gradient(90deg, #a78bfa, #f59e0b); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.btn-grid .btn { padding-inline: 8px; font-size: .9rem; }
+@media (max-height: 480px) and (orientation: landscape) { .btn-grid { grid-template-columns: repeat(4, 1fr); } .btn-grid .btn { padding-block: 8px; font-size: .8rem; } }

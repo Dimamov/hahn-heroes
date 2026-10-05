@@ -130,6 +130,19 @@ export interface QuestState {
   questClaimed: boolean;
 }
 
+export interface HouseChallenge {
+  state: 'none' | 'no_house' | 'active';
+  theme?: string;
+  goal?: number; // average points per hero this week
+  coins?: number;
+  progress?: number;
+  reached?: boolean;
+  myPoints?: number;
+  needMine?: number;
+  claimed?: boolean;
+}
+export interface SenseiChallenge { theme: string | null; goal: number | null; coins: number | null; houses: { name: string; members: number; progress: number }[] }
+
 export interface Announcement {
   id: number;
   title: string;
@@ -484,6 +497,8 @@ export interface Backend {
   dormGet(friendHeroId?: string): Promise<DormView>;
   dormSave(layout: { item: string; cell: number }[]): Promise<void>;
   houseState(): Promise<HouseState>;
+  houseChallenge(): Promise<HouseChallenge>;
+  houseChallengeClaim(): Promise<{ awarded: number; duplicate: boolean }>;
   houseVote(optionId: number): Promise<void>;
   leaderboard(): Promise<Leaderboard>;
   houseTeacherView(classId: string): Promise<HouseTeacherView>;
@@ -533,6 +548,8 @@ export interface Backend {
   postAnnouncement(title: string, body: string): Promise<void>;
   setTriviaNight(weekday: string, time: string): Promise<void>;
   senseiTriviaRoster(): Promise<TriviaRoster>;
+  senseiChallenge(): Promise<SenseiChallenge>;
+  senseiSetChallenge(theme: string, goal: number, coins: number): Promise<void>;
   questState(): Promise<QuestState>;
   questClaim(): Promise<{ awarded: number; duplicate: boolean }>;
   streakClaim(days: number): Promise<{ awarded: number; duplicate: boolean }>;
