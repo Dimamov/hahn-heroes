@@ -237,6 +237,11 @@ export interface Backend {
   // Grown-ups
   adultSignUp(email: string, password: string, role: 'parent' | 'teacher', name: string): Promise<Adult | 'confirm_email'>;
   adultSignIn(email: string, password: string): Promise<Adult>;
+  /** Emails a password-reset link. Always resolves, so it never reveals who has an account. */
+  adultRequestReset(email: string): Promise<void>;
+  /** True when the app was opened from a password-reset link and needs a new password. */
+  resetPending(): boolean;
+  adultSetPassword(password: string): Promise<void>;
   claimLink(code: string): Promise<LinkResult>;
   children(): Promise<ChildSummary[]>;
   childMissions(childId: string): Promise<HomeMission[]>;
