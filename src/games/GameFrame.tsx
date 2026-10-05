@@ -3,11 +3,11 @@ import { useSession } from '../App.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
 
 /** Every game shares this frame: a clear way out, and one place that collects the daily reward. */
-export function GameFrame({ title, hint, onExit, children }: { title: string; hint?: string; onExit?: () => void; children: React.ReactNode }) {
+export function GameFrame({ title, hint, onExit, right, children }: { title: string; hint?: string; onExit?: () => void; right?: React.ReactNode; children: React.ReactNode }) {
   const { go } = useSession();
   return (
     <main className="screen game">
-      <ScreenBar title={title} onBack={onExit ?? (() => go('arcade'))} />
+      <ScreenBar title={title} onBack={onExit ?? (() => go('arcade'))} right={right} />
       {hint && <p className="hint">{hint}</p>}
       {children}
     </main>

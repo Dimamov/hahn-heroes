@@ -403,4 +403,34 @@ describe('demo backend: grown-ups and missions', () => {
       expect(await b.currentRoom()).toBeNull();
     });
   });
+
+  describe('chat', () => {
+    it('warns once, pauses on the second swear, and lets the Sensei unlock after a parent asks', async () => {
+      const b = make();
+      const hero = await b.signUp(input);
+      await b.createRoom('trivia-clash');
+      expect(await b.chatSend('good luck!')).toEqual({ ok: true });
+      clock = new Date(clock.getTime() + 2000);
+      expect(await b.chatSend('what the f u c k')).toEqual({ ok: false, reason: 'warning' });
+      clock = new Date(clock.getTime() + 2000);
+      expect(await b.chatSend('call 555 123 4567')).toEqual({ ok: false, reason: 'private' });
+      expect(await b.chatSend('Hello classmates, assignment time')).toEqual({ ok: true });
+      clock = new Date(clock.getTime() + 2000);
+      expect(await b.chatSend('SH1T')).toEqual({ ok: false, reason: 'banned' });
+      expect((await b.chatRead()).banned).toBe(true);
+      expect((await b.chatRead()).messages.map((m) => m.body)).toEqual(['good luck!', 'Hello classmates, assignment time']);
+      const code = await b.linkCode();
+      await b.signOut();
+      await b.adultSignUp('p@x.test', 'password1', 'parent', 'Pat Parent');
+      await b.claimLink(code.code);
+      expect(await b.childChat(hero.id)).toEqual({ banned: true, requested: false });
+      await b.chatRequestUnlock(hero.id);
+      expect(await b.childChat(hero.id)).toEqual({ banned: true, requested: true });
+      await b.signOut();
+      await b.adultSignIn('sensei@demo.test', 'sensei');
+      expect((await b.senseiChatRequests())[0]).toMatchObject({ childId: hero.id, requested: true });
+      await b.chatUnlock(hero.id);
+      expect(await b.senseiChatRequests()).toEqual([]);
+    });
+  });
 });

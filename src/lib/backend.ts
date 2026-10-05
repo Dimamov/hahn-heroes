@@ -188,6 +188,10 @@ export interface RoomState {
   explanation?: string;
   myPoints?: number;
 }
+export interface ChatMessage { id: number; name: string; me: boolean; body: string }
+export type ChatResult = { ok: true } | { ok: false; reason: 'warning' | 'banned' | 'slow' | 'private' };
+export interface ChatChild { banned: boolean; requested: boolean }
+export interface ChatRequest { childId: string; name: string; grade: number; requested: boolean }
 export interface ArcadeStatus { coins: number; games: string[]; claimed: string[] }
 export interface PendingTeacher {
   id: string;
@@ -295,6 +299,12 @@ export interface Backend {
   startRoom(): Promise<void>;
   roomAnswer(choice: number): Promise<void>;
   roomState(code: string): Promise<RoomState>;
+  chatSend(text: string): Promise<ChatResult>;
+  chatRead(): Promise<{ banned: boolean; messages: ChatMessage[] }>;
+  childChat(childId: string): Promise<ChatChild>;
+  chatRequestUnlock(childId: string): Promise<void>;
+  senseiChatRequests(): Promise<ChatRequest[]>;
+  chatUnlock(childId: string): Promise<void>;
   /** Demo mode only: adds a practice buddy so a game can start without a second device. */
   addPracticeBuddy?(): Promise<void>;
   senseiOverview(): Promise<SenseiOverview>;

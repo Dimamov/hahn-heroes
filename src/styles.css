@@ -365,3 +365,13 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .players .card.me, .scorebar .me { border-color: var(--cyan); }
 .scorebar { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 12px; font-weight: 800; font-size: .85rem; color: var(--muted); }
 .scorebar .me { color: var(--cyan); }
+
+/* Room chat */
+.chat-btn { position: relative; font-size: 1.3rem; padding: 0 12px; }
+.chat-sheet { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; gap: 10px; padding: calc(var(--sat) + 12px) calc(var(--sar) + 16px) calc(var(--sab) + 12px) calc(var(--sal) + 16px); background: var(--bg); }
+.chat-list { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; }
+.chat-msg { display: flex; flex-direction: column; align-items: flex-start; max-width: 85%; padding: 6px 12px; border-radius: 14px; background: var(--panel-2); font-weight: 700; overflow-wrap: anywhere; }
+.chat-msg.me { align-self: flex-end; align-items: flex-end; background: #3a2f8f; }
+.chat-msg small { color: var(--muted); font-size: .7rem; }
+.chat-form { display: flex; gap: 8px; }
+.chat-form input { flex: 1; min-width: 0; min-height: 48px; border-radius: 14px; border: 2px solid var(--violet); background: var(--panel); color: var(--text); padding: 0 12px; font: 700 1rem 'Nunito', system-ui; user-select: text; -webkit-user-select: text; }

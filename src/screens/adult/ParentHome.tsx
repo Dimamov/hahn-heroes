@@ -76,6 +76,23 @@ function LinkChild({ backend, onBack }: { backend: Backend; onBack: () => void }
 
 const STATUS: Record<HomeMission['status'], string> = { assigned: 'Not done yet', submitted: 'Needs your check', approved: 'Approved', sent_back: 'Sent back' };
 
+function ChatNotice({ backend, child }: { backend: Backend; child: ChildSummary }) {
+  const [st, setSt] = useState<{ banned: boolean; requested: boolean } | null>(null);
+  useEffect(() => { backend.childChat(child.id).then(setSt).catch(() => setSt(null)); }, [backend, child.id]);
+  if (!st?.banned) return null;
+  return (
+    <div className="card" role="status">
+      <b>💬 Chat is paused for {child.displayName}</b>
+      <small className="muted">A message broke the chat rules twice. Games still work.</small>
+      <div className="card-bottom"><span />
+        {st.requested
+          ? <small className="muted">Asked the Sensei to unlock it</small>
+          : <button className="btn small primary" onClick={async () => { await backend.chatRequestUnlock(child.id).catch(() => undefined); setSt({ banned: true, requested: true }); }}>Ask the Sensei to unlock</button>}
+      </div>
+    </div>
+  );
+}
+
 function ChildScreen({ backend, child, onBack, onNew, onLearning }: { backend: Backend; child: ChildSummary; onBack: () => void; onNew: () => void; onLearning: () => void }) {
   const [missions, setMissions] = useState<HomeMission[] | null>(null);
   const [progress, setProgress] = useState<ChildProgress | null>(null);
@@ -106,6 +123,7 @@ function ChildScreen({ backend, child, onBack, onNew, onLearning }: { backend: B
           <div><b>🏫 {progress.classWeek}/{progress.classCap}</b><small>Class this week</small></div>
         </div>
       )}
+      <ChatNotice backend={backend} child={child} />
       {note && <p className="note ok" role="status">{note}</p>}
       {missions === null ? <div className="spinner" /> : (
         <PagedList items={ordered} perPage={2} empty="No missions yet. Tap New mission to send one."
