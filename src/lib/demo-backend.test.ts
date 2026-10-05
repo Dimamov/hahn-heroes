@@ -215,6 +215,24 @@ describe('demo backend: grown-ups and missions', () => {
     expect(await b.houseChallengeClaim()).toMatchObject({ duplicate: true });
   });
 
+  it('sells seasonal items only while their event is live', async () => {
+    const b = make();
+    await b.signUp(input);
+    let shop = await b.shopState();
+    expect(shop.events).toMatchObject([{ id: 'fall', live: false }]);
+    expect(shop.items.some((i) => i.id === 'd-pumpkin')).toBe(false);
+    expect(await b.shopBuy('d-pumpkin')).toEqual({ ok: false, reason: 'event_over' });
+    clock = new Date('2026-10-13T15:00:00Z');
+    shop = await b.shopState();
+    expect(shop.events).toMatchObject([{ id: 'fall', live: true }]);
+    expect(shop.items.find((i) => i.id === 'd-pumpkin')).toMatchObject({ event: 'fall', owned: false });
+    expect(await b.shopBuy('d-pumpkin')).toEqual({ ok: false, reason: 'not_enough_coins' });
+    clock = new Date('2026-11-03T15:00:00Z');
+    shop = await b.shopState();
+    expect(shop.events).toEqual([]);
+    expect(shop.items.some((i) => i.id === 'd-pumpkin')).toBe(false);
+  });
+
   it('sells items once, only with enough points, and keeps the wardrobe and room', async () => {
     const b = make();
     await b.signUp(input);

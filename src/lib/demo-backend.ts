@@ -12,6 +12,7 @@ import {
   isValidPicture, normalizeHeroCode,
 } from '../../supabase/functions/_shared/kid-auth.ts';
 import { SHOP_ITEMS, itemById } from './shop-catalog.ts';
+import EVENTS_JSON from '../../content/events.json';
 import { CARDS, cardById, fairness as tradeFairness, type OfferItem, type Rarity } from './cards.ts';
 import { SKILLS, dailyBonus, growthMultipliers, surgeRules } from './skills.ts';
 import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
@@ -233,6 +234,7 @@ function demoNexusTick(r: DemoRoom, now: number) {
 }
 
 const HOUSE_CAP = 80;
+const EVENTS = EVENTS_JSON as { id: string; name: string; icon: string; blurb: string; starts: string; ends: string }[];
 const DEMO_RIVALS = [
   { name: 'Ember Owls', color: '#f97316', power: 'flame', motto: 'Bright minds burn brighter', grade: 6, members: 22, week: 41.5, season: 188 },
   { name: 'Tide Titans', color: '#06b6d4', power: 'tide', motto: 'Steady waves win', grade: 5, members: 24, week: 33, season: 142.5 },
@@ -277,6 +279,7 @@ interface Db {
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
   showcase?: { heroId: string; title: string; pose: Pose }[];
+  eventEdits?: Record<string, { starts: string; ends: string; enabled: boolean }>;
   challenge?: { week: string; theme: string; goal: number; coins: number } | null;
   adv?: { heroId: string; caseId: string; solved: string[]; done: boolean }[];
   story?: { heroId: string; episode: string; panel: number; done: boolean; choices: Record<string, string>; solved: string[] }[];
@@ -526,6 +529,9 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
   };
   const tradeFair = (t: NonNullable<Db['trades']>[number]) => tradeFairness(t.offerA, t.offerB, (c) => qtyOf(t.a, c) > 0, (c) => qtyOf(t.b, c) > 0);
   const skillBalance = (heroId: string) => db.ledger.filter((l) => l.heroId === heroId && l.currency === 'skill_points').reduce((s, l) => s + l.amount, 0);
+  const addDays = (date: string, n: number) => new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
+  const liveEvents = (_today: string) => EVENTS.map((e) => ({ ...e, ...(db.eventEdits?.[e.id] ?? { enabled: true }) }));
+  const eventLive = (id: string, today: string) => liveEvents(today).some((e) => e.id === id && e.enabled && today >= e.starts && today <= e.ends);
   const heroWeekPoints = (heroId: string) => correctPoints(heroId, schoolWeek(now()));
   const heroSeasonPoints = (heroId: string) => correctPoints(heroId);
   const tooManyTries = (actor: string, kind: 'link' | 'class') =>
@@ -1291,9 +1297,12 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const hero = meHero();
       const bal = await this.balances();
       const owned = new Set((db.owned ??= []).filter((o) => o.heroId === hero.id).map((o) => o.itemId));
+      const today = schoolDate(now());
+      const events = liveEvents(today);
       return {
         coins: bal.coins, xp: bal.xp,
-        items: SHOP_ITEMS.map((i) => ({ id: i.id, kind: i.kind, slot: i.slot, name: i.name, icon: i.icon, price: i.price, unlockXp: i.unlock_xp, owned: owned.has(i.id), locked: i.unlock_xp > bal.xp }))
+        events: events.filter((e) => e.enabled && e.ends >= today && e.starts <= addDays(today, 14)).map((e) => ({ id: e.id, name: e.name, icon: e.icon, blurb: e.blurb, starts: e.starts, ends: e.ends, live: today >= e.starts })),
+        items: SHOP_ITEMS.filter((i) => !i.event || owned.has(i.id) || eventLive(i.event, today)).map((i) => ({ id: i.id, kind: i.kind, slot: i.slot, name: i.name, icon: i.icon, price: i.price, unlockXp: i.unlock_xp, event: i.event ?? null, owned: owned.has(i.id), locked: i.unlock_xp > bal.xp }))
           .sort((a, b) => a.unlockXp - b.unlockXp || a.price - b.price || a.id.localeCompare(b.id)),
         equipped: Object.fromEntries((db.equipped ??= []).filter((e) => e.heroId === hero.id).map((e) => [e.slot, e.itemId])),
       };
@@ -1304,6 +1313,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (!item) throw new Error('no such item');
       if ((db.owned ??= []).some((o) => o.heroId === hero.id && o.itemId === itemId)) return { ok: false, reason: 'already_owned' };
       const bal = await this.balances();
+      if (item.event && !eventLive(item.event, schoolDate(now()))) return { ok: false, reason: 'event_over' };
       if (item.unlock_xp > bal.xp) return { ok: false, reason: 'locked' };
       if (bal.coins < item.price) return { ok: false, reason: 'not_enough_coins' };
       db.ledger.push({ heroId: hero.id, currency: 'coins', amount: -item.price, source: 'purchase', key: `shop:${itemId}`, week: schoolWeek(now()) });
@@ -1411,6 +1421,18 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
         return { name: h.name, members: mates.length, progress: Math.round((mates.reduce((s, m) => s + Math.min(heroWeekPoints(m.childId), HOUSE_CAP), 0) / Math.max(mates.length, 1)) * 10) / 10 };
       }).filter((h) => h.members >= 1).sort((a, b) => b.progress - a.progress);
       return { theme: c?.theme ?? null, goal: c?.goal ?? null, coins: c?.coins ?? null, houses };
+    },
+    async senseiEvents() {
+      meAdult('sensei');
+      return liveEvents(schoolDate(now())).map((e) => ({ id: e.id, name: e.name, icon: e.icon, starts: e.starts, ends: e.ends, enabled: e.enabled, items: SHOP_ITEMS.filter((i) => i.event === e.id).length }));
+    },
+    async senseiSetEvent(id, starts, ends, enabled) {
+      meAdult('sensei');
+      if (!EVENTS.some((e) => e.id === id)) throw new Error('no such event');
+      if (!(starts <= ends)) throw new Error('the end date must be after the start');
+      if ((Date.parse(ends) - Date.parse(starts)) / 86400000 > 90) throw new Error('events last up to 90 days');
+      (db.eventEdits ??= {})[id] = { starts, ends, enabled };
+      commit();
     },
     async senseiSetChallenge(theme, goal, coins) {
       meAdult('sensei');

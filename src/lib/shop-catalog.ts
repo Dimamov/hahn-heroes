@@ -1,6 +1,6 @@
 import items from '../../content/shop.json';
 
-export interface CatalogItem { id: string; kind: 'outfit' | 'accessory' | 'decor'; slot: string | null; name: string; icon: string; price: number; unlock_xp: number }
+export interface CatalogItem { id: string; kind: 'outfit' | 'accessory' | 'decor'; slot: string | null; name: string; icon: string; price: number; unlock_xp: number; event?: string }
 export const SHOP_ITEMS = items as CatalogItem[];
 export const itemById = (id: string) => SHOP_ITEMS.find((i) => i.id === id);
 export const WEAR_SLOTS = [

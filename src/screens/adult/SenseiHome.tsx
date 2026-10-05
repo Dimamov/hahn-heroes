@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { ItemGrid } from '../../components/ItemGrid.tsx';
 import { CardFace } from '../../components/CardFace.tsx';
 import { CARDS } from '../../lib/cards.ts';
-import type { Adult, Backend, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
+import type { Adult, Backend, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
-type View = 'home' | 'challenge' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings';
+type View = 'home' | 'challenge' | 'events' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings';
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
@@ -24,6 +24,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
   if (view === 'chat') return <ChatUnlocks backend={backend} onBack={back} />;
   if (view === 'traffic') return <Traffic backend={backend} onBack={back} />;
   if (view === 'challenge') return <Challenge backend={backend} onBack={back} />;
+  if (view === 'events') return <Events backend={backend} onBack={back} />;
   if (view === 'trivia') return <Trivia backend={backend} current={overview?.triviaNight} onBack={back} />;
 
   return (
@@ -48,6 +49,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
         <button className="btn" onClick={() => setView('teachers')}>Teachers to approve{overview && overview.pendingTeachers > 0 ? ` (${overview.pendingTeachers})` : ''}</button>
         <button className="btn" onClick={() => setView('announce')}>📣 Post an announcement</button>
         <button className="btn" onClick={() => setView('challenge')}>🏁 Weekly House challenge</button>
+        <button className="btn" onClick={() => setView('events')}>🍂 Seasonal events</button>
         <button className="btn" onClick={() => setView('trivia')}>🎤 Trivia Night time</button>
       </div>
     </main>
@@ -146,6 +148,39 @@ function Challenge({ backend, onBack }: { backend: Backend; onBack: () => void }
       <p className="note" role="status">{note}</p>
       <div className="grow" />
       <button className="btn primary" disabled={theme.trim().length < 3} onClick={save}>Save this week's challenge</button>
+    </main>
+  );
+}
+
+function Events({ backend, onBack }: { backend: Backend; onBack: () => void }) {
+  const [list, setList] = useState<SenseiEvent[] | null>(null);
+  const [note, setNote] = useState('');
+  const load = () => backend.senseiEvents().then(setList).catch(() => setList([]));
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const edit = (id: string, patch: Partial<SenseiEvent>) => setList((l) => l && l.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+  const save = async (e: SenseiEvent) => {
+    try { await backend.senseiSetEvent(e.id, e.starts, e.ends, e.enabled); setNote(`${e.name} saved! ✅`); } catch { setNote('The end date must be after the start, and 90 days at most.'); }
+    load();
+  };
+  return (
+    <main className="screen">
+      <ScreenBar title="Seasonal events" onBack={onBack} />
+      <p className="hint">Limited items go on sale in the Shop only between these dates. Heroes keep what they bought.</p>
+      <PagedList items={list ?? []} perPage={1} empty={list ? 'No events.' : ''} render={(e) => (
+        <div className="card" key={e.id}>
+          <b>{e.icon} {e.name}</b><small className="muted">{e.items} limited items</small>
+          <div className="row2">
+            <label className="field plain"><span>Starts</span><input type="date" value={e.starts} onChange={(x) => edit(e.id, { starts: x.target.value })} /></label>
+            <label className="field plain"><span>Ends</span><input type="date" value={e.ends} onChange={(x) => edit(e.id, { ends: x.target.value })} /></label>
+          </div>
+          <div className="seg">
+            <button className={e.enabled ? 'chosen' : ''} onClick={() => edit(e.id, { enabled: true })}>On</button>
+            <button className={!e.enabled ? 'chosen' : ''} onClick={() => edit(e.id, { enabled: false })}>Off</button>
+          </div>
+          <button className="btn primary" onClick={() => save(e)}>Save {e.name}</button>
+        </div>
+      )} />
+      <p className="note" role="status">{note}</p>
     </main>
   );
 }

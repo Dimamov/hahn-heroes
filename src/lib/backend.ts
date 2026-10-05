@@ -228,9 +228,11 @@ export interface LeaderHero { name: string; starter: string; week: number; seaso
 export interface Leaderboard { minMembers: number; houses: LeaderHouse[]; heroes: LeaderHero[] }
 
 
-export interface ShopItem { id: string; kind: 'outfit' | 'accessory' | 'decor'; slot: string | null; name: string; icon: string; price: number; unlockXp: number; owned: boolean; locked: boolean }
-export interface ShopState { coins: number; xp: number; items: ShopItem[]; equipped: Record<string, string | null> }
-export type ShopBuyResult = { ok: true } | { ok: false; reason: 'locked' | 'already_owned' | 'not_enough_coins' };
+export interface ShopItem { id: string; kind: 'outfit' | 'accessory' | 'decor'; slot: string | null; name: string; icon: string; price: number; unlockXp: number; owned: boolean; locked: boolean; event?: string | null }
+export interface SeasonEvent { id: string; name: string; icon: string; blurb: string; starts: string; ends: string; live: boolean }
+export interface ShopState { coins: number; xp: number; items: ShopItem[]; equipped: Record<string, string | null>; events: SeasonEvent[] }
+export interface SenseiEvent { id: string; name: string; icon: string; starts: string; ends: string; enabled: boolean; items: number }
+export type ShopBuyResult = { ok: true } | { ok: false; reason: 'locked' | 'already_owned' | 'not_enough_coins' | 'event_over' };
 export interface DormView {
   mine: boolean;
   name: string;
@@ -551,6 +553,8 @@ export interface Backend {
   senseiTriviaRoster(): Promise<TriviaRoster>;
   senseiChallenge(): Promise<SenseiChallenge>;
   senseiSetChallenge(theme: string, goal: number, coins: number): Promise<void>;
+  senseiEvents(): Promise<SenseiEvent[]>;
+  senseiSetEvent(id: string, starts: string, ends: string, enabled: boolean): Promise<void>;
   showcaseState(): Promise<ShowcaseState>;
   showcaseSet(title: string, pose: string): Promise<void>;
   questState(): Promise<QuestState>;

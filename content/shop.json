@@ -304,5 +304,125 @@
   "icon": "🗿",
   "price": 320,
   "unlock_xp": 500
+ },
+ {
+  "id": "a-leaf-crown",
+  "kind": "accessory",
+  "slot": "hat",
+  "name": "Leaf Crown",
+  "icon": "🍁",
+  "price": 90,
+  "unlock_xp": 0,
+  "event": "fall"
+ },
+ {
+  "id": "o-harvest-cloak",
+  "kind": "outfit",
+  "slot": "outfit",
+  "name": "Harvest Cloak",
+  "icon": "🧑‍🌾",
+  "price": 140,
+  "unlock_xp": 0,
+  "event": "fall"
+ },
+ {
+  "id": "d-pumpkin",
+  "kind": "decor",
+  "slot": null,
+  "name": "Big Pumpkin",
+  "icon": "🎃",
+  "price": 70,
+  "unlock_xp": 0,
+  "event": "fall"
+ },
+ {
+  "id": "d-hay",
+  "kind": "decor",
+  "slot": null,
+  "name": "Hay Bale",
+  "icon": "🌾",
+  "price": 60,
+  "unlock_xp": 0,
+  "event": "fall"
+ },
+ {
+  "id": "a-ice-crown",
+  "kind": "accessory",
+  "slot": "hat",
+  "name": "Ice Crown",
+  "icon": "🧊",
+  "price": 100,
+  "unlock_xp": 0,
+  "event": "winter"
+ },
+ {
+  "id": "o-snow-parka",
+  "kind": "outfit",
+  "slot": "outfit",
+  "name": "Snow Parka",
+  "icon": "🥶",
+  "price": 150,
+  "unlock_xp": 0,
+  "event": "winter"
+ },
+ {
+  "id": "d-snowman",
+  "kind": "decor",
+  "slot": null,
+  "name": "Snowman",
+  "icon": "⛄",
+  "price": 70,
+  "unlock_xp": 0,
+  "event": "winter"
+ },
+ {
+  "id": "d-lights",
+  "kind": "decor",
+  "slot": null,
+  "name": "Winter Lights",
+  "icon": "🎇",
+  "price": 80,
+  "unlock_xp": 0,
+  "event": "winter"
+ },
+ {
+  "id": "a-flower-crown",
+  "kind": "accessory",
+  "slot": "hat",
+  "name": "Flower Crown",
+  "icon": "🌸",
+  "price": 90,
+  "unlock_xp": 0,
+  "event": "spring"
+ },
+ {
+  "id": "a-butterfly",
+  "kind": "accessory",
+  "slot": "back",
+  "name": "Butterfly Wings",
+  "icon": "🦋",
+  "price": 130,
+  "unlock_xp": 0,
+  "event": "spring"
+ },
+ {
+  "id": "d-blossom",
+  "kind": "decor",
+  "slot": null,
+  "name": "Blossom Pot",
+  "icon": "🌷",
+  "price": 60,
+  "unlock_xp": 0,
+  "event": "spring"
+ },
+ {
+  "id": "d-kite",
+  "kind": "decor",
+  "slot": null,
+  "name": "Sky Kite",
+  "icon": "🪁",
+  "price": 70,
+  "unlock_xp": 0,
+  "event": "spring"
  }
 ]

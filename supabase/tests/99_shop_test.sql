@@ -15,7 +15,7 @@ begin
   perform as_user(41);
   r := shop_state();
   assert (r->>'coins')::int = 100 and (r->>'xp')::int = 60, 'balances shown';
-  assert (select count(*) from jsonb_array_elements(r->'items')) = 34, 'catalog size';
+  assert (select count(*) from jsonb_array_elements(r->'items') i where i->>'event' is null) = 34, 'catalog size';
   assert (select (i->>'locked')::boolean from jsonb_array_elements(r->'items') i where i->>'id' = 'a-crown'), 'crown locked';
   assert not (select (i->>'locked')::boolean from jsonb_array_elements(r->'items') i where i->>'id' = 'a-wizard-hat'), 'wizard hat open at 50 xp';
 
