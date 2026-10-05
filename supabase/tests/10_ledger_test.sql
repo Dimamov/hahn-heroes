@@ -123,6 +123,11 @@ end $$;
 do $$
 begin
   begin
+    perform kid_auth_secret();
+    raise exception 'student read the kid auth secret';
+  exception when insufficient_privilege then null;
+  end;
+  begin
     perform award('00000000-0000-0000-0000-00000000000b', 'coins', 1000, 'sensei', 'Hack', 'hack:1');
     raise exception 'student called award()';
   exception when insufficient_privilege then null;

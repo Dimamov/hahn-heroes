@@ -1,7 +1,8 @@
 // Creates a student account: a hero code, a picture password and a hero. No email involved.
-// Needs the secret KID_AUTH_SECRET (a long random string only the server knows).
+// Uses the server-only secret from _shared/secret.ts.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders, json } from '../_shared/http.ts';
+import { getKidSecret } from '../_shared/secret.ts';
 import {
   deriveKidPassword, generateHeroCode, heroDisplayName, isGrade, isStarterHero, isValidPicture, kidAuthEmail,
 } from '../_shared/kid-auth.ts';
@@ -16,12 +17,12 @@ Deno.serve(async (req) => {
     return json({ error: 'invalid_request' }, 400);
   }
 
-  const secret = Deno.env.get('KID_AUTH_SECRET');
-  if (!secret || secret.length < 32) return json({ error: 'server_not_configured' }, 500);
-
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
     auth: { persistSession: false },
   });
+
+  const secret = await getKidSecret(admin);
+  if (!secret) return json({ error: 'server_not_configured' }, 500);
 
   // A taken code is rare (31^8 codes); try a few times before giving up.
   for (let attempt = 0; attempt < 5; attempt++) {
@@ -38,11 +39,8 @@ Deno.serve(async (req) => {
       id: data.user.id, hero_code: code, display_name: name, grade: body.grade, starter_hero: body.hero,
     });
     if (heroError) {
-      if (heroError.code === '23505') {
-        await admin.auth.admin.deleteUser(data.user.id);
-        continue;
-      }
       await admin.auth.admin.deleteUser(data.user.id);
+      if (heroError.code === '23505') continue;
       return json({ error: 'could_not_create_hero' }, 500);
     }
     return json({ heroCode: code, displayName: name });

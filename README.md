@@ -38,3 +38,16 @@ Copy `.env.example` to `.env` and fill in the Supabase URL and publishable key t
 ## Hosting (Cloudflare)
 
 `wrangler.jsonc` publishes the built app as a Cloudflare Worker named `hahn-heroes` (separate from the other Detcord workers). Simplest setup: in the Cloudflare dashboard, Workers & Pages, Create, import this GitHub repository, build command `npm run build`, deploy command `npx wrangler deploy`. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` as build variables (the publishable key is meant to be public; never put the service role key or `KID_AUTH_SECRET` there).
+
+## Live Supabase project
+
+The backend runs in the existing `hahn-heroes` Supabase project (org HAHN HEROES, `reccddfusealreknvjfj`, us-east-2). It also holds the earlier prototype's `nexus_*` and `academy_*` tables and functions, which this app does not touch; the app only adds `app_settings`, `app_secrets`, `heroes`, `sign_in_attempts` and `ledger_entries` plus the functions in `supabase/migrations/`. The Supabase free plan allows 2 active projects per account, so a separate project needs a paused or upgraded one.
+
+Public values for the app's build settings (the publishable key is meant to be public):
+
+```
+VITE_SUPABASE_URL=https://reccddfusealreknvjfj.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_0lgGi-nNahJtzBObQIbI-A_fwYczmEo
+```
+
+Known gap for a later milestone: `kid-signup` has no limit on how many heroes one network can create.

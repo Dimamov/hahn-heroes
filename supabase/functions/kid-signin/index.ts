@@ -2,6 +2,7 @@
 // Returns a normal Supabase session the app uses from then on.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders, json } from '../_shared/http.ts';
+import { getKidSecret } from '../_shared/secret.ts';
 import { deriveKidPassword, isValidHeroCode, isValidPicture, kidAuthEmail, normalizeHeroCode } from '../_shared/kid-auth.ts';
 
 Deno.serve(async (req) => {
@@ -12,11 +13,11 @@ Deno.serve(async (req) => {
   const code = normalizeHeroCode(String(body?.heroCode ?? ''));
   if (!isValidHeroCode(code) || !isValidPicture(body?.picture)) return json({ error: 'invalid_request' }, 400);
 
-  const secret = Deno.env.get('KID_AUTH_SECRET');
-  if (!secret || secret.length < 32) return json({ error: 'server_not_configured' }, 500);
-
   const url = Deno.env.get('SUPABASE_URL')!;
   const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+
+  const secret = await getKidSecret(admin);
+  if (!secret) return json({ error: 'server_not_configured' }, 500);
   const ip = req.headers.get('cf-connecting-ip') ?? req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null;
 
   const { data: gate, error: gateError } = await admin.rpc('check_sign_in', { p_hero_code: code, p_ip: ip });
