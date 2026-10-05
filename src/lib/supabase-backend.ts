@@ -845,6 +845,15 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       if (d.ok) return { ok: true };
       return { ok: false, reason: d.banned ? 'banned' : d.warning ? 'warning' : d.private ? 'private' : d.no_class ? 'no_class' : 'slow' };
     },
+    async friendChatSend(friendId, text) {
+      const d = await rpc('friend_chat_send', { p_friend: friendId, p_text: text });
+      if (d.ok) return { ok: true };
+      return { ok: false, reason: d.banned ? 'banned' : d.warning ? 'warning' : d.private ? 'private' : 'slow' };
+    },
+    async friendChatRead(friendId) {
+      const d = await rpc('friend_chat_read', { p_friend: friendId });
+      return { banned: !!d.banned, canChat: !!d.can_chat, messages: d.messages ?? [] };
+    },
     async chatRead() {
       const d = await rpc('chat_read');
       return { banned: d.banned, canChat: d.can_chat !== false, messages: d.messages };

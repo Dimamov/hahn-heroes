@@ -308,8 +308,8 @@ export interface SquadView {
   invites: { squadId: string; name: string; leaderName: string }[];
 }
 export const SQUAD_WORDS = {
-  adjectives: ['Brave', 'Swift', 'Bright', 'Bold', 'Kind', 'Wild', 'Clever', 'Mighty', 'Lucky', 'Cosmic'],
-  nouns: ['Wolves', 'Comets', 'Owls', 'Foxes', 'Falcons', 'Dragons', 'Stars', 'Lions', 'Sparks', 'Titans'],
+  adjectives: ['Brave',  'Swift',  'Bright',  'Bold',  'Kind',  'Wild',  'Clever',  'Mighty',  'Lucky',  'Cosmic',  'Blazing',  'Shadow',  'Lunar',  'Solar',  'Crimson',  'Azure',  'Violet',  'Emerald',  'Silver',  'Scarlet',  'Mystic',  'Secret',  'Legendary',  'Epic',  'Turbo',  'Super',  'Astral',  'Celestial',  'Noble',  'Loyal',  'Daring',  'Heroic',  'Dazzling',  'Sparkling',  'Fiery',  'Frosty',  'Neon',  'Cyber',  'Rainbow',  'Midnight',  'Dawn',  'Twilight',  'Phantom',  'Steel',  'Jade',  'Arcane',  'Enchanted',  'Soaring',  'Dashing'],
+  nouns: ['Wolves',  'Comets',  'Owls',  'Foxes',  'Falcons',  'Dragons',  'Stars',  'Lions',  'Sparks',  'Titans',  'Ninjas',  'Samurai',  'Phoenixes',  'Tigers',  'Eagles',  'Panthers',  'Rangers',  'Knights',  'Guardians',  'Voyagers',  'Storms',  'Meteors',  'Nebulas',  'Sprites',  'Griffins',  'Unicorns',  'Pegasi',  'Wizards',  'Mages',  'Paladins',  'Scouts',  'Racers',  'Champions',  'Heroes',  'Legends',  'Wardens',  'Sentinels',  'Pandas',  'Penguins',  'Dolphins',  'Sharks',  'Ravens',  'Lynxes',  'Hawks',  'Cranes',  'Kitsunes',  'Tanukis',  'Koi'],
   maxMembers: 5,
 };
 export interface RoomPlayer { name: string; starter: string; score: number; me: boolean; host: boolean; answered: boolean }
@@ -715,6 +715,9 @@ export interface Backend {
   nexusBoost(index: number): Promise<void>;
   chatSend(text: string): Promise<ChatResult>;
   chatRead(): Promise<{ banned: boolean; canChat: boolean; messages: ChatMessage[] }>;
+  /** Direct chat between two accepted friends (hero id of the friend). Same filter and pause as room chat. */
+  friendChatSend(friendId: string, text: string): Promise<ChatResult>;
+  friendChatRead(friendId: string): Promise<{ banned: boolean; canChat: boolean; messages: ChatMessage[] }>;
   childChat(childId: string): Promise<ChatChild>;
   chatRequestUnlock(childId: string): Promise<void>;
   senseiChatRequests(): Promise<ChatRequest[]>;
