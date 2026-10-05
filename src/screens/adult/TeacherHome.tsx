@@ -3,9 +3,10 @@ import type { AiQuiz, AiStatus, Adult, Backend, ClassInfo, ClassMissionResults, 
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 import { TeacherHouse } from './TeacherHouse.tsx';
+import { ClassReportScreen } from './TeacherReport.tsx';
 import { TeacherCharacter } from './TeacherCharacter.tsx';
 
-type View = { name: 'list' } | { name: 'new-class' } | { name: 'class'; cls: ClassInfo } | { name: 'new-mission'; cls: ClassInfo } | { name: 'house'; cls: ClassInfo } | { name: 'character' };
+type View = { name: 'list' } | { name: 'new-class' } | { name: 'class'; cls: ClassInfo } | { name: 'new-mission'; cls: ClassInfo } | { name: 'house'; cls: ClassInfo } | { name: 'report'; cls: ClassInfo } | { name: 'character' };
 
 export function TeacherHome({ backend, adult, onSignOut }: { backend: Backend; adult: Adult; onSignOut: () => void }) {
   const [view, setView] = useState<View>({ name: 'list' });
@@ -16,7 +17,8 @@ export function TeacherHome({ backend, adult, onSignOut }: { backend: Backend; a
 
   if (view.name === 'character') return <TeacherCharacter backend={backend} onBack={toList} />;
   if (view.name === 'new-class') return <NewClass backend={backend} onBack={toList} onDone={(cls) => { reload(); setView({ name: 'class', cls }); }} />;
-  if (view.name === 'class') return <ClassScreen backend={backend} cls={view.cls} onBack={toList} onNew={() => setView({ name: 'new-mission', cls: view.cls })} onHouse={() => setView({ name: 'house', cls: view.cls })} />;
+  if (view.name === 'class') return <ClassScreen backend={backend} cls={view.cls} onBack={toList} onNew={() => setView({ name: 'new-mission', cls: view.cls })} onHouse={() => setView({ name: 'house', cls: view.cls })} onReport={() => setView({ name: 'report', cls: view.cls })} />;
+  if (view.name === 'report') return <ClassReportScreen backend={backend} cls={view.cls} onBack={() => setView({ name: 'class', cls: view.cls })} />;
   if (view.name === 'house') return <TeacherHouse backend={backend} cls={view.cls} onBack={() => setView({ name: 'class', cls: view.cls })} />;
   if (view.name === 'new-mission') return <NewClassMissionScreen backend={backend} cls={view.cls} onBack={() => setView({ name: 'class', cls: view.cls })} />;
 
@@ -58,7 +60,7 @@ function NewClass({ backend, onBack, onDone }: { backend: Backend; onBack: () =>
   );
 }
 
-function ClassScreen({ backend, cls, onBack, onNew, onHouse }: { backend: Backend; cls: ClassInfo; onBack: () => void; onNew: () => void; onHouse: () => void }) {
+function ClassScreen({ backend, cls, onBack, onNew, onHouse, onReport }: { backend: Backend; cls: ClassInfo; onBack: () => void; onNew: () => void; onHouse: () => void; onReport: () => void }) {
   const [results, setResults] = useState<ClassMissionResults[] | null>(null);
   const load = () => backend.classResults(cls.id).then(setResults).catch(() => setResults([]));
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -83,7 +85,10 @@ function ClassScreen({ backend, cls, onBack, onNew, onHouse }: { backend: Backen
             </div>
           )} />
       )}
-      <button className="btn ghost" onClick={onHouse}>🏰 House</button>
+      <div className="btn-grid">
+        <button className="btn ghost" onClick={onReport}>📊 Report</button>
+        <button className="btn ghost" onClick={onHouse}>🏰 House</button>
+      </div>
       <button className="btn primary" onClick={onNew}>＋ New mission</button>
     </main>
   );

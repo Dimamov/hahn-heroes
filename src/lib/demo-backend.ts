@@ -495,6 +495,12 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     const a = meAdult('parent');
     return db.parentLinks.some((l) => l.childId === childId && l.parentId === a.id);
   };
+  /** A parent of the child, or the teacher of a class the child is in. */
+  const canSeeChild = (childId: string) => {
+    const a = db.adults.find((x) => x.id === db.current);
+    if (a?.role === 'teacher' && a.approved) return db.members.some((m) => m.childId === childId && db.classes.some((c) => c.id === m.classId && c.teacherId === a.id));
+    return isParentOf(childId);
+  };
   const teaches = (classId: string) => {
     const t = meAdult('teacher');
     return db.classes.find((c) => c.id === classId && c.teacherId === t.id);
@@ -841,11 +847,25 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       return learningFor(meHero().id);
     },
     async childLearning(childId) {
-      if (!isParentOf(childId)) throw new Error('not your child');
+      if (!canSeeChild(childId)) throw new Error('not your child');
       return learningFor(childId);
     },
+    async classReport(classId, weeksBack = 0) {
+      if (!teaches(classId)) throw new Error('not your class');
+      const cls = db.classes.find((c) => c.id === classId)!;
+      const students = [];
+      for (const m of db.members.filter((x) => x.classId === classId)) {
+        const hero = heroById(m.childId);
+        if (!hero) continue;
+        const w = await this.childWeek(m.childId, weeksBack);
+        students.push({ id: m.childId, name: hero.displayName, daysActive: w.daysActive, answered: w.answered, correct: w.correct, points: w.points, missions: w.missions });
+      }
+      students.sort((a, b) => a.name.localeCompare(b.name));
+      const weekStart = schoolWeek(new Date(now().getTime() - 7 * 86400000 * Math.max(0, Math.min(12, weeksBack))));
+      return { weekStart, className: cls.name, students };
+    },
     async childWeek(childId, weeksBack = 0) {
-      if (!isParentOf(childId)) throw new Error('not your child');
+      if (!canSeeChild(childId)) throw new Error('not your child');
       const week = schoolWeek(new Date(now().getTime() - 7 * 86400000 * Math.max(0, Math.min(12, weeksBack))));
       const rows = db.history.filter((h) => h.childId === childId && h.answered && schoolWeek(new Date(h.servedAt)) === week);
       const bySubject = new Map<Subject, { answered: number; correct: number }>();
