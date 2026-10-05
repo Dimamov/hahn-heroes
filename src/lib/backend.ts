@@ -5,6 +5,7 @@ import type { StickerBook, StickerDesign } from './stickers.ts';
 import type { Comic, ComicPanels } from './comics.ts';
 import type { ContestState } from './contest.ts';
 import type { MadeCode, RedeemResult } from './codes.ts';
+import type { TreasureState } from './treasure.ts';
 import type { AdvAnswerResult, AdvDone, AdvProgress } from './adventures.ts';
 import type { StoryAnswerResult, StoryChoiceResult, StoryDone, StoryProgress } from './story.ts';
 
@@ -579,6 +580,10 @@ export interface Backend {
   stickerList(): Promise<StickerBook>;
   stickerMake(design: StickerDesign): Promise<{ ok: boolean; reason?: 'daily_limit' | 'full' }>;
   stickerGive(stickerId: number, toHero: string): Promise<{ ok: boolean; reason?: 'full' }>;
+  /** The weekly treasure hunt: four clues, each a pin hidden on one screen; the full map pays a card. */
+  treasureState(): Promise<TreasureState>;
+  treasureFind(place: string): Promise<{ ok: boolean; done?: boolean }>;
+  treasureClaim(): Promise<{ ok: boolean }>;
   /** Ids of the achievement-wall badges this hero has earned. */
   badgeWall(): Promise<string[]>;
   /** Secret codes: a teacher (their class) or the Sensei (everyone) makes a code word; kids redeem it once. */
