@@ -183,6 +183,17 @@ describe('demo backend: grown-ups and missions', () => {
     expect((await b.classReport(cls.id, 1)).students[0].answered).toBe(0);
   });
 
+  it('gives a hero their own weekly recap', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    expect((await b.myWeek()).answered).toBe(0);
+    const set = await b.startPractice('math');
+    await b.answerQuestion(set.questions[0].id, 0);
+    const w = await b.myWeek();
+    expect(w).toMatchObject({ answered: 1, daysActive: 1 });
+    expect((await b.myWeek(1)).answered).toBe(0);
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);

@@ -250,6 +250,10 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('child_week', { p_child: childId, p_weeks_back: weeksBack });
       return { weekStart: d.week_start, daysActive: d.days_active, answered: d.answered, correct: d.correct, subjects: d.subjects, points: Number(d.points), missions: d.missions };
     },
+    async myWeek(weeksBack = 0) {
+      const d = await rpc('my_week', { p_weeks_back: weeksBack });
+      return { weekStart: d.week_start, daysActive: d.days_active, answered: d.answered, correct: d.correct, subjects: d.subjects, points: Number(d.points), missions: d.missions };
+    },
     async classReport(classId, weeksBack = 0) {
       const d = await rpc('class_report', { p_class: classId, p_weeks_back: weeksBack });
       return {

@@ -850,6 +850,28 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (!canSeeChild(childId)) throw new Error('not your child');
       return learningFor(childId);
     },
+    async myWeek(weeksBack = 0) {
+      const id = meHero().id;
+      const week = schoolWeek(new Date(now().getTime() - 7 * 86400000 * Math.max(0, Math.min(12, weeksBack))));
+      const rows = db.history.filter((h) => h.childId === id && h.answered && schoolWeek(new Date(h.servedAt)) === week);
+      const bySubject = new Map<Subject, { answered: number; correct: number }>();
+      for (const h of rows) {
+        const s = QUESTIONS.find((q) => q.id === h.questionId)?.subject;
+        if (!s) continue;
+        const e = bySubject.get(s) ?? { answered: 0, correct: 0 };
+        e.answered += 1; if (h.correct) e.correct += 1;
+        bySubject.set(s, e);
+      }
+      const earned = db.ledger.filter((r) => r.heroId === id && r.currency === 'coins' && r.amount > 0 && r.week === week);
+      return {
+        weekStart: week,
+        daysActive: new Set(rows.map((h) => schoolDate(new Date(h.servedAt)))).size,
+        answered: rows.length, correct: rows.filter((h) => h.correct).length,
+        subjects: [...bySubject].sort(([a], [b]) => a.localeCompare(b)).map(([subject, v]) => ({ subject, ...v })),
+        points: earned.reduce((s, r) => s + r.amount, 0),
+        missions: earned.filter((r) => r.source === 'home_mission' || r.source === 'class_mission').length,
+      };
+    },
     async classReport(classId, weeksBack = 0) {
       if (!teaches(classId)) throw new Error('not your class');
       const cls = db.classes.find((c) => c.id === classId)!;
