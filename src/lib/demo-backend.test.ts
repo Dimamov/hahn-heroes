@@ -935,3 +935,34 @@ describe('demo backend: grown-ups and missions', () => {
     });
   });
 });
+
+describe('teacher character requests', () => {
+  it('goes teacher to Sensei and back, and only then is approved', async () => {
+    const b = createDemoBackend(memoryStorage(), () => new Date('2026-10-12T15:00:00Z'));
+    await b.adultSignUp('tess@example.com', 'secret1', 'teacher', 'Tess Teacher');
+    await b.signOut();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    const [pending] = await b.pendingTeachers();
+    await b.approveTeacher(pending.id, true);
+    await b.signOut();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    const photo = 'data:image/jpeg;base64,AAAA';
+    await expect(b.teacherCharacterSubmit('nope', '')).rejects.toThrow();
+    await b.teacherCharacterSubmit(photo, 'A staff');
+    expect((await b.teacherCharacter()).status).toBe('new');
+    await b.signOut();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    const [req] = await b.senseiCharacterQueue();
+    expect(req).toMatchObject({ name: 'Tess Teacher', wish: 'A staff', photo });
+    await b.senseiCharacterDeliver(req.teacherId, 'data:image/png;base64,BBBB', 'Staff added');
+    expect(await b.senseiCharacterQueue()).toEqual([]);
+    await b.signOut();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    expect((await b.teacherCharacter()).status).toBe('review');
+    await b.teacherCharacterRespond(true, '');
+    await b.teacherCharacterRemovePhoto();
+    const c = await b.teacherCharacter();
+    expect(c).toMatchObject({ status: 'approved', photo: null });
+    expect(c.art).toBeTruthy();
+  });
+});

@@ -22,7 +22,7 @@ import {
   AdultAuthError, HOUSE_COLORS, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
   type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
   type ClassResult, type Hero, type HouseIdentity, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
-  type QuestState, type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress, type TriviaState,
+  type QuestState, type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress, type TeacherCharacter, type TriviaState,
 } from './backend.ts';
 
 interface BankQuestion {
@@ -275,6 +275,7 @@ interface Db {
   classMissions: ClassMissionRow[];
   submissions: SubmissionRow[];
   announcements: Announcement[];
+  teacherCharacters?: Record<string, TeacherCharacter>;
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
@@ -2058,6 +2059,53 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (!a) return;
       if (approve) a.approved = true;
       else if (!a.approved) db.adults = db.adults.filter((x) => x.id !== id);
+      commit();
+    },
+    async teacherCharacter() {
+      const a = meAdult('teacher');
+      return { ...(db.teacherCharacters?.[a.id] ?? { status: 'none', wish: '', photo: null, art: null, artNote: '', changeNote: '' }) } as TeacherCharacter;
+    },
+    async teacherCharacterWish(wish) {
+      const a = meAdult('teacher');
+      const all = (db.teacherCharacters ??= {});
+      all[a.id] = { ...(all[a.id] ?? { status: 'wish', photo: null, art: null, artNote: '', changeNote: '' }), wish: wish.trim().slice(0, 600) };
+      commit();
+    },
+    async teacherCharacterSubmit(photo, wish) {
+      const a = meAdult('teacher');
+      const all = (db.teacherCharacters ??= {});
+      if (!photo.startsWith('data:image/')) throw new Error('that photo does not work, try a smaller one');
+      if (all[a.id]?.status === 'review') throw new Error('approve or ask for changes on the character first');
+      all[a.id] = { ...(all[a.id] ?? { art: null, artNote: '' }), status: 'new', wish: wish.trim().slice(0, 600), photo, changeNote: '' } as TeacherCharacter;
+      commit();
+    },
+    async teacherCharacterRespond(approve, note) {
+      const a = meAdult('teacher');
+      const c = db.teacherCharacters?.[a.id];
+      if (!c || c.status !== 'review') throw new Error('there is no character waiting for you');
+      c.status = approve ? 'approved' : 'changes';
+      c.changeNote = approve ? '' : note.trim().slice(0, 300);
+      commit();
+    },
+    async teacherCharacterRemovePhoto() {
+      const a = meAdult('teacher');
+      const c = db.teacherCharacters?.[a.id];
+      if (!c || !c.photo || c.status === 'new') throw new Error('there is no photo to remove right now');
+      c.photo = null;
+      commit();
+    },
+    async senseiCharacterQueue() {
+      meAdult('sensei');
+      return Object.entries(db.teacherCharacters ?? {})
+        .filter(([, c]) => c.status === 'new' || c.status === 'changes')
+        .map(([id, c]) => ({ teacherId: id, name: db.adults.find((x) => x.id === id)?.displayName ?? 'Teacher', status: c.status as 'new' | 'changes', wish: c.wish, photo: c.photo, changeNote: c.changeNote }));
+    },
+    async senseiCharacterDeliver(teacherId, art, note) {
+      meAdult('sensei');
+      const c = db.teacherCharacters?.[teacherId];
+      if (!c || (c.status !== 'new' && c.status !== 'changes')) throw new Error('that request is not waiting for art');
+      if (!art.startsWith('data:image/')) throw new Error('that image does not work, try a smaller one');
+      c.art = art; c.artNote = note.trim().slice(0, 300); c.status = 'review';
       commit();
     },
     async aiStatus() {
