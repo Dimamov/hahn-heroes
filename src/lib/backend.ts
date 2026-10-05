@@ -122,6 +122,14 @@ export interface TriviaRoster {
   grades: { grade: number; going: number; names: string[] }[];
 }
 
+export interface QuestState {
+  streak: number;
+  milestones: { days: number; coins: number; reached: boolean; claimed: boolean }[];
+  tasks: { id: string; label: string; have: number; need: number }[];
+  questCoins: number;
+  questClaimed: boolean;
+}
+
 export interface Announcement {
   id: number;
   title: string;
@@ -525,6 +533,9 @@ export interface Backend {
   postAnnouncement(title: string, body: string): Promise<void>;
   setTriviaNight(weekday: string, time: string): Promise<void>;
   senseiTriviaRoster(): Promise<TriviaRoster>;
+  questState(): Promise<QuestState>;
+  questClaim(): Promise<{ awarded: number; duplicate: boolean }>;
+  streakClaim(days: number): Promise<{ awarded: number; duplicate: boolean }>;
   storyState(): Promise<StoryProgress[]>;
   storySave(episode: string, panel: number): Promise<void>;
   storyChoose(episode: string, panelId: string, option: string): Promise<StoryChoiceResult>;

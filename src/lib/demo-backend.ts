@@ -20,7 +20,7 @@ import {
   AdultAuthError, HOUSE_COLORS, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
   type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
   type ClassResult, type Hero, type HouseIdentity, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
-  type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress, type TriviaState,
+  type QuestState, type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress, type TriviaState,
 } from './backend.ts';
 
 interface BankQuestion {
@@ -51,6 +51,7 @@ interface LedgerRow {
   source: RewardSource;
   key: string;
   week: string;
+  day?: string;
 }
 interface Account extends Hero {
   picture: number[];
@@ -410,6 +411,35 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
   const storyEpisode = (episode: string) => {
     if (episode !== 'ep1') throw new Error('no such episode');
   };
+  /** Mirrors streak_info() and quest_state(): worked out from the ledger, never stored. */
+  const streakOf = (heroId: string): { days: number; start: string | null } => {
+    const days = new Set(db.ledger.filter((r) => r.heroId === heroId && r.currency === 'coins' && /^daily:\d{4}-\d{2}-\d{2}$/.test(r.key)).map((r) => r.key.slice(6)));
+    const dayBefore = (d: string) => { const t = new Date(`${d}T00:00:00Z`); t.setUTCDate(t.getUTCDate() - 1); return t.toISOString().slice(0, 10); };
+    const today = schoolDate(now());
+    let at = days.has(today) ? today : dayBefore(today);
+    let n = 0;
+    let start: string | null = null;
+    while (days.has(at)) { n++; start = at; at = dayBefore(at); }
+    return { days: n, start };
+  };
+  const QUEST_MILES = [{ days: 3, coins: 5 }, { days: 7, coins: 15 }, { days: 14, coins: 30 }, { days: 30, coins: 60 }];
+  const questFor = (heroId: string): QuestState => {
+    const today = schoolDate(now());
+    const mine = db.ledger.filter((r) => r.heroId === heroId && r.currency === 'coins');
+    const { days, start } = streakOf(heroId);
+    const learn = mine.filter((r) => r.key.startsWith('learn:') && r.day === today).length;
+    return {
+      streak: days,
+      milestones: QUEST_MILES.map((m) => ({ ...m, reached: days >= m.days, claimed: mine.some((r) => r.key === `streak:${start}:${m.days}`) })),
+      tasks: [
+        { id: 'checkin', label: 'Collect your daily check-in', have: mine.some((r) => r.key === `daily:${today}`) ? 1 : 0, need: 1 },
+        { id: 'learn', label: 'Get 3 Learn answers right', have: Math.min(learn, 3), need: 3 },
+        { id: 'game', label: 'Collect an Arcade reward', have: mine.some((r) => r.key.startsWith('arcade:') && r.day === today) ? 1 : 0, need: 1 },
+      ],
+      questCoins: 10,
+      questClaimed: mine.some((r) => r.key === `quest:${today}`),
+    };
+  };
   const nextTriviaDate = (): string => {
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const [y, m, d] = schoolDate(now()).split('-').map(Number);
@@ -496,7 +526,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
         .reduce((s, r) => s + r.amount, 0);
       grant = Math.max(0, Math.min(amount, cap - used));
     }
-    db.ledger.push({ heroId, currency, amount: grant, source, key, week });
+    db.ledger.push({ heroId, currency, amount: grant, source, key, week, day: schoolDate(now()) });
     commit();
     return { awarded: grant, duplicate: false, capped: grant < amount };
   }
@@ -1074,6 +1104,27 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     async tradeCancel(tradeId) {
       const { t } = tradeFor(tradeId);
       if (t.status === 'open') { t.status = 'cancelled'; commit(); }
+    },
+    async questState() {
+      return questFor(meHero().id);
+    },
+    async questClaim() {
+      const me = meHero().id;
+      const q = questFor(me);
+      if (q.tasks.some((t) => t.have < t.need)) throw new Error('finish all three tasks first');
+      if (q.questClaimed) return { awarded: 0, duplicate: true };
+      award(me, 'xp', 5, 'streak', `quest:${schoolDate(now())}`);
+      const r = award(me, 'coins', 10, 'streak', `quest:${schoolDate(now())}`);
+      return { awarded: r.awarded, duplicate: r.duplicate };
+    },
+    async streakClaim(days) {
+      const me = meHero().id;
+      const q = questFor(me);
+      const m = q.milestones.find((x) => x.days === days);
+      if (!m) throw new Error('no such milestone');
+      if (!m.reached) throw new Error('not there yet');
+      const r = award(me, 'coins', m.coins, 'streak', `streak:${streakOf(me).start}:${days}`);
+      return { awarded: r.awarded, duplicate: r.duplicate };
     },
     async storyState() {
       const me = meHero().id;
