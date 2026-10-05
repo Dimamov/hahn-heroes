@@ -338,6 +338,15 @@ describe('demo backend: grown-ups and missions', () => {
     expect(await b.lookGallery()).toEqual([]);
   });
 
+  it('shows the monthly class race by class name only', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    const r = await b.raceState();
+    expect(r.classes.length).toBeGreaterThan(0);
+    expect(r.classes[0].rank).toBe(1);
+    expect(Object.keys(r.classes[0]).sort()).toEqual(['grade', 'members', 'mine', 'name', 'rank', 'total']);
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);

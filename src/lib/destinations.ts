@@ -25,6 +25,7 @@ export const DESTINATIONS: Destination[] = [
   { id: 'treasure', label: 'Treasure Map', icon: '🗺️', tint: '#f59e0b', blurb: 'Follow the clues around the app and win a card.', milestone: 'Events' },
   { id: 'base', label: 'Squad Hideout', icon: '🏕️', tint: '#60a5fa', blurb: 'Decorate a shared hideout with your squad.', milestone: 'Collections' },
   { id: 'studio', label: 'Avatar Studio', icon: '🎨', tint: '#f472b6', blurb: 'Mix hair, makeup, outfits and auras. Pin your look for likes.', milestone: 'Collections' },
+  { id: 'race', label: 'Class Race', icon: '🏁', tint: '#38bdf8', blurb: 'Which class earns the most points this month?', milestone: 'Events' },
   { id: 'quest', label: 'Daily Quest', icon: '🎯', tint: '#f59e0b', blurb: 'Three tasks a day and a streak that grows.', milestone: 'Rewards' },
   { id: 'missions', label: 'Missions', icon: '📋', tint: '#22d3ee', blurb: 'Home missions from your grown-up and class missions from your teacher.', milestone: 'Parents, teachers and the Sensei' },
   { id: 'hero', label: 'My Hero', icon: '🦸', tint: '#a78bfa', blurb: 'Wardrobe, shop and skills for your hero.', milestone: 'Collections' },

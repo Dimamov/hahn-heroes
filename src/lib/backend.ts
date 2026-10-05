@@ -6,6 +6,7 @@ import type { Comic, ComicPanels } from './comics.ts';
 import type { ContestState } from './contest.ts';
 import type { MadeCode, RedeemResult } from './codes.ts';
 import type { TreasureState } from './treasure.ts';
+import type { RaceState } from './race.ts';
 import type { GalleryLook, Look, LookState } from './look.ts';
 import type { AdvAnswerResult, AdvDone, AdvProgress } from './adventures.ts';
 import type { StoryAnswerResult, StoryChoiceResult, StoryDone, StoryProgress } from './story.ts';
@@ -583,6 +584,8 @@ export interface Backend {
   stickerList(): Promise<StickerBook>;
   stickerMake(design: StickerDesign): Promise<{ ok: boolean; reason?: 'daily_limit' | 'full' }>;
   stickerGive(stickerId: number, toHero: string): Promise<{ ok: boolean; reason?: 'full' }>;
+  /** Class vs class race: this month (0) or last month (1), class names only. */
+  raceState(back?: number): Promise<RaceState>;
   /** Avatar studio: mix hair, makeup, aura, an owned outfit and accessory; pin it for friends to like. */
   lookGet(): Promise<LookState>;
   lookSave(look: Look, pinned: boolean): Promise<void>;
