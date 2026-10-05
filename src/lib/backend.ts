@@ -243,6 +243,22 @@ export interface DrawingView {
   players: DrawingPlayer[];
 }
 export interface DrawingReport { artist: string; reporter: string; word: string; at: string }
+export interface NexusPlayer { i: number; name: string; starter: string; me: boolean; solved: number; need: number; done: boolean; left: boolean }
+export interface NexusView {
+  state: 'lobby' | 'playing' | 'done' | 'closed';
+  outcome: 'play' | 'won' | 'lost';
+  secondsLeft: number;
+  secondsTotal: number;
+  /** Seconds the squad has already lost to wrong answers. */
+  penalty: number;
+  solved: number;
+  need: number;
+  wrong: number;
+  question: { prompt: string; choices: string[]; hidden: number[] } | null;
+  canBoost: boolean;
+  players: NexusPlayer[];
+}
+export interface NexusAnswer { correct: boolean; rightChoice: number; explanation: string; penalty: number; over?: boolean }
 export interface ChatMessage { id: number; name: string; me: boolean; body: string }
 export type ChatResult = { ok: true } | { ok: false; reason: 'warning' | 'banned' | 'slow' | 'private' };
 export interface ChatChild { banned: boolean; requested: boolean }
@@ -369,6 +385,9 @@ export interface Backend {
   drawingGuess(text: string): Promise<{ correct: boolean; points: number }>;
   drawingReport(): Promise<void>;
   senseiDrawingReports(): Promise<DrawingReport[]>;
+  nexusView(code: string): Promise<NexusView>;
+  nexusAnswer(choice: number): Promise<NexusAnswer>;
+  nexusBoost(index: number): Promise<void>;
   chatSend(text: string): Promise<ChatResult>;
   chatRead(): Promise<{ banned: boolean; messages: ChatMessage[] }>;
   childChat(childId: string): Promise<ChatChild>;

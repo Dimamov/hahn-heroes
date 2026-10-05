@@ -534,6 +534,60 @@ describe('demo backend: grown-ups and missions', () => {
     });
   });
 
+  describe('escape the nexus', () => {
+    it('breaks every seal with buddy help, charging time for wrong answers', async () => {
+      const b = make();
+      await b.signUp(input);
+      const code = await b.createRoom('escape-nexus');
+      await b.addPracticeBuddy!();
+      await b.startRoom();
+      let v = await b.nexusView(code);
+      expect(v.need).toBe(3);
+      expect(v.players).toHaveLength(2);
+      expect(v.question?.choices.length).toBeGreaterThan(1);
+      const first = v.question!;
+      const right = (bank as { prompt: string; answer: number }[]).find((x) => x.prompt === first.prompt)!.answer;
+      const wrongOne = (right + 1) % first.choices.length;
+      const bad = await b.nexusAnswer(wrongOne);
+      expect(bad.correct).toBe(false);
+      expect(bad.penalty).toBe(10);
+      v = await b.nexusView(code);
+      expect(v.penalty).toBe(10);
+      expect(v.wrong).toBe(1);
+      expect(v.secondsTotal).toBe(60 + 2 * 50 + 10);
+      for (let turns = 0; turns < 40 && v.state === 'playing'; turns++) {
+        if (v.question) {
+          const ans = (bank as { prompt: string; answer: number }[]).find((x) => x.prompt === v.question!.prompt)!.answer;
+          await b.nexusAnswer(ans);
+        } else clock = new Date(clock.getTime() + 5_000);
+        v = await b.nexusView(code);
+      }
+      expect(v.outcome).toBe('won');
+    });
+    it('loses when the clock runs out and lets a finished hero boost a teammate once', async () => {
+      const b = make();
+      await b.signUp(input);
+      const code = await b.createRoom('escape-nexus');
+      await b.addPracticeBuddy!();
+      await b.startRoom();
+      let v = await b.nexusView(code);
+      await expect(b.nexusBoost(1)).rejects.toThrow('open your own seal first');
+      for (let i = 0; i < 3; i++) {
+        const ans = (bank as { prompt: string; answer: number }[]).find((x) => x.prompt === v.question!.prompt)!.answer;
+        await b.nexusAnswer(ans);
+        v = await b.nexusView(code);
+      }
+      expect(v.question).toBeNull();
+      if (v.canBoost) {
+        const buddy = v.players.find((p) => !p.me && !p.done);
+        if (buddy) { await b.nexusBoost(buddy.i); await expect(b.nexusBoost(buddy.i)).rejects.toThrow('already boosted'); }
+      }
+      clock = new Date(clock.getTime() + 600_000);
+      v = await b.nexusView(code);
+      expect(v.outcome).not.toBe('play');
+    });
+  });
+
   describe('chat', () => {
     it('warns once, pauses on the second swear, and lets the Sensei unlock after a parent asks', async () => {
       const b = make();

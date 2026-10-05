@@ -375,6 +375,22 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiDrawingReports() {
       return rpc('sensei_drawing_reports');
     },
+    async nexusView(code) {
+      const d = await rpc('nexus_view', { p_code: code });
+      return {
+        state: d.state, outcome: d.outcome, secondsLeft: d.seconds_left ?? 0, secondsTotal: d.seconds_total ?? 0, penalty: d.penalty ?? 0,
+        solved: d.solved ?? 0, need: d.need ?? 3, wrong: d.wrong ?? 0,
+        question: d.question ? { prompt: d.question.prompt, choices: d.question.choices, hidden: d.question.hidden ?? [] } : null,
+        canBoost: !!d.can_boost, players: d.players ?? [],
+      };
+    },
+    async nexusAnswer(choice) {
+      const d = await rpc('nexus_answer', { p_choice: choice });
+      return { correct: !!d.correct, rightChoice: Number(d.right_choice ?? -1), explanation: d.explanation ?? '', penalty: d.penalty ?? 0, over: !!d.over };
+    },
+    async nexusBoost(index) {
+      await rpc('nexus_boost', { p_index: index });
+    },
     async chatSend(text) {
       const d = await rpc('chat_send', { p_text: text });
       if (d.ok) return { ok: true };
