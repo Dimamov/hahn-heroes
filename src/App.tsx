@@ -26,6 +26,7 @@ import { SquadBase } from './screens/SquadBase.tsx';
 import { Studio } from './screens/Studio.tsx';
 import { Kindness } from './screens/Kindness.tsx';
 import { WhackShadow } from './games/WhackShadow.tsx';
+import { Voice } from './screens/Voice.tsx';
 import { Race } from './screens/Race.tsx';
 import { Badges } from './screens/Badges.tsx';
 import { Codes } from './screens/Codes.tsx';
@@ -205,6 +206,7 @@ export default function App() {
       {screen === 'codes' && <Codes />}
       {screen === 'badges' && <Badges />}
       {screen === 'race' && <Race />}
+      {screen === 'voice' && <Voice />}
       {screen === 'kindness' && <Kindness />}
       {screen === 'studio' && <Studio />}
       {screen === 'base' && <SquadBase />}
@@ -229,7 +231,7 @@ export default function App() {
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'badges', 'treasure', 'base', 'studio', 'race', 'kindness', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'badges', 'treasure', 'base', 'studio', 'race', 'kindness', 'voice', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }
