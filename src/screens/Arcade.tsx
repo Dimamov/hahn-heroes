@@ -13,6 +13,7 @@ export const GAMES = [
   { id: 'bubble-pop', label: 'Bubble Pop', icon: '🫧', reward: true },
   { id: 'block-blast', label: 'Block Blast', icon: '🧱', reward: true },
   { id: 'hero-defense', label: 'Hero Defense', icon: '🛡️', reward: true },
+  { id: 'shadow-spy', label: 'Shadow Spy', icon: '🕶️', reward: false },
   { id: 'trivia-clash', label: 'Trivia Clash', icon: '⚔️', reward: false },
   { id: 'odin', label: 'ODIN', icon: '🎴', reward: false },
   { id: 'shadow-signal', label: 'Shadow Signal', icon: '🕵️', reward: false },
@@ -26,7 +27,7 @@ export const GAMES = [
 
 const TAGLINES: Record<string, string> = {
   'trivia-clash': 'Private rooms', odin: 'Private rooms', 'squad-drawing': 'Private rooms', 'escape-nexus': 'Private rooms',
-  'shadow-signal': 'Rooms or one device', 'word-rush': 'Pass the device', arena: 'Friendly spar',
+  'shadow-signal': 'Rooms or one device', 'shadow-spy': 'Rooms, emoji clues', 'word-rush': 'Pass the device', arena: 'Friendly spar',
 };
 
 /** Solo games and squad games, six to a page so the list never scrolls. */

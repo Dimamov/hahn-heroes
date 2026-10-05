@@ -5,6 +5,7 @@ import { ChatButton } from './ChatBox.tsx';
 import { PlayerList } from './TriviaClash.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
 import type { RoomState, ShadowView } from '../lib/backend.ts';
+import { SPY_EMOJI } from '../lib/spy.ts';
 import { isCaught, newRound, tallyVotes, type Round } from '../lib/shadow-rules.ts';
 
 const errText = (e: unknown) => {
@@ -23,10 +24,10 @@ const errText = (e: unknown) => {
 };
 
 /** Shadow Signal: one player is the Shadow and doesn't know the secret word. Give clues, then vote them out. */
-export function ShadowSignal() {
-  const [mode, setMode] = useState<'online' | 'local' | null>(null);
+export function ShadowSignal({ emoji = false }: { emoji?: boolean }) {
+  const [mode, setMode] = useState<'online' | 'local' | null>(emoji ? 'online' : null);
   if (mode === 'local') return <ShadowLocal onExit={() => setMode(null)} />;
-  if (mode === 'online') return <ShadowOnline onExit={() => setMode(null)} />;
+  if (mode === 'online') return <ShadowOnline emoji={emoji} onExit={() => setMode(null)} />;
   return (
     <GameFrame title="Shadow Signal" hint="One of you is the Shadow and doesn't know the secret word. Give clues that prove you know it, without making it too easy, then vote!">
       <div className="grow" />
@@ -37,7 +38,8 @@ export function ShadowSignal() {
   );
 }
 
-function ShadowOnline({ onExit }: { onExit: () => void }) {
+function ShadowOnline({ onExit, emoji = false }: { onExit: () => void; emoji?: boolean }) {
+  const title = emoji ? 'Shadow Spy' : 'Shadow Signal';
   const { backend, go, refresh } = useSession();
   const [code, setCode] = useState<string | null | undefined>(undefined);
   const [room, setRoom] = useState<RoomState | null>(null);
@@ -71,11 +73,11 @@ function ShadowOnline({ onExit }: { onExit: () => void }) {
   };
   const leave = async () => { await backend.leaveRoom().catch(() => undefined); setCode(null); setRoom(null); setView(null); go('arcade'); };
 
-  if (code === undefined) return <GameFrame title="Shadow Signal"><div className="spinner" /></GameFrame>;
+  if (code === undefined) return <GameFrame title={title}><div className="spinner" /></GameFrame>;
 
   if (!code || !room) {
     return (
-      <GameFrame title="Shadow Signal" onExit={onExit}>
+      <GameFrame title={title} onExit={onExit}>
         <div className="grow" />
         <button className="btn primary" onClick={() => act(async () => setCode(await backend.createRoom('shadow-signal')))}>🏠 Host a room</button>
         <p className="hint">or join a friend's room</p>
@@ -91,7 +93,7 @@ function ShadowOnline({ onExit }: { onExit: () => void }) {
   if (room.state === 'lobby') {
     const enough = room.players.length >= 3;
     return (
-      <GameFrame title="Shadow Signal" onExit={leave} right={<ChatButton />}>
+      <GameFrame title={title} onExit={leave} right={<ChatButton />}>
         <p className="hint">Tell your friends this code (you need 3 to 6 players):</p>
         <div className="big-code"><b>{room.code}</b></div>
         <PlayerList room={room} />
@@ -105,14 +107,14 @@ function ShadowOnline({ onExit }: { onExit: () => void }) {
     );
   }
 
-  if (!view) return <GameFrame title="Shadow Signal" onExit={leave}><div className="spinner" /></GameFrame>;
+  if (!view) return <GameFrame title={title} onExit={leave}><div className="spinner" /></GameFrame>;
   const me = view.players.find((p) => p.me)!;
 
   if (view.phase === 'done' && view.result) {
     const shadow = view.players.find((p) => p.shadow);
     const iWon = view.isShadow ? view.result.shadowWon : !view.result.shadowWon;
     return (
-      <GameFrame title="Shadow Signal" onExit={leave}>
+      <GameFrame title={title} onExit={leave}>
         <div className="soon-icon" aria-hidden>{iWon ? '🏆' : '🎭'}</div>
         <h3 className="center-text">{iWon ? 'Your side won!' : 'Your side lost this one.'}</h3>
         <p className="hint">
@@ -137,7 +139,7 @@ function ShadowOnline({ onExit }: { onExit: () => void }) {
   const myTurn = view.phase === 'clue' && me.speaking;
   const speaker = view.players.find((p) => p.speaking);
   return (
-    <GameFrame title="Shadow Signal" onExit={leave} right={<ChatButton />}>
+    <GameFrame title={title} onExit={leave} right={<ChatButton />}>
       <RoleCard category={view.category} shadow={view.isShadow} word={view.word} />
       <div className="rush-timer" aria-label={`${view.secondsLeft} seconds left`}>
         <i style={{ width: `${view.seconds ? Math.min(100, (view.secondsLeft / view.seconds) * 100) : 0}%` }} />
@@ -152,7 +154,11 @@ function ShadowOnline({ onExit }: { onExit: () => void }) {
         ))}
       </div>}
       {view.phase === 'clue' && (myTurn ? (
-        <form className="choice-edit" onSubmit={(e) => { e.preventDefault(); if (clue.trim()) act(async () => { await backend.shadowClue(clue.trim()); setClue(''); }); }}>
+        emoji ? (
+          <div className="spy-grid" role="group" aria-label="Pick an emoji clue">
+            {SPY_EMOJI.map((e) => <button key={e} className="spy-emoji" onClick={() => act(() => backend.shadowClue(e))}>{e}</button>)}
+          </div>
+        ) : <form className="choice-edit" onSubmit={(e) => { e.preventDefault(); if (clue.trim()) act(async () => { await backend.shadowClue(clue.trim()); setClue(''); }); }}>
           <input aria-label="Your one word clue" value={clue} maxLength={16} autoCapitalize="none" autoComplete="off" placeholder="One word clue" onChange={(e) => setClue(e.target.value)} />
           <button className="btn primary" disabled={!clue.trim()}>Send</button>
         </form>

@@ -1,5 +1,6 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
+import { isSpyEmoji } from './spy.ts';
 import { KIND_REASONS, KIND_REWARD, KIND_WEEKLY_MAX } from './kindness.ts';
 import { DRAWING_WORDS, isRightGuess, maskWord, scribble, type DrawStroke } from './drawing-rules.ts';
 import { BOT_CLUES, isCaught, newRound, tallyVotes } from './shadow-rules.ts';
@@ -2282,9 +2283,11 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       demoShadowTick(r, at());
       if (sh.phase !== 'clue' || sh.order[sh.turn] !== me) throw new Error('it is not your turn');
       const clue = text.trim().toLowerCase();
-      if (!/^[a-z][a-z'-]{0,15}$/.test(clue)) throw new Error('one word, letters only');
-      if (chatFlagged(clue)) throw new Error('pick a different word');
-      if (me !== sh.shadowId && clue.replace(/-/g, '').includes(sh.word.replace(/ /g, ''))) throw new Error('that gives it away');
+      if (!isSpyEmoji(clue)) {
+        if (!/^[a-z][a-z'-]{0,15}$/.test(clue)) throw new Error('one word, letters only');
+        if (chatFlagged(clue)) throw new Error('pick a different word');
+        if (me !== sh.shadowId && clue.replace(/-/g, '').includes(sh.word.replace(/ /g, ''))) throw new Error('that gives it away');
+      }
       sh.clues.push({ i: sh.turn, text: clue }); sh.turn += 1; sh.phaseStart = at();
       demoShadowTick(r, at());
       commit();
