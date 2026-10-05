@@ -485,3 +485,16 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
   .item-tile { min-height: 72px; }
   .dorm { width: min(100%, 56vh); }
 }
+
+/* Nexlings */
+.nex-preview { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px; border: 3px solid; border-radius: 20px; background: #ffffff0d; }
+.nex-stage { display: grid; place-items: center; flex: 0 1 34vh; min-height: 0; border: 3px solid; border-radius: 28px; background: radial-gradient(circle at 50% 60%, #2a1f5c, #0f0b26); }
+.nex-body { line-height: 1; animation: nex-bob 2.4s ease-in-out infinite; }
+.nex-body.s4 { filter: drop-shadow(0 0 14px #fbbf24); }
+@keyframes nex-bob { 50% { transform: translateY(-6px); } }
+.evolve { padding: 10px; border-radius: 16px; background: linear-gradient(90deg, #8b5cff, #ff3fa4); color: #fff; font: 800 1.1rem 'Baloo 2', 'Nunito', system-ui; border: 0; animation: nex-pop .5s ease-out; }
+@keyframes nex-pop { from { transform: scale(.7); opacity: 0; } }
+.item-tile.nex small { font-size: .72rem; }
+@media (prefers-reduced-motion: reduce) { .nex-body, .evolve { animation: none; } }
+.bar-track { height: 14px; border-radius: 8px; background: var(--panel-2); overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 8px; transition: width .4s; }
