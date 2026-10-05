@@ -750,3 +750,16 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .mini-hero { position: absolute; left: 50%; bottom: 4%; height: 70%; width: auto; transform: translateX(-50%); object-fit: contain; pointer-events: none; opacity: .95; }
 .contest-card .btn { width: min(100%, 320px); }
 @media (max-height: 480px) and (orientation: landscape) { .contest-card { flex-direction: row; justify-content: center; gap: 12px; } .contest-card > b { display: none; } .dorm.mini { width: 36vh; flex: none; } .contest-card .btn { width: auto; min-width: 140px; } }
+
+/* Battle arena */
+.arena { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.arena-field { display: flex; justify-content: space-around; align-items: flex-end; gap: 8px; flex: 1; min-height: 0; padding: 6px; border-radius: 16px; background: linear-gradient(180deg, #2a1f5c, #14102f); }
+.arena-side { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; flex: 1; min-width: 0; height: 100%; transition: transform .3s; }
+.arena-side.hurt { transform: translateX(6px); filter: brightness(1.4); }
+.arena-hero { height: min(26vh, 200px); width: auto; max-width: 100%; object-fit: contain; }
+.arena-foe { font-size: clamp(3.5rem, 14vh, 6rem); line-height: 1; }
+.arena-bar { position: relative; width: 100%; max-width: 160px; height: 14px; border-radius: 8px; background: #0008; overflow: hidden; }
+.arena-bar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #34d399, #22d3ee); transition: width .4s; }
+.arena-bar small { position: relative; display: block; text-align: center; font-size: .65rem; line-height: 14px; }
+.arena-moves { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-height: 480px) and (orientation: landscape) { .arena { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: auto auto 1fr; gap: 4px 12px; } .arena-field { grid-row: 1 / 4; } .arena-moves { grid-column: 2; } .arena-hero { height: min(40vh, 150px); } }
