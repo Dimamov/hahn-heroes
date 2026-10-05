@@ -743,6 +743,27 @@ describe('demo backend: grown-ups and missions', () => {
     });
   });
 
+  describe('story', () => {
+    it('saves progress, pays choices and checkpoints once, and gives the card at the end', async () => {
+      const b = make();
+      await b.signUp(input);
+      await b.storySave('ep1', 5);
+      await b.storySave('ep1', 2);
+      expect((await b.storyState())[0].panel).toBe(5);
+      expect(await b.storyChoose('ep1', 'touch', 'ana')).toMatchObject({ repeat: false, amount: 5 });
+      expect(await b.storyChoose('ep1', 'touch', 'isabella')).toEqual({ repeat: true, option: 'ana' });
+      await expect(b.storyComplete('ep1')).rejects.toThrow('checkpoint');
+      expect(await b.storyAnswer('ep1', 'cp1', 0)).toEqual({ correct: false });
+      for (const [cp, pick] of [['cp1', 1], ['cp2', 0], ['cp3', 2]] as const) {
+        expect(await b.storyAnswer('ep1', cp, pick)).toMatchObject({ correct: true, first: true });
+      }
+      expect(await b.storyAnswer('ep1', 'cp1', 1)).toMatchObject({ first: false });
+      expect(await b.storyComplete('ep1')).toEqual({ repeat: false, card: 'e-keeper', coins: 20 });
+      expect(await b.storyComplete('ep1')).toEqual({ repeat: true, card: 'e-keeper' });
+      expect((await b.cardsState()).cards.find((c) => c.id === 'e-keeper')?.qty).toBe(1);
+    });
+  });
+
   describe('trivia night', () => {
     it('takes an RSVP and pays the prize once, to the heroes who said yes', async () => {
       const b = make();

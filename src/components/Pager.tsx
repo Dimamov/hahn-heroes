@@ -1,9 +1,16 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
 /** Swipeable pages (native scroll snap) with dots. Each page fits the screen; no arrows. */
-export function Pager({ pages, badges = [], onPage }: { pages: ReactNode[]; badges?: boolean[]; onPage?: (i: number) => void }) {
+export function Pager({ pages, badges = [], onPage, start = 0 }: { pages: ReactNode[]; badges?: boolean[]; onPage?: (i: number) => void; start?: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(start);
+
+  // Open on a given page without sliding there.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (el && start > 0) el.scrollLeft = start * el.clientWidth;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const el = ref.current;
