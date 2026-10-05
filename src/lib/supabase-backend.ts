@@ -199,6 +199,10 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async childMissions(childId) {
       return (await rows(sb.from('home_missions').select('*').eq('child_id', childId).order('created_at', { ascending: false }))).map(home);
     },
+    async childWeek(childId, weeksBack = 0) {
+      const d = await rpc('child_week', { p_child: childId, p_weeks_back: weeksBack });
+      return { weekStart: d.week_start, daysActive: d.days_active, answered: d.answered, correct: d.correct, subjects: d.subjects, points: Number(d.points), missions: d.missions };
+    },
     async childProgress(childId) {
       const d = await rpc('child_progress', { p_child: childId });
       return { coins: d.coins, xp: d.xp, homeWeek: d.home_week, classWeek: d.class_week, homeCap: d.home_cap, classCap: d.class_cap };

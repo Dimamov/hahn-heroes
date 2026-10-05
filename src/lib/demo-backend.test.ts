@@ -514,6 +514,11 @@ describe('demo backend: grown-ups and missions', () => {
       const math = (await b.childLearning(hero.id)).find((s) => s.subject === 'math')!;
       expect(math).toMatchObject({ answered: 20, correct: 20, left: 0 });
       expect(math.skills.length).toBeGreaterThan(2);
+      const week = await b.childWeek(hero.id);
+      expect(week).toMatchObject({ answered: 80, correct: 80, daysActive: 1 });
+      expect(week.subjects.map((x) => x.subject)).toEqual(['math', 'reading', 'science', 'vocab']);
+      expect(week.points).toBe(150);
+      expect((await b.childWeek(hero.id, 1)).answered).toBe(0);
     });
   });
 

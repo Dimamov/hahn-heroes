@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import type { Adult, Backend, ChildProgress, ChildSummary, HomeMission, SubjectProgress } from '../../lib/backend.ts';
+import type { Adult, Backend, ChildProgress, ChildSummary, HomeMission, SubjectProgress, WeekSummary } from '../../lib/backend.ts';
 import { SUBJECT_INFO } from '../Learn.tsx';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 import { HeroArt } from '../../components/HeroArt.tsx';
 import { formatHeroCode, normalizeHeroCode } from '../../../supabase/functions/_shared/kid-auth.ts';
 
-type View = { name: 'list' } | { name: 'link' } | { name: 'child'; child: ChildSummary } | { name: 'new'; child: ChildSummary } | { name: 'learning'; child: ChildSummary };
+type View = { name: 'list' } | { name: 'link' } | { name: 'child'; child: ChildSummary } | { name: 'new'; child: ChildSummary } | { name: 'learning'; child: ChildSummary } | { name: 'week'; child: ChildSummary };
 
 const LINK_ERRORS = { invalid_code: "That code isn't right, or it was already used. Ask your child for a new one.", too_many_tries: 'Too many tries. Please wait an hour and try again.' };
 
@@ -19,7 +19,8 @@ export function ParentHome({ backend, adult, onSignOut }: { backend: Backend; ad
   if (view.name === 'link') return <LinkChild backend={backend} onBack={() => { reload(); setView({ name: 'list' }); }} />;
   if (view.name === 'new') return <NewMission backend={backend} child={view.child} onBack={() => setView({ name: 'child', child: view.child })} />;
   if (view.name === 'learning') return <LearningView backend={backend} child={view.child} onBack={() => setView({ name: 'child', child: view.child })} />;
-  if (view.name === 'child') return <ChildScreen backend={backend} child={view.child} onBack={() => { reload(); setView({ name: 'list' }); }} onNew={() => setView({ name: 'new', child: view.child })} onLearning={() => setView({ name: 'learning', child: view.child })} />;
+  if (view.name === 'week') return <WeekView backend={backend} child={view.child} onBack={() => setView({ name: 'child', child: view.child })} />;
+  if (view.name === 'child') return <ChildScreen backend={backend} child={view.child} onBack={() => { reload(); setView({ name: 'list' }); }} onNew={() => setView({ name: 'new', child: view.child })} onLearning={() => setView({ name: 'learning', child: view.child })} onWeek={() => setView({ name: 'week', child: view.child })} />;
 
   return (
     <main className="screen">
@@ -93,7 +94,7 @@ function ChatNotice({ backend, child }: { backend: Backend; child: ChildSummary 
   );
 }
 
-function ChildScreen({ backend, child, onBack, onNew, onLearning }: { backend: Backend; child: ChildSummary; onBack: () => void; onNew: () => void; onLearning: () => void }) {
+function ChildScreen({ backend, child, onBack, onNew, onLearning, onWeek }: { backend: Backend; child: ChildSummary; onBack: () => void; onNew: () => void; onLearning: () => void; onWeek: () => void }) {
   const [missions, setMissions] = useState<HomeMission[] | null>(null);
   const [progress, setProgress] = useState<ChildProgress | null>(null);
   const [note, setNote] = useState('');
@@ -142,7 +143,8 @@ function ChildScreen({ backend, child, onBack, onNew, onLearning }: { backend: B
             </div>
           )} />
       )}
-      <div className="stack row">
+      <div className="btn-grid">
+        <button className="btn ghost" onClick={onWeek}>🗓️ This week</button>
         <button className="btn ghost" onClick={onLearning}>📈 Learning</button>
         <button className="btn primary" onClick={onNew}>＋ New mission</button>
       </div>
@@ -151,6 +153,44 @@ function ChildScreen({ backend, child, onBack, onNew, onLearning }: { backend: B
 }
 
 /** How a child is doing in each subject, with the skills that need more practice. */
+const niceDay = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+
+/** What a child practised in a school week, this week or last, in plain words. */
+function WeekView({ backend, child, onBack }: { backend: Backend; child: ChildSummary; onBack: () => void }) {
+  const [back, setBack] = useState(0);
+  const [w, setW] = useState<WeekSummary | null>(null);
+  useEffect(() => { setW(null); backend.childWeek(child.id, back).then(setW).catch(() => setW({ weekStart: '', daysActive: 0, answered: 0, correct: 0, subjects: [], points: 0, missions: 0 })); }, [backend, child.id, back]);
+  const pct = w && w.answered ? Math.round((100 * w.correct) / w.answered) : 0;
+  const first = child.displayName.split(' ')[0];
+  return (
+    <main className="screen">
+      <ScreenBar title={`${first}: ${back === 0 ? 'this week' : 'last week'}`} onBack={onBack} />
+      <div className="chips">
+        <button className={`chip${back === 0 ? ' chosen' : ''}`} onClick={() => setBack(0)}>This week</button>
+        <button className={`chip${back === 1 ? ' chosen' : ''}`} onClick={() => setBack(1)}>Last week</button>
+      </div>
+      {w === null ? <div className="spinner" /> : (
+        <>
+          <p className="hint">{w.weekStart ? `Week of ${niceDay(w.weekStart)}` : ''}</p>
+          {w.answered === 0 && w.points === 0 ? <p className="note">{first} did not practise {back === 0 ? 'yet this week' : 'that week'}.</p> : (
+            <>
+              <div className="progress-card learn">
+                <div><b>📅 {w.daysActive}</b><small>days active</small></div>
+                <div><b>✅ {w.correct}/{w.answered}</b><small>right{w.answered ? ` · ${pct}%` : ''}</small></div>
+                <div><b>💎 {w.points}</b><small>points earned</small></div>
+                <div><b>🎯 {w.missions}</b><small>missions done</small></div>
+              </div>
+              {w.subjects.map((s) => (
+                <div className="skill-row" key={s.subject}><span>{SUBJECT_INFO[s.subject].icon} {SUBJECT_INFO[s.subject].label}</span><span>{s.correct}/{s.answered} right</span></div>
+              ))}
+            </>
+          )}
+        </>
+      )}
+    </main>
+  );
+}
+
 function LearningView({ backend, child, onBack }: { backend: Backend; child: ChildSummary; onBack: () => void }) {
   const [data, setData] = useState<SubjectProgress[] | null>(null);
   useEffect(() => { backend.childLearning(child.id).then(setData).catch(() => setData([])); }, [backend, child.id]);
