@@ -10,6 +10,10 @@ export const GAMES = [
   { id: 'word-builder', label: 'Word Builder', icon: '🔠', reward: true },
   { id: 'spot-difference', label: 'Spot the Difference', icon: '🔍', reward: true },
   { id: 'whack-shadow', label: 'Whack-a-Shadow', icon: '👻', reward: true },
+  { id: 'bubble-pop', label: 'Bubble Pop', icon: '🫧', reward: true },
+  { id: 'block-blast', label: 'Block Blast', icon: '🧱', reward: true },
+  { id: 'hero-defense', label: 'Hero Defense', icon: '🛡️', reward: true },
+  { id: 'shadow-spy', label: 'Shadow Spy', icon: '🕶️', reward: false },
   { id: 'trivia-clash', label: 'Trivia Clash', icon: '⚔️', reward: false },
   { id: 'odin', label: 'ODIN', icon: '🎴', reward: false },
   { id: 'shadow-signal', label: 'Shadow Signal', icon: '🕵️', reward: false },
@@ -23,16 +27,19 @@ export const GAMES = [
 
 const TAGLINES: Record<string, string> = {
   'trivia-clash': 'Private rooms', odin: 'Private rooms', 'squad-drawing': 'Private rooms', 'escape-nexus': 'Private rooms',
-  'shadow-signal': 'Rooms or one device', 'word-rush': 'Pass the device', arena: 'Friendly spar',
+  'shadow-signal': 'Rooms or one device', 'shadow-spy': 'Rooms, emoji clues', 'word-rush': 'Pass the device', arena: 'Friendly spar',
 };
 
 /** Solo games and squad games, six to a page so the list never scrolls. */
 export function Arcade() {
   const { backend, go } = useSession();
   const [status, setStatus] = useState<ArcadeStatus | null>(null);
+  const [hidden, setHidden] = useState<string[]>([]);
+  useEffect(() => { backend.hiddenGames().then(setHidden).catch(() => undefined); }, [backend]);
+  const games = GAMES.filter((g) => !hidden.includes(g.id));
   useEffect(() => { backend.arcadeStatus().then(setStatus).catch(() => setStatus({ coins: 5, games: [], claimed: [] })); }, [backend]);
   const isOpen = (g: (typeof GAMES)[number]) => !!(g.reward && status && status.games.includes(g.id) && !status.claimed.includes(g.id));
-  const pages = Array.from({ length: Math.ceil(GAMES.length / 6) }, (_, i) => GAMES.slice(i * 6, i * 6 + 6));
+  const pages = Array.from({ length: Math.ceil(games.length / 6) }, (_, i) => games.slice(i * 6, i * 6 + 6));
   return (
     <main className="screen">
       <ScreenBar title="Arcade" onBack={() => go('home')} />

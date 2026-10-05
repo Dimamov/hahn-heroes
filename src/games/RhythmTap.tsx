@@ -1,44 +1,63 @@
 import { useEffect, useRef, useState } from 'react';
 import { GameFrame } from './GameFrame.tsx';
-import { beep } from '../lib/sound.ts';
-import { FALL_SECONDS, SONGS, judgeTap, notesFor, stars, sweepMisses, type Note, type Song } from '../lib/rhythm.ts';
+import { PagedList } from '../components/PagedList.tsx';
+import { FALL_SECONDS, judgeTap, stars, sweepMisses, type Note } from '../lib/rhythm.ts';
+import type { Level, ParsedSong, SongDef } from '../lib/songs.ts';
+
+type Songs = typeof import('../lib/songs.ts');
+type Synth = typeof import('../lib/synth.ts');
+const LEAD = 2;
 
 const LANES = ['#ff3fa4', '#22d3ee', '#fbbf24'];
-const TONES = [392, 523, 659];
 
-/** Tap the falling notes in time with the beat. No timer pressure, no lives: just fun. */
+type Result = { stars: number; perfect: number; good: number; miss: number };
+
+/** Tap the falling notes in time with real tunes. No timer pressure, no lives: just fun. */
 export function RhythmTap() {
-  const [song, setSong] = useState<Song | null>(null);
-  const [done, setDone] = useState<{ stars: number; perfect: number; good: number; miss: number } | null>(null);
+  const [libs, setLibs] = useState<{ songs: Songs; synth: Synth } | null>(null);
+  const [level, setLevel] = useState<Level>('easy');
+  const [song, setSong] = useState<ParsedSong | null>(null);
+  const [done, setDone] = useState<Result | null>(null);
+  // The songs and the sound maker load only when this game opens, so the rest of the app stays small.
+  useEffect(() => { Promise.all([import('../lib/songs.ts'), import('../lib/synth.ts')]).then(([songs, synth]) => setLibs({ songs, synth })); }, []);
+
+  if (!libs) return <GameFrame title="Rhythm Tap"><div className="spinner" /></GameFrame>;
   if (done && song) {
     return (
       <GameFrame title="Rhythm Tap">
         <div className="grow" />
         <div className="soon-icon" aria-hidden>{'⭐'.repeat(done.stars)}</div>
-        <h3>{song.name}: {done.stars === 3 ? 'Perfect rhythm!' : done.stars === 2 ? 'Great beat!' : 'Nice try!'}</h3>
+        <h3>{song.def.name}: {done.stars === 3 ? 'Perfect rhythm!' : done.stars === 2 ? 'Great beat!' : 'Nice try!'}</h3>
         <p className="hint">{done.perfect} perfect · {done.good} good · {done.miss} missed</p>
         <div className="grow" />
         <div className="btn-grid">
-          <button className="btn ghost" onClick={() => setDone(null)}>Play again</button>
+          <button className="btn ghost" onClick={() => { libs.synth.unlockAudio(); setDone(null); }}>Play again</button>
           <button className="btn primary" onClick={() => { setDone(null); setSong(null); }}>Pick a song</button>
         </div>
       </GameFrame>
     );
   }
   if (!song) {
+    const pick = (def: SongDef) => { libs.synth.unlockAudio(); setSong(libs.songs.parseSong(def)); };
     return (
-      <GameFrame title="Rhythm Tap" hint="Pick a song. Tap each lane when a note reaches the line.">
-        <div className="grow" />
-        {SONGS.map((s) => <button className="btn primary" key={s.id} onClick={() => setSong(s)}>{s.icon} {s.name}</button>)}
-        <div className="grow" />
+      <GameFrame title="Rhythm Tap" hint="Pick a level and a song. Tap each lane when a note reaches the line.">
+        <div className="chips" role="group" aria-label="Level">
+          {libs.songs.LEVELS.map((l) => <button key={l.id} className={`chip${level === l.id ? ' chosen' : ''}`} onClick={() => setLevel(l.id)}>{l.label}</button>)}
+        </div>
+        <div className="rt-songs"><PagedList items={libs.songs.LIBRARY} perPage={4} empty="No songs yet." render={(def) => (
+          <button className="btn primary song-btn" key={def.id} onClick={() => pick(def)}>
+            <span>{def.icon} {def.name}</span><small>{def.by}</small>
+          </button>
+        )} /></div>
+        <p className="hint credits">Old tunes are public domain. The hero tracks were made for HAHN Heroes.</p>
       </GameFrame>
     );
   }
-  return <Play song={song} onDone={setDone} onExit={() => setSong(null)} />;
+  return <Play song={song} level={level} libs={libs} onDone={setDone} onExit={() => setSong(null)} />;
 }
 
-function Play({ song, onDone, onExit }: { song: Song; onDone: (r: { stars: number; perfect: number; good: number; miss: number }) => void; onExit: () => void }) {
-  const notes = useRef<Note[]>(notesFor(song));
+function Play({ song, level, libs, onDone, onExit }: { song: ParsedSong; level: Level; libs: { songs: Songs; synth: Synth }; onDone: (r: Result) => void; onExit: () => void }) {
+  const notes = useRef<Note[]>(libs.songs.beatMap(song, level, LEAD));
   const start = useRef(performance.now());
   const [, frame] = useState(0);
   const [combo, setCombo] = useState(0);
@@ -47,6 +66,8 @@ function Play({ song, onDone, onExit }: { song: Song; onDone: (r: { stars: numbe
   const now = () => (performance.now() - start.current) / 1000;
 
   useEffect(() => {
+    start.current = performance.now();
+    const stop = libs.synth.playSong(song, LEAD);
     let raf = 0;
     const loop = () => {
       const t = now();
@@ -61,18 +82,18 @@ function Play({ song, onDone, onExit }: { song: Song; onDone: (r: { stars: numbe
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
+    return () => { cancelAnimationFrame(raf); stop(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const tap = (lane: number) => {
     const r = judgeTap(notes.current, lane, now());
-    beep(TONES[lane], 120, 'triangle');
+    libs.synth.tapClick(lane);
     if (r) { setCombo((c) => c + 1); setSaid(r === 'perfect' ? 'Perfect!' : 'Good'); } else setSaid('Wait for the note');
   };
 
   const t = now();
   return (
-    <GameFrame title={song.name} onExit={onExit} right={<b className="rt-combo" aria-live="polite">{combo > 1 ? `${combo} combo` : ''}</b>}>
+    <GameFrame title={song.def.name} onExit={onExit} right={<b className="rt-combo" aria-live="polite">{combo > 1 ? `${combo} combo` : ''}</b>}>
       <div className="rt-board" aria-label="Falling notes">
         {LANES.map((color, lane) => (
           <div className="rt-lane" key={lane}>

@@ -8,6 +8,8 @@ import type { MadeCode, RedeemResult } from './codes.ts';
 import type { TreasureState } from './treasure.ts';
 import type { RaceState } from './race.ts';
 import type { KindRow, KindState } from './kindness.ts';
+import type { HintResult } from './hints.ts';
+import type { GoofyState } from './goofy.ts';
 import type { GalleryLook, Look, LookState } from './look.ts';
 import type { AdvAnswerResult, AdvDone, AdvProgress } from './adventures.ts';
 import type { StoryAnswerResult, StoryChoiceResult, StoryDone, StoryProgress } from './story.ts';
@@ -159,6 +161,10 @@ export interface HouseChallenge {
 }
 export interface SenseiChallenge { theme: string | null; goal: number | null; coins: number | null; houses: { name: string; members: number; progress: number }[] }
 
+export interface PushPrefs {
+  chore_waiting: boolean; weekly_summary: boolean; chore_accepted: boolean; quiz_soon: boolean; sensei_message: boolean; quiet_hours: boolean;
+}
+
 export interface Announcement {
   id: number;
   title: string;
@@ -197,6 +203,14 @@ export interface SenseiOverview {
 }
 export interface TrafficDay { day: string; heroes: number; adults: number; minutes: number; newHeroes: number }
 export interface ActivePlayer { name: string; grade: number; screen: string; secondsAgo: number }
+export interface UsageReport {
+  month: string; since: string | null; heroesTotal: number; activeKids: number; hidden: string[];
+  screens: { screen: string; opens: number; players: number; cameBack: number; minutes: number; prevOpens: number }[];
+  weeks: { week: string; kids: number }[];
+  hours: { hour: number; minutes: number }[];
+  subjects: { subject: string; answered: number; correct: number }[];
+}
+
 export interface SenseiTraffic {
   totalHeroes: number;
   nowHeroes: number;
@@ -484,6 +498,12 @@ export interface Backend {
   announcements(): Promise<{ items: Announcement[]; unread: number }>;
   senseiDeleteAnnouncement(id: number): Promise<void>;
   markAnnouncementsRead(): Promise<void>;
+  /** Push notifications: is the server set up (and its public key), this person's choices, and their devices. */
+  pushKey(): Promise<{ configured: boolean; key: string | null }>;
+  pushPrefs(): Promise<PushPrefs | null>;
+  pushSetPrefs(prefs: Partial<PushPrefs>): Promise<void>;
+  pushSubscribe(sub: { endpoint: string; p256dh: string; auth: string }): Promise<void>;
+  pushUnsubscribe(endpoint: string): Promise<void>;
   /** The next Trivia Night, and whether this hero said they are coming. */
   triviaState(): Promise<TriviaState>;
   triviaRsvp(going: boolean): Promise<TriviaState>;
@@ -556,6 +576,7 @@ export interface Backend {
   tradeConfirm(tradeId: string, ver: number, ack: boolean): Promise<{ ok: boolean; done?: boolean; reason?: string }>;
   tradeCancel(tradeId: string): Promise<void>;
   /** Sensei only: hand any card to the hero with this code. Resolves with the hero's name. */
+  senseiDeleteHero(heroCode: string): Promise<string>;
   senseiGiveCard(heroCode: string, cardId: string): Promise<string>;
   skillState(): Promise<SkillState>;
   skillLearn(skillId: string): Promise<{ ok: true } | { ok: false; reason: 'locked' | 'already_learned' | 'not_enough_points' }>;
@@ -591,6 +612,12 @@ export interface Backend {
   /** Teachers (their students) and the Sensei (everyone): nominations waiting for a decision. */
   kindReview(): Promise<KindRow[]>;
   kindDecide(id: number, approve: boolean): Promise<{ awarded: number }>;
+  /** A short hint for a practice question: from the AI helper when it is on, otherwise a built-in nudge. Never the answer. */
+  hintFor(questionId: string, subject: string): Promise<HintResult>;
+  /** Goofy challenge: accept a mystery silly task once a day, then say you did it for a small reward. */
+  goofyState(): Promise<GoofyState>;
+  goofyAccept(): Promise<GoofyState>;
+  goofyFinish(done: boolean): Promise<{ awarded: number }>;
   /** Class vs class race: this month (0) or last month (1), class names only. */
   raceState(back?: number): Promise<RaceState>;
   /** Avatar studio: mix hair, makeup, aura, an owned outfit and accessory; pin it for friends to like. */
@@ -669,6 +696,11 @@ export interface Backend {
   /** Tells the Sensei this person is here. Safe to call often; the server throttles it. */
   ping(screen: string): Promise<void>;
   senseiTraffic(): Promise<SenseiTraffic>;
+  /** Monthly counts for the Sensei: which screens and games get used. back = 0 this month, 1 last month. */
+  senseiUsageReport(back: number): Promise<UsageReport>;
+  /** Games the Sensei has hidden from the Arcade (nothing is deleted). */
+  hiddenGames(): Promise<string[]>;
+  senseiHideGame(id: string, hidden: boolean): Promise<void>;
   pendingTeachers(): Promise<PendingTeacher[]>;
   approveTeacher(id: string, approve: boolean): Promise<void>;
   postAnnouncement(title: string, body: string): Promise<void>;

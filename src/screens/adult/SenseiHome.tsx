@@ -5,11 +5,12 @@ import { CARDS } from '../../lib/cards.ts';
 import { SECRET_PLACES, type Adult, type Announcement, type Backend, type CharacterRequest, type SenseiSecret, ChatLogLine, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { shrinkImage } from '../../lib/image-file.ts';
+import { UsageReportScreen } from './UsageReport.tsx';
 import { KindReview } from './KindReview.tsx';
 import { CodeMaker } from './CodeMaker.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
-type View = 'home' | 'challenge' | 'events' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes' | 'kind';
+type View = 'home' | 'challenge' | 'events' | 'delete' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes' | 'kind' | 'usage';
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
@@ -24,6 +25,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
   if (view === 'announce') return <Announce backend={backend} onBack={back} />;
   if (view === 'drawings') return <DrawingReports backend={backend} onBack={back} />;
   if (view === 'codes') return <CodeMaker backend={backend} onBack={back} />;
+  if (view === 'usage') return <UsageReportScreen backend={backend} onBack={back} />;
   if (view === 'kind') return <KindReview backend={backend} onBack={back} />;
   if (view === 'secret') return <SecretHunt backend={backend} onBack={back} />;
   if (view === 'characters') return <Characters backend={backend} onBack={back} />;
@@ -31,6 +33,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
   if (view === 'chat') return <ChatUnlocks backend={backend} onBack={back} />;
   if (view === 'traffic') return <Traffic backend={backend} onBack={back} />;
   if (view === 'challenge') return <Challenge backend={backend} onBack={back} />;
+  if (view === 'delete') return <DeleteHero backend={backend} onBack={back} />;
   if (view === 'events') return <Events backend={backend} onBack={back} />;
   if (view === 'trivia') return <Trivia backend={backend} current={overview?.triviaNight} onBack={back} />;
 
@@ -57,10 +60,12 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
         <button className="btn" onClick={() => setView('chat')}>💬 Chat unlocks</button>
         <button className="btn" onClick={() => setView('drawings')}>🚩 Drawing reports</button>
         <button className="btn" onClick={() => setView('traffic')}>📈 Players and traffic</button>
+        <button className="btn" onClick={() => setView('usage')}>🗓 Monthly report</button>
         <button className="btn" onClick={() => setView('teachers')}>Teachers to approve{overview && overview.pendingTeachers > 0 ? ` (${overview.pendingTeachers})` : ''}</button>
         <button className="btn" onClick={() => setView('announce')}>📣 Post an announcement</button>
         <button className="btn" onClick={() => setView('challenge')}>🏁 Weekly House challenge</button>
         <button className="btn" onClick={() => setView('events')}>🍂 Seasonal events</button>
+        <button className="btn" onClick={() => setView('delete')}>🗑️ Delete a hero</button>
         <button className="btn" onClick={() => setView('trivia')}>🎤 Trivia Night time</button>
       </div>
     </main>
@@ -197,6 +202,35 @@ function Challenge({ backend, onBack }: { backend: Backend; onBack: () => void }
       <p className="note" role="status">{note}</p>
       <div className="grow" />
       <button className="btn primary" disabled={theme.trim().length < 3} onClick={save}>Save this week's challenge</button>
+    </main>
+  );
+}
+
+function DeleteHero({ backend, onBack }: { backend: Backend; onBack: () => void }) {
+  const [code, setCode] = useState('');
+  const [asking, setAsking] = useState(false);
+  const [note, setNote] = useState('');
+  const go = async () => {
+    setAsking(false);
+    try { const name = await backend.senseiDeleteHero(code); setNote(`${name} and all their data were deleted.`); setCode(''); } catch { setNote('No hero has that code.'); }
+  };
+  return (
+    <main className="screen">
+      <ScreenBar title="Delete a hero" onBack={onBack} />
+      <p className="hint">For a parent or school request. Type the hero's sign-in code from their card. This removes the hero and everything they earned, and cannot be undone.</p>
+      <label className="field plain"><span>Hero code</span><input value={code} maxLength={9} autoCapitalize="characters" onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="ABCD-EFGH" /></label>
+      <p className="note" role="status">{note}</p>
+      <div className="grow" />
+      <button className="btn primary" disabled={code.replace(/[^A-Z0-9]/g, '').length !== 8} onClick={() => setAsking(true)}>Delete this hero</button>
+      {asking && (
+        <div className="opicker" role="dialog" aria-label="Delete this hero">
+          <div className="card">
+            <b>Delete this hero forever?</b>
+            <p className="muted">Code {code}. All their points, cards and progress go with them.</p>
+            <div className="seg"><button onClick={() => setAsking(false)}>Keep</button><button className="chosen" onClick={go}>Delete</button></div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
