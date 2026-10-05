@@ -16,7 +16,18 @@ begin
   perform as_user(13); perform room_join(v_code);
   perform as_user(21); perform expect_error($q$select chat_send('hi')$q$, 'join a room');
 
+  -- chat needs a class: a hero who has not joined one is told so (u11 joined one earlier)
+  perform as_admin();
+  create temp table saved_members as select * from class_members where child_id = u(11);
+  delete from class_members where child_id = u(11);
   perform as_user(11);
+  assert (chat_send('hello')->>'no_class')::boolean and not (chat_read()->>'can_chat')::boolean, 'no class, no chat';
+  perform as_admin();
+  insert into class_members select * from saved_members;
+  drop table saved_members;
+
+  perform as_user(11);
+  assert (chat_read()->>'can_chat')::boolean, 'class joined, chat open';
   assert (chat_send('good luck everyone!')->>'ok')::boolean, 'normal message posts';
   assert (chat_send('too fast')->>'slow')::boolean, 'one message a second';
   perform pg_sleep(1.1);
@@ -53,6 +64,10 @@ begin
   perform expect_error($q$select sensei_chat_requests()$q$, 'only the Sensei');
   perform expect_error(format($q$select chat_unlock(%L)$q$, u(13)), 'only the Sensei');
 
+  perform as_user(4);
+  assert jsonb_array_length(sensei_chat_log(u(13))) = 2 and (sensei_chat_log(u(13))->0->>'body') = 'good luck everyone!', 'Sensei reads the recent lines';
+  perform as_user(1);
+  perform expect_error(format($q$select sensei_chat_log(%L)$q$, u(13)), 'only the Sensei');
   perform as_user(4);
   assert jsonb_array_length(sensei_chat_requests()) = 1 and (sensei_chat_requests()->0->>'requested')::boolean, 'Sensei sees the request';
   perform chat_unlock(u(13));

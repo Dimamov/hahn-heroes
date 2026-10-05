@@ -368,8 +368,9 @@ export interface NexusView {
 }
 export interface NexusAnswer { correct: boolean; rightChoice: number; explanation: string; penalty: number; over?: boolean }
 export interface ChatMessage { id: number; name: string; me: boolean; body: string }
-export type ChatResult = { ok: true } | { ok: false; reason: 'warning' | 'banned' | 'slow' | 'private' };
+export type ChatResult = { ok: true } | { ok: false; reason: 'warning' | 'banned' | 'slow' | 'private' | 'no_class' };
 export interface ChatChild { banned: boolean; requested: boolean }
+export interface ChatLogLine { name: string; child: boolean; body: string; at: string }
 export interface ChatRequest { childId: string; name: string; grade: number; requested: boolean }
 export interface ArcadeStatus { coins: number; games: string[]; claimed: string[] }
 export interface PendingTeacher {
@@ -535,11 +536,12 @@ export interface Backend {
   nexusAnswer(choice: number): Promise<NexusAnswer>;
   nexusBoost(index: number): Promise<void>;
   chatSend(text: string): Promise<ChatResult>;
-  chatRead(): Promise<{ banned: boolean; messages: ChatMessage[] }>;
+  chatRead(): Promise<{ banned: boolean; canChat: boolean; messages: ChatMessage[] }>;
   childChat(childId: string): Promise<ChatChild>;
   chatRequestUnlock(childId: string): Promise<void>;
   senseiChatRequests(): Promise<ChatRequest[]>;
   chatUnlock(childId: string): Promise<void>;
+  senseiChatLog(childId: string): Promise<ChatLogLine[]>;
   /** Demo mode only: adds a practice buddy so a game can start without a second device. */
   addPracticeBuddy?(): Promise<void>;
   senseiOverview(): Promise<SenseiOverview>;

@@ -15,8 +15,13 @@ begin
   assert my_room() = v_code, 'my_room finds it';
 
   perform as_user(12);   -- grade 6
-  perform expect_error(format($q$select room_join(%L)$q$, v_code), 'other grade');
-  perform expect_error($q$select room_join('QQQQ')$q$, 'no room');
+  assert room_join(v_code) is null, 'a room for the other grade looks like no room';
+  assert room_join('QQQQ') is null, 'no room with that code';
+  for i in 1..8 loop perform room_join('QQQQ'); end loop;
+  perform expect_error($q$select room_join('QQQQ')$q$, 'too many tries');
+  perform as_admin();
+  delete from room_join_misses;
+  perform as_user(12);
   perform expect_error(format($q$select room_state(%L)$q$, v_code), 'not in that room');
 
   perform as_user(13);

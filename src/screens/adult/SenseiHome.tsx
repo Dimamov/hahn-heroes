@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ItemGrid } from '../../components/ItemGrid.tsx';
 import { CardFace } from '../../components/CardFace.tsx';
 import { CARDS } from '../../lib/cards.ts';
-import type { Adult, Backend, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
+import type { Adult, Backend, ChatLogLine, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
@@ -319,6 +319,8 @@ function ChatUnlocks({ backend, onBack }: { backend: Backend; onBack: () => void
   const [list, setList] = useState<ChatRequest[] | null>(null);
   const load = () => backend.senseiChatRequests().then(setList).catch(() => setList([]));
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [log, setLog] = useState<{ name: string; lines: ChatLogLine[] } | null>(null);
+  const read = async (r: ChatRequest) => setLog({ name: r.name, lines: await backend.senseiChatLog(r.childId).catch(() => []) });
   const unlock = async (r: ChatRequest) => { await backend.chatUnlock(r.childId).catch(() => {}); load(); };
   return (
     <main className="screen">
@@ -330,11 +332,25 @@ function ChatUnlocks({ backend, onBack }: { backend: Backend; onBack: () => void
             <div className="card" key={r.childId}>
               <div className="card-top"><b>{r.name}</b><small className="muted">Grade {r.grade}</small></div>
               <small className="muted">{r.requested ? 'A parent asked for an unlock' : 'No request yet'}</small>
-              <div className="card-bottom"><span />
+              <div className="card-bottom">
+                <button className="btn small ghost" onClick={() => read(r)}>Read recent chat</button>
                 <button className="btn small primary" onClick={() => unlock(r)}>Unlock chat</button>
               </div>
             </div>
           )} />
+      )}
+      {log && (
+        <div className="opicker" role="dialog" aria-label="Recent chat">
+          <div className="card">
+            <b>Recent chat near {log.name}</b>
+            <div className="chat-list">
+              {log.lines.length === 0 && <small className="muted">No messages saved.</small>}
+              {log.lines.map((l, k) => <div key={k} className={`chat-msg${l.child ? ' me' : ''}`}><small>{l.name}</small><span>{l.body}</span></div>)}
+            </div>
+            <small className="muted">A blocked message itself is never saved.</small>
+            <button className="btn small primary" onClick={() => setLog(null)}>Close</button>
+          </div>
+        </div>
       )}
     </main>
   );
