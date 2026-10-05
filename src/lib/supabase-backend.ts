@@ -478,6 +478,17 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('sticker_give', { p_sticker: stickerId, p_to: toHero });
       return { ok: !!d.ok, reason: d.reason };
     },
+    async codeCreate(classId, coins, xp, announce = false) {
+      return (await rpc('code_create', { p_class: classId, p_coins: coins, p_xp: xp, p_announce: announce })) as string;
+    },
+    async codeMine() {
+      const d = await rpc('code_mine');
+      return d.map((c: any) => ({ id: c.id, code: c.code, coins: c.coins, xp: c.xp, expiresAt: c.expires_at, className: c.class, redeemed: Number(c.redeemed) }));
+    },
+    async codeRedeem(code) {
+      const d = await rpc('code_redeem', { p_code: code });
+      return d.ok ? { ok: true, coins: d.coins, xp: d.xp } : { ok: false, reason: d.reason };
+    },
     async contestState() {
       const d = await rpc('contest_state');
       return {

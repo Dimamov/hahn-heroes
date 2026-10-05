@@ -274,6 +274,26 @@ describe('demo backend: grown-ups and missions', () => {
     expect(await b.contestClaim()).toEqual({ ok: false });
   });
 
+  it('lets a teacher make one capped class code a day and kids redeem it once', async () => {
+    const { b, hero, cls } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    await b.joinClass(cls.joinCode!);
+    await b.signOut();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    await expect(b.codeCreate(cls.id, 6, 0)).rejects.toThrow('up to 5');
+    await expect(b.codeCreate(cls.id, 0, 0)).rejects.toThrow('at least');
+    const code = await b.codeCreate(cls.id, 3, 15);
+    await expect(b.codeCreate(cls.id, 1, 1)).rejects.toThrow('already made');
+    expect((await b.codeMine())[0]).toMatchObject({ code, redeemed: 0 });
+    await b.signOut();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    expect(await b.codeRedeem('nope')).toEqual({ ok: false, reason: 'not_found' });
+    const before = (await b.balances()).coins;
+    expect(await b.codeRedeem(code.toLowerCase())).toEqual({ ok: true, coins: 3, xp: 15 });
+    expect((await b.balances()).coins).toBe(before + 3);
+    expect(await b.codeRedeem(code)).toEqual({ ok: false, reason: 'already_used' });
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);
