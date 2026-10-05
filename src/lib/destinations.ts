@@ -20,7 +20,7 @@ export const DESTINATIONS: Destination[] = [
   { id: 'room', label: 'My Room', icon: '🛏️', tint: '#34d399', blurb: 'Decorate your dorm room and invite friends to visit.', milestone: 'Collections' },
   { id: 'nexlings', label: 'Nexlings', icon: '🐾', tint: '#fbbf24', blurb: 'Pick a Nexling companion and watch it grow.', milestone: 'Collections' },
   { id: 'cards', label: 'Cards', icon: '🃏', tint: '#f472b6', blurb: 'Collect, show off and trade cards.', milestone: 'Collections' },
-  { id: 'squad', label: 'Squad', icon: '👥', tint: '#38bdf8', blurb: 'Your friends, your squad and your House.', milestone: 'Squad play' },
+  { id: 'squad', label: 'Squad', icon: '👥', tint: '#38bdf8', blurb: 'Your friends and your squad.', milestone: 'Squad play' },
   { id: 'settings', label: 'Settings', icon: '⚙️', tint: '#94a3b8', blurb: 'Sound, motion and reading options.', milestone: 'Collections' },
   { id: 'sensei', label: 'Contact the Sensei', icon: '🧙', tint: '#c084fc', blurb: 'Send a message or report a bug.', milestone: 'Foundation', href: 'mailto:info@detcorddigital.com?subject=HAHN%20Heroes' },
   { id: 'guide', label: 'How the Nexus Works', icon: '❓', tint: '#60a5fa', blurb: 'The Sensei explains how to play.', milestone: 'Story and events' },

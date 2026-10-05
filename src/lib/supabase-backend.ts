@@ -248,6 +248,45 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('arcade_claim', { p_game: game });
       return { awarded: d.awarded, duplicate: d.duplicate, capped: d.capped };
     },
+    async friends() {
+      const d = await rpc('my_friends');
+      return {
+        friends: d.friends.map((f: any) => ({ id: f.id, heroId: f.hero_id, name: f.name, grade: f.grade, starter: f.starter })),
+        incoming: d.incoming.map((f: any) => ({ id: f.id, name: f.name, grade: f.grade, starter: f.starter })),
+        outgoing: d.outgoing,
+      };
+    },
+    async requestFriend(code) {
+      return (await rpc('friend_request', { p_code: code })).name;
+    },
+    async respondFriend(id, accept) {
+      await rpc('friend_respond', { p_id: id, p_accept: accept });
+    },
+    async removeFriend(id) {
+      await rpc('friend_remove', { p_id: id });
+    },
+    async mySquad() {
+      const d = await rpc('my_squad');
+      return {
+        squad: d.squad && {
+          id: d.squad.id, name: d.squad.name, leader: d.squad.leader,
+          members: d.squad.members.map((m: any) => ({ heroId: m.hero_id, name: m.name, starter: m.starter, status: m.status, isLeader: m.is_leader })),
+        },
+        invites: d.invites.map((i: any) => ({ squadId: i.squad_id, name: i.name, leaderName: i.leader_name })),
+      };
+    },
+    async createSquad(adjective, noun) {
+      await rpc('squad_create', { p_adjective: adjective, p_noun: noun });
+    },
+    async inviteToSquad(friendHeroId) {
+      await rpc('squad_invite', { p_friend: friendHeroId });
+    },
+    async respondSquadInvite(squadId, accept) {
+      await rpc('squad_respond', { p_squad: squadId, p_accept: accept });
+    },
+    async leaveSquad() {
+      await rpc('squad_leave');
+    },
     async senseiOverview() {
       const d = await rpc('sensei_overview');
       return {

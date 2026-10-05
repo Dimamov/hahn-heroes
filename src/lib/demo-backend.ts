@@ -10,7 +10,7 @@ import {
 } from '../../supabase/functions/_shared/kid-auth.ts';
 import bank from '../../content/questions.json';
 import {
-  AdultAuthError, SUBJECTS, SignInError, emptyBalances,
+  AdultAuthError, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
   type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
   type ClassResult, type Hero, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
   type QuizQuestion, type SignUpInput, type Subject, type SubjectProgress,
@@ -94,6 +94,8 @@ interface Db {
   history: HistoryRow[];
   stats: { childId: string; subject: Subject; skill: string; attempts: number; correct: number }[];
   ledger: LedgerRow[];
+  friendships?: { id: string; a: string; b: string; status: 'pending' | 'accepted' | 'declined' | 'removed' }[];
+  squads?: { id: string; leader: string; name: string; disbanded: boolean; members: { childId: string; status: 'invited' | 'member' | 'declined' | 'left' }[] }[];
   pings?: { userId: string; role: 'hero' | 'parent' | 'teacher' | 'sensei'; screen: string; at: number }[];
   current: string | null; // hero id or adult id
 }
@@ -542,6 +544,98 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const r = award(id, 'coins', ARCADE_REWARDS.coins, 'game', key);
       if (!r.duplicate) award(id, 'xp', ARCADE_REWARDS.xp, 'game', key);
       return { awarded: r.awarded, duplicate: r.duplicate, capped: r.capped };
+    },
+    async friends() {
+      const me = meHero().id;
+      const list = (db.friendships ??= []);
+      const hero = (id: string) => heroById(id)!;
+      return {
+        friends: list.filter((f) => f.status === 'accepted' && (f.a === me || f.b === me)).map((f) => {
+          const h = hero(f.a === me ? f.b : f.a);
+          return { id: f.id, heroId: h.id, name: h.displayName, grade: h.grade, starter: h.starter };
+        }),
+        incoming: list.filter((f) => f.status === 'pending' && f.b === me).map((f) => ({ id: f.id, name: hero(f.a).displayName, grade: hero(f.a).grade, starter: hero(f.a).starter })),
+        outgoing: list.filter((f) => f.status === 'pending' && f.a === me).map((f) => ({ id: f.id, name: hero(f.b).displayName })),
+      };
+    },
+    async requestFriend(code) {
+      const me = meHero();
+      const other = db.accounts[normalizeHeroCode(code)];
+      if (!other) throw new Error('no hero has that code');
+      if (other.id === me.id) throw new Error('that is your own code');
+      const list = (db.friendships ??= []);
+      const row = list.find((f) => (f.a === me.id && f.b === other.id) || (f.a === other.id && f.b === me.id));
+      if (row && (row.status === 'pending' || row.status === 'accepted')) throw new Error('already friends or waiting');
+      if (row) Object.assign(row, { a: me.id, b: other.id, status: 'pending' });
+      else list.push({ id: generateCode(10), a: me.id, b: other.id, status: 'pending' });
+      commit();
+      return other.displayName;
+    },
+    async respondFriend(id, accept) {
+      const me = meHero().id;
+      const row = (db.friendships ??= []).find((f) => f.id === id && f.b === me && f.status === 'pending');
+      if (!row) throw new Error('no such request');
+      row.status = accept ? 'accepted' : 'declined';
+      commit();
+    },
+    async removeFriend(id) {
+      const me = meHero().id;
+      const row = (db.friendships ??= []).find((f) => f.id === id && f.status === 'accepted' && (f.a === me || f.b === me));
+      if (!row) throw new Error('not your friend');
+      row.status = 'removed';
+      commit();
+    },
+    async mySquad() {
+      const me = meHero().id;
+      const squads = (db.squads ??= []).filter((s) => !s.disbanded);
+      const mine = squads.find((s) => s.members.some((m) => m.childId === me && m.status === 'member'));
+      return {
+        squad: mine ? {
+          id: mine.id, name: mine.name, leader: mine.leader === me,
+          members: mine.members.filter((m) => m.status === 'member' || (m.status === 'invited' && mine.leader === me)).map((m) => {
+            const h = heroById(m.childId)!;
+            return { heroId: h.id, name: h.displayName, starter: h.starter, status: m.status as 'member' | 'invited', isLeader: h.id === mine.leader };
+          }).sort((a, b) => Number(b.isLeader) - Number(a.isLeader)),
+        } : null,
+        invites: squads.filter((s) => s.members.some((m) => m.childId === me && m.status === 'invited'))
+          .map((s) => ({ squadId: s.id, name: s.name, leaderName: heroById(s.leader)!.displayName })),
+      };
+    },
+    async createSquad(adjective, noun) {
+      const me = meHero().id;
+      if (!SQUAD_WORDS.adjectives.includes(adjective) || !SQUAD_WORDS.nouns.includes(noun)) throw new Error('pick a name from the list');
+      const squads = (db.squads ??= []);
+      if (squads.some((s) => !s.disbanded && s.members.some((m) => m.childId === me && m.status === 'member'))) throw new Error('leave your squad first');
+      squads.push({ id: generateCode(10), leader: me, name: `${adjective} ${noun}`, disbanded: false, members: [{ childId: me, status: 'member' }] });
+      commit();
+    },
+    async inviteToSquad(friendHeroId) {
+      const me = meHero().id;
+      const squad = (db.squads ??= []).find((s) => !s.disbanded && s.leader === me);
+      if (!squad) throw new Error('only a squad leader can invite');
+      if (!(db.friendships ??= []).some((f) => f.status === 'accepted' && ((f.a === me && f.b === friendHeroId) || (f.b === me && f.a === friendHeroId)))) throw new Error('you can only invite friends');
+      if (squad.members.filter((m) => m.status === 'member' || m.status === 'invited').length >= SQUAD_WORDS.maxMembers) throw new Error('the squad is full');
+      const row = squad.members.find((m) => m.childId === friendHeroId);
+      if (row) { if (row.status === 'declined' || row.status === 'left') row.status = 'invited'; }
+      else squad.members.push({ childId: friendHeroId, status: 'invited' });
+      commit();
+    },
+    async respondSquadInvite(squadId, accept) {
+      const me = meHero().id;
+      const squads = (db.squads ??= []);
+      if (accept && squads.some((s) => !s.disbanded && s.members.some((m) => m.childId === me && m.status === 'member'))) throw new Error('leave your squad first');
+      const row = squads.find((s) => s.id === squadId && !s.disbanded)?.members.find((m) => m.childId === me && m.status === 'invited');
+      if (!row) throw new Error('no such invite');
+      row.status = accept ? 'member' : 'declined';
+      commit();
+    },
+    async leaveSquad() {
+      const me = meHero().id;
+      const squad = (db.squads ??= []).find((s) => !s.disbanded && s.members.some((m) => m.childId === me && m.status === 'member'));
+      if (!squad) return;
+      if (squad.leader === me) squad.disbanded = true;
+      else squad.members.find((m) => m.childId === me)!.status = 'left';
+      commit();
     },
     async senseiOverview() {
       meAdult('sensei');

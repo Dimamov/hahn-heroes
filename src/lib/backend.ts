@@ -156,6 +156,19 @@ export interface SenseiTraffic {
   hours: { hour: number; heroes: number }[];
   screens: { screen: string; count: number }[];
 }
+export interface Friend { id: string; heroId: string; name: string; grade: number; starter: string }
+export interface FriendRequest { id: string; name: string; grade: number; starter: string }
+export interface Friends { friends: Friend[]; incoming: FriendRequest[]; outgoing: { id: string; name: string }[] }
+export interface SquadMember { heroId: string; name: string; starter: string; status: 'member' | 'invited'; isLeader: boolean }
+export interface SquadView {
+  squad: { id: string; name: string; leader: boolean; members: SquadMember[] } | null;
+  invites: { squadId: string; name: string; leaderName: string }[];
+}
+export const SQUAD_WORDS = {
+  adjectives: ['Brave', 'Swift', 'Bright', 'Bold', 'Kind', 'Wild', 'Clever', 'Mighty', 'Lucky', 'Cosmic'],
+  nouns: ['Wolves', 'Comets', 'Owls', 'Foxes', 'Falcons', 'Dragons', 'Stars', 'Lions', 'Sparks', 'Titans'],
+  maxMembers: 5,
+};
 export interface ArcadeStatus { coins: number; games: string[]; claimed: string[] }
 export interface PendingTeacher {
   id: string;
@@ -240,6 +253,16 @@ export interface Backend {
   arcadeStatus(): Promise<ArcadeStatus>;
   /** Pays the daily reward for a finished game, once per game per school day. */
   arcadeClaim(game: string): Promise<{ awarded: number; duplicate: boolean; capped: boolean }>;
+  friends(): Promise<Friends>;
+  /** Ask another hero to be friends using their hero code. Resolves with their name. */
+  requestFriend(code: string): Promise<string>;
+  respondFriend(id: string, accept: boolean): Promise<void>;
+  removeFriend(id: string): Promise<void>;
+  mySquad(): Promise<SquadView>;
+  createSquad(adjective: string, noun: string): Promise<void>;
+  inviteToSquad(friendHeroId: string): Promise<void>;
+  respondSquadInvite(squadId: string, accept: boolean): Promise<void>;
+  leaveSquad(): Promise<void>;
   senseiOverview(): Promise<SenseiOverview>;
   /** Tells the Sensei this person is here. Safe to call often; the server throttles it. */
   ping(screen: string): Promise<void>;
