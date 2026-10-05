@@ -1285,7 +1285,7 @@
   "grade": 5,
   "skill": "main-idea",
   "difficulty": 1,
-  "prompt": "Honeybees live in large groups called colonies. Each bee has a job. Some collect nectar, some care for young bees, and some guard the hive. Working together keeps the colony alive.\n\nWhat is the main idea?",
+  "prompt": "Honeybees live in large groups called colonies. A single colony can hold thousands of bees, and each bee has a job. Some collect nectar from flowers, some care for the young bees, and some guard the hive from visitors that do not belong. Working together keeps the colony alive through the whole year.\n\nWhat is the main idea?",
   "choices": [
    "Honeybees work together in colonies by doing different jobs.",
    "Honeybees only collect nectar.",
@@ -1301,7 +1301,7 @@
   "grade": 5,
   "skill": "inference",
   "difficulty": 2,
-  "prompt": "Mia grabbed her umbrella and rain boots, then looked at the dark clouds. She checked the clock and hurried out the door to catch the bus.\n\nWhat can you infer from the passage?",
+  "prompt": "Mia grabbed her umbrella and rain boots, then looked out the window at the dark clouds. A cool wind was pushing the leaves across the yard. She checked the clock and hurried out the door to catch the bus.\n\nWhat can you infer from the passage?",
   "choices": [
    "It is a sunny day.",
    "It looks like it is going to rain.",
@@ -1317,7 +1317,7 @@
   "grade": 5,
   "skill": "sequence",
   "difficulty": 1,
-  "prompt": "To make a paper airplane, first fold the paper in half lengthwise. Next, unfold it and fold the top corners to the center. Then fold the edges in again. Finally, fold the wings down.\n\nWhat step comes right after folding the paper in half?",
+  "prompt": "Paper airplanes are fun to make, and anyone can learn how. To make one, first fold the paper in half lengthwise. Next, unfold it and fold the top corners to the center. Then fold the edges in again. Finally, fold the wings down, and your plane is ready to fly.\n\nWhat step comes right after folding the paper in half?",
   "choices": [
    "Fold the wings down.",
    "Fold the edges in again.",
@@ -1333,7 +1333,7 @@
   "grade": 5,
   "skill": "authors-purpose",
   "difficulty": 2,
-  "prompt": "Did you know an octopus has three hearts? Two pump blood to its gills, and one pumps blood to the rest of its body. This surprising animal is full of amazing facts.\n\nThe author mostly wrote this passage to:",
+  "prompt": "Did you know an octopus has three hearts? Two pump blood to its gills, and one pumps blood to the rest of its body. An octopus can also squeeze through a gap no bigger than its eye. This surprising animal is full of amazing facts.\n\nThe author mostly wrote this passage to:",
   "choices": [
    "tell a made-up story",
    "convince readers to buy a pet",
@@ -1349,7 +1349,7 @@
   "grade": 5,
   "skill": "theme",
   "difficulty": 3,
-  "prompt": "A turtle kept practicing every day while the others laughed at his slow pace. Season after season he kept going. At last he crossed the finish line of the long trail, tired but proud.\n\nWhich theme fits this story best?",
+  "prompt": "A turtle kept practicing every day while the others laughed at his slow pace. Rain or shine, he walked a little farther than the day before. Season after season he kept going. At last he crossed the finish line of the long trail, tired but proud.\n\nWhich theme fits this story best?",
   "choices": [
    "Patience and steady effort lead to success.",
    "Fast animals always win.",
@@ -1365,7 +1365,7 @@
   "grade": 5,
   "skill": "vocabulary-in-context",
   "difficulty": 2,
-  "prompt": "The tiny village was remote, miles from any town or highway. Visitors needed a full day to reach it.\n\nIn this passage, what does remote mean?",
+  "prompt": "The tiny village was remote, miles from any town or highway. No bus stopped there, and the only road was narrow and full of bumps. Visitors needed a full day to reach it, but those who made the trip said the quiet was worth it.\n\nIn this passage, what does remote mean?",
   "choices": [
    "crowded",
    "far away",
@@ -1381,7 +1381,7 @@
   "grade": 5,
   "skill": "cause-effect",
   "difficulty": 2,
-  "prompt": "After a week without rain, the grass in the park turned brown and the pond got smaller. Park workers asked visitors to use less water.\n\nWhat caused the grass to turn brown?",
+  "prompt": "After a week without rain, the grass in the park turned brown and the pond got smaller. The flowers drooped, and the ducks had less space to swim. Park workers asked visitors to use less water until the weather changed.\n\nWhat caused the grass to turn brown?",
   "choices": [
    "Too many visitors",
    "Cold weather",
@@ -1397,7 +1397,7 @@
   "grade": 5,
   "skill": "details",
   "difficulty": 1,
-  "prompt": "The library opens at 9 a.m. on weekdays and 10 a.m. on Saturdays. It is closed on Sundays. Students can borrow up to five books at a time.\n\nHow many books can students borrow at a time?",
+  "prompt": "The library opens at 9 a.m. on weekdays and 10 a.m. on Saturdays. It is closed on Sundays. Students can borrow up to five books at a time, and they have two weeks to bring them back. A friendly librarian is always ready to help find a good story.\n\nHow many books can students borrow at a time?",
   "choices": [
    "Three",
    "Nine",
@@ -1413,7 +1413,7 @@
   "grade": 5,
   "skill": "main-idea",
   "difficulty": 2,
-  "prompt": "Recycling aluminum cans saves energy. Making a new can from recycled metal uses far less energy than making one from raw materials. It also keeps cans out of landfills.\n\nWhat is the passage mostly about?",
+  "prompt": "Recycling aluminum cans saves energy. Making a new can from recycled metal uses far less energy than making one from raw materials. It also keeps cans out of landfills, where they would sit for many years. A recycled can can be back on a store shelf in about two months.\n\nWhat is the passage mostly about?",
   "choices": [
    "the benefits of recycling aluminum cans",
    "how cans are shaped",
@@ -1429,7 +1429,7 @@
   "grade": 5,
   "skill": "inference",
   "difficulty": 3,
-  "prompt": "The coach looked at the scoreboard, then smiled as the team ran off the field. Everyone was hugging, and a few players were jumping up and down.\n\nWhat most likely happened?",
+  "prompt": "The coach looked at the scoreboard, then smiled as the team ran off the field. Everyone was hugging, and a few players were jumping up and down. Parents in the stands were cheering and waving signs, and someone had already started singing.\n\nWhat most likely happened?",
   "choices": [
    "The team lost badly.",
    "The team won the game.",
@@ -1445,7 +1445,7 @@
   "grade": 5,
   "skill": "sequence",
   "difficulty": 2,
-  "prompt": "Before dinner, Ben set the table. After eating, he washed the dishes. Later, he did his homework and read for twenty minutes before bed.\n\nWhat did Ben do right after eating?",
+  "prompt": "Ben had a busy evening. Before dinner, Ben set the table. After eating, he washed the dishes. Later, he did his homework and read for twenty minutes before bed. By the time he turned off the light, he was ready for sleep.\n\nWhat did Ben do right after eating?",
   "choices": [
    "He set the table.",
    "He did his homework.",
@@ -1461,7 +1461,7 @@
   "grade": 5,
   "skill": "authors-purpose",
   "difficulty": 2,
-  "prompt": "Every student should walk or bike to school when possible. It keeps you healthy, saves money, and helps the air stay clean. Try it this week!\n\nWhat does the author want to do?",
+  "prompt": "Every student should walk or bike to school when possible. It keeps you healthy, saves money, and helps the air stay clean. It can also be a fun way to talk with friends before the day begins. Try it this week!\n\nWhat does the author want to do?",
   "choices": [
    "teach how to fix a bike",
    "tell a funny story",
@@ -1477,7 +1477,7 @@
   "grade": 5,
   "skill": "theme",
   "difficulty": 2,
-  "prompt": "A young crow dropped pebbles into a tall jar until the water rose high enough to drink. It had not been strong, but it had been clever.\n\nWhat lesson does this story teach?",
+  "prompt": "A young crow was very thirsty, and he found a tall jar with a little water at the bottom. His beak could not reach it. He dropped pebbles into the jar, one at a time, until the water rose high enough to drink. He had not been strong, but he had been clever.\n\nWhat lesson does this story teach?",
   "choices": [
    "Thinking cleverly can solve problems.",
    "Strong birds always win.",
@@ -1493,7 +1493,7 @@
   "grade": 5,
   "skill": "vocabulary-in-context",
   "difficulty": 3,
-  "prompt": "The hikers were weary after climbing all day. They dropped their packs and fell asleep as soon as they lay down.\n\nWhat does weary mean?",
+  "prompt": "The hikers were weary after climbing all day. Their legs ached and their backpacks felt twice as heavy as they had that morning. They dropped their packs and fell asleep as soon as they lay down.\n\nWhat does weary mean?",
   "choices": [
    "excited",
    "very tired",
@@ -1509,7 +1509,7 @@
   "grade": 5,
   "skill": "inference",
   "difficulty": 2,
-  "prompt": "When the other kids teased him, Leo took a deep breath and walked away without a word. Later he told his teacher what happened.\n\nWhat does this show about Leo?",
+  "prompt": "When the other kids teased him, Leo took a deep breath and walked away without a word. His face felt hot, but he did not shout. Later he told his teacher what happened, and she thanked him for coming to her.\n\nWhat does this show about Leo?",
   "choices": [
    "He wanted to tease them back.",
    "He did not care.",
@@ -1525,7 +1525,7 @@
   "grade": 5,
   "skill": "cause-effect",
   "difficulty": 1,
-  "prompt": "The power went out during the storm, so the family lit candles and played board games.\n\nWhy did the family light candles?",
+  "prompt": "A big storm rolled in at dinnertime, with thunder and heavy rain. The power went out during the storm, so the family lit candles and played board games. They laughed and told stories until the lights came back on.\n\nWhy did the family light candles?",
   "choices": [
    "It was someone's birthday.",
    "The storm ended.",
@@ -1541,7 +1541,7 @@
   "grade": 5,
   "skill": "compare-contrast",
   "difficulty": 2,
-  "prompt": "Frogs and toads look alike, but they differ. Frogs have smooth, moist skin and long legs for jumping. Toads have dry, bumpy skin and shorter legs.\n\nHow are frogs different from toads?",
+  "prompt": "Frogs and toads look alike, but they differ. Frogs have smooth, moist skin and long legs for jumping. Toads have dry, bumpy skin and shorter legs. Frogs usually stay near water, while toads can spend more time on dry land.\n\nHow are frogs different from toads?",
   "choices": [
    "Frogs have smooth skin and toads have bumpy skin.",
    "Frogs have bumpy skin and toads have smooth skin.",
@@ -1557,7 +1557,7 @@
   "grade": 5,
   "skill": "vocabulary-in-context",
   "difficulty": 2,
-  "prompt": "The chef used fresh herbs to enhance the soup's flavor. After adding basil, the soup tasted much richer.\n\nWhat does enhance mean?",
+  "prompt": "The chef used fresh herbs to enhance the soup's flavor. First she tasted the soup and thought it was a little plain. After adding basil, the soup tasted much richer, and everyone at the table asked for a second bowl.\n\nWhat does enhance mean?",
   "choices": [
    "hide",
    "improve",
@@ -1573,7 +1573,7 @@
   "grade": 5,
   "skill": "main-idea",
   "difficulty": 3,
-  "prompt": "Many people think deserts are empty, but they hold plenty of life. Cacti store water, lizards hide in cool burrows by day, and owls hunt after dark. Each living thing is suited to dry heat.\n\nWhat is the main idea?",
+  "prompt": "Many people think deserts are empty, but they hold plenty of life. Cacti store water in their thick stems, lizards hide in cool burrows by day, and owls hunt after dark when the air is cooler. Even tiny seeds wait in the sand for rain. Each living thing is suited to dry heat.\n\nWhat is the main idea?",
   "choices": [
    "Deserts are empty.",
    "Owls are the best hunters.",
@@ -1589,7 +1589,7 @@
   "grade": 5,
   "skill": "inference",
   "difficulty": 3,
-  "prompt": "A sign at the pool reads: Walk, don't run. Wet floors are slippery. Please shower before swimming.\n\nWhy does the sign say Walk, don't run?",
+  "prompt": "A sign at the pool reads: Walk, don't run. Wet floors are slippery. Please shower before swimming. Another sign by the deep end reminds swimmers to ask a lifeguard before they dive. The pool is open every afternoon after school.\n\nWhy does the sign say Walk, don't run?",
   "choices": [
    "Because the pool is far away",
    "To help swimmers swim faster",
@@ -1605,7 +1605,7 @@
   "grade": 6,
   "skill": "main-idea",
   "difficulty": 1,
-  "prompt": "Volcanoes form when melted rock from deep inside Earth rises to the surface. Over time, layers of cooled lava and ash pile up and build a mountain. Some volcanoes are still active today.\n\nWhat is the main idea?",
+  "prompt": "Volcanoes form when melted rock from deep inside Earth rises to the surface. Over time, layers of cooled lava and ash pile up and build a mountain. The process can take thousands of years. Some volcanoes are still active today, and scientists watch them closely.\n\nWhat is the main idea?",
   "choices": [
    "Rising melted rock builds volcanoes over time.",
    "All volcanoes are active.",
@@ -1621,7 +1621,7 @@
   "grade": 6,
   "skill": "inference",
   "difficulty": 2,
-  "prompt": "The cafeteria was unusually quiet. Students stared at their trays, and the usual chatter was gone. A few kept glancing at the clock, waiting for the announcement about test scores.\n\nHow do the students probably feel?",
+  "prompt": "The cafeteria was unusually quiet. Students stared at their trays, and the usual chatter was gone. Nobody was trading snacks or telling jokes. A few kept glancing at the clock, waiting for the announcement about test scores.\n\nHow do the students probably feel?",
   "choices": [
    "excited about a party",
    "nervous about the results",
@@ -1637,7 +1637,7 @@
   "grade": 6,
   "skill": "authors-purpose",
   "difficulty": 2,
-  "prompt": "The bright yellow lemon looked cheerful on the counter. Its skin was bumpy and smelled sweetly sour, like sunshine in a bottle.\n\nWhy does the author write sunshine in a bottle?",
+  "prompt": "The bright yellow lemon looked cheerful on the counter, sitting beside a bowl of green apples. Its skin was bumpy and smelled sweetly sour, like sunshine in a bottle. Even before it was cut, the whole kitchen seemed a little brighter.\n\nWhy does the author write sunshine in a bottle?",
   "choices": [
    "to prove lemons need sun",
    "to explain how to make juice",
@@ -1653,7 +1653,7 @@
   "grade": 6,
   "skill": "sequence",
   "difficulty": 2,
-  "prompt": "The sea turtle crawled from the water and dug a hole in the sand. She laid her eggs, covered them, and returned to the sea. Weeks later, the hatchlings dug out and scurried to the waves.\n\nWhat happens right after she lays her eggs?",
+  "prompt": "The sea turtle crawled from the water and dug a hole in the sand. She laid her eggs, covered them, and returned to the sea. The sun warmed the sand for weeks. Later, the hatchlings dug out and scurried to the waves, guided by the shining water.\n\nWhat happens right after she lays her eggs?",
   "choices": [
    "The hatchlings reach the waves.",
    "She digs a hole.",
@@ -1669,7 +1669,7 @@
   "grade": 6,
   "skill": "theme",
   "difficulty": 3,
-  "prompt": "Everyone said the old bridge could not be fixed. Neighbors brought boards, tools, and lunches anyway. By sunset, they had rebuilt it, and everyone crossed together.\n\nWhich theme fits this story?",
+  "prompt": "Everyone said the old bridge could not be fixed. It sagged in the middle, and half its boards were gone. Neighbors brought boards, tools, and lunches anyway. They worked side by side all day. By sunset, they had rebuilt it, and everyone crossed together.\n\nWhich theme fits this story?",
   "choices": [
    "Working together can accomplish hard goals.",
    "Old things should be thrown away.",
@@ -1685,7 +1685,7 @@
   "grade": 6,
   "skill": "vocabulary-in-context",
   "difficulty": 2,
-  "prompt": "The lawyer's argument was so compelling that the jury listened without moving. Many members changed their minds.\n\nWhat does compelling mean?",
+  "prompt": "The lawyer's argument was so compelling that the jury listened without moving. Not a single person looked at the clock or whispered to a neighbor. When she finished, the room stayed silent for a moment. Many members changed their minds.\n\nWhat does compelling mean?",
   "choices": [
    "confusing",
    "convincing",
@@ -1701,7 +1701,7 @@
   "grade": 6,
   "skill": "cause-effect",
   "difficulty": 2,
-  "prompt": "When the factory closed, many families moved away. With fewer customers, the town's shops lost business, and several closed too.\n\nWhat was a result of fewer customers?",
+  "prompt": "The factory had been the center of the town for fifty years. When the factory closed, many families moved away. With fewer customers, the town's shops lost business, and several closed too. Soon, the busy main street felt much quieter.\n\nWhat was a result of fewer customers?",
   "choices": [
    "The factory closed.",
    "More families moved in.",
@@ -1717,7 +1717,7 @@
   "grade": 6,
   "skill": "authors-purpose",
   "difficulty": 1,
-  "prompt": "Our class garden needs volunteers! Join us Saturday at 9 a.m. to plant seeds and pull weeds. Bring gloves and a water bottle.\n\nWhat is the main purpose of this passage?",
+  "prompt": "Our class garden needs volunteers! The beds are full of weeds, and the new seeds have not gone in yet. Join us Saturday at 9 a.m. to plant seeds and pull weeds. Bring gloves and a water bottle. We will finish by lunchtime, and snacks will be provided.\n\nWhat is the main purpose of this passage?",
   "choices": [
    "to explain how seeds grow",
    "to tell about a past trip",
@@ -1733,7 +1733,7 @@
   "grade": 6,
   "skill": "main-idea",
   "difficulty": 2,
-  "prompt": "Sleep is important for growing students. During sleep, the body repairs itself and the brain stores new memories. Students who sleep nine to eleven hours often do better in class.\n\nWhich sentence best summarizes the passage?",
+  "prompt": "Sleep is important for growing students. During sleep, the body repairs itself and the brain stores new memories. Sleeping well can also help your mood stay steady during a long school day. Students who sleep nine to eleven hours often do better in class.\n\nWhich sentence best summarizes the passage?",
   "choices": [
    "Enough sleep helps the body and the brain.",
    "Students should skip homework.",
@@ -1749,7 +1749,7 @@
   "grade": 6,
   "skill": "inference",
   "difficulty": 3,
-  "prompt": "The path was covered with small paw prints that led to the edge of the pond. Near the water, the mud was churned up, and a few feathers floated nearby.\n\nWhat can you infer?",
+  "prompt": "The path was covered with small paw prints that led to the edge of the pond. The prints looked fresh, with sharp edges in the damp soil. Near the water, the mud was churned up, and a few feathers floated nearby.\n\nWhat can you infer?",
   "choices": [
    "No animals live nearby.",
    "An animal visited the pond recently.",
@@ -1765,7 +1765,7 @@
   "grade": 6,
   "skill": "vocabulary-in-context",
   "difficulty": 3,
-  "prompt": "The scientist's theory was tentative, so she planned more experiments before announcing it as fact.\n\nWhat does tentative mean?",
+  "prompt": "The scientist's theory was tentative. Her first experiment had gone well, but one result still surprised her. She wrote in her notebook that the idea might change. The theory was tentative, so she planned more experiments before announcing it as fact.\n\nWhat does tentative mean?",
   "choices": [
    "final",
    "secret",
@@ -1781,7 +1781,7 @@
   "grade": 6,
   "skill": "sequence",
   "difficulty": 1,
-  "prompt": "First, the team gathered data on bird visits. Then they graphed the results. Last, they wrote a summary.\n\nWhat did the team do second?",
+  "prompt": "The students wanted to learn which birds visited the school feeder. First, the team gathered data on bird visits. Then they graphed the results. Last, they wrote a summary to share with the class and hung it on the science wall.\n\nWhat did the team do second?",
   "choices": [
    "They gathered data.",
    "They wrote a summary.",
@@ -1797,7 +1797,7 @@
   "grade": 6,
   "skill": "theme",
   "difficulty": 2,
-  "prompt": "Though the little fox lost the race, she congratulated the winner and asked for tips. Next time, she trained with them and ran her best time yet.\n\nWhich theme fits this story?",
+  "prompt": "The little fox ran hard, but she lost the race by a few steps. She was disappointed, though she did not sulk. Though the little fox lost the race, she congratulated the winner and asked for tips. Next time, she trained with them and ran her best time yet.\n\nWhich theme fits this story?",
   "choices": [
    "Learning from setbacks leads to growth.",
    "Winning is everything.",
@@ -1813,7 +1813,7 @@
   "grade": 6,
   "skill": "cause-effect",
   "difficulty": 3,
-  "prompt": "Because mangrove roots trap soil, coastlines with mangroves lose less land to waves. When people cut the trees down, shores often wash away faster.\n\nWhat happens when mangroves are cut down?",
+  "prompt": "Mangrove trees grow along warm coastlines, with tangled roots that rise out of the water. Because mangrove roots trap soil, coastlines with mangroves lose less land to waves. They also give young fish a safe place to hide. When people cut the trees down, shores often wash away faster.\n\nWhat happens when mangroves are cut down?",
   "choices": [
    "Roots trap more soil.",
    "Shores may wash away faster.",
@@ -1829,7 +1829,7 @@
   "grade": 6,
   "skill": "compare-contrast",
   "difficulty": 2,
-  "prompt": "Both lakes and ponds hold fresh water. Lakes are generally larger and deeper, while ponds are shallow enough for sunlight to reach the bottom.\n\nHow is a pond different from a lake?",
+  "prompt": "Both lakes and ponds hold fresh water, and both are home to fish, frogs, and plants. Lakes are generally larger and deeper, while ponds are shallow enough for sunlight to reach the bottom. Because of that, plants can grow across a whole pond.\n\nHow is a pond different from a lake?",
   "choices": [
    "Ponds are salty.",
    "Ponds are deeper.",
@@ -1845,7 +1845,7 @@
   "grade": 6,
   "skill": "mood",
   "difficulty": 2,
-  "prompt": "The old house stood alone on the hill, its windows dark and its shutters creaking in the wind. No one had lived there for years.\n\nWhat mood does the author create?",
+  "prompt": "The old house stood alone on the hill, its windows dark and its shutters creaking in the wind. Weeds had grown up through the porch, and a loose gate swung back and forth. No one had lived there for years.\n\nWhat mood does the author create?",
   "choices": [
    "cheerful and busy",
    "angry and loud",
@@ -1861,7 +1861,7 @@
   "grade": 6,
   "skill": "main-idea",
   "difficulty": 3,
-  "prompt": "Coral reefs cover less than one percent of the ocean floor, yet about a quarter of ocean species depend on them. Warming water can cause corals to lose color and weaken. Protecting reefs protects countless animals.\n\nWhat is the main idea?",
+  "prompt": "Coral reefs cover less than one percent of the ocean floor, yet about a quarter of ocean species depend on them. Reefs give fish food and places to hide. Warming water can cause corals to lose color and weaken. Protecting reefs protects countless animals.\n\nWhat is the main idea?",
   "choices": [
    "Coral reefs support many species and need protection.",
    "Reefs cover most of the ocean.",
@@ -1877,7 +1877,7 @@
   "grade": 6,
   "skill": "inference",
   "difficulty": 2,
-  "prompt": "Rosa measured a plant each Monday. It was 4 cm in week one, 7 cm in week two, and 10 cm in week three.\n\nIf the pattern continues, how tall will it be in week four?",
+  "prompt": "Rosa wanted to see how fast a bean plant could grow. She measured it each Monday and wrote the number in her science journal. It was 4 cm in week one, 7 cm in week two, and 10 cm in week three. She kept it on a sunny windowsill and watered it each morning.\n\nIf the pattern continues, how tall will it be in week four?",
   "choices": [
    "11 cm",
    "13 cm",
@@ -1893,7 +1893,7 @@
   "grade": 6,
   "skill": "vocabulary-in-context",
   "difficulty": 2,
-  "prompt": "The farmer let the field lie fallow for a year, leaving it unplanted so the soil could rest.\n\nWhat does fallow mean?",
+  "prompt": "The farmer let the field lie fallow for a year. Instead of planting corn as usual, she left it unplanted so the soil could rest. Wildflowers grew along the edges, and the soil slowly became richer for the next season.\n\nWhat does fallow mean?",
   "choices": [
    "newly planted",
    "covered in snow",
@@ -1909,7 +1909,7 @@
   "grade": 6,
   "skill": "character",
   "difficulty": 3,
-  "prompt": "Though some call him a hero, the lighthouse keeper simply said, I just lit the lamp every night. He never asked for thanks and quietly kept working for forty years.\n\nWhat does this show about the keeper?",
+  "prompt": "Though some call him a hero, the lighthouse keeper simply said, I just lit the lamp every night. He never asked for thanks. Ships passed safely along the rocky coast, and few of the sailors ever learned his name. He quietly kept working for forty years.\n\nWhat does this show about the keeper?",
   "choices": [
    "He is proud of his fame.",
    "He wanted rewards.",
