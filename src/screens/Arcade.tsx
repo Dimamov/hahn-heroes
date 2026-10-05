@@ -12,6 +12,7 @@ export const GAMES = [
   { id: 'whack-shadow', label: 'Whack-a-Shadow', icon: '👻', reward: true },
   { id: 'bubble-pop', label: 'Bubble Pop', icon: '🫧', reward: true },
   { id: 'block-blast', label: 'Block Blast', icon: '🧱', reward: true },
+  { id: 'hero-defense', label: 'Hero Defense', icon: '🛡️', reward: true },
   { id: 'trivia-clash', label: 'Trivia Clash', icon: '⚔️', reward: false },
   { id: 'odin', label: 'ODIN', icon: '🎴', reward: false },
   { id: 'shadow-signal', label: 'Shadow Signal', icon: '🕵️', reward: false },
