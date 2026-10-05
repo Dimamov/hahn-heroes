@@ -413,6 +413,9 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async storyComplete(episode) {
       return rpc('story_complete', { p_episode: episode });
     },
+    async senseiDeleteHero(heroCode) {
+      return rpc('sensei_delete_hero', { p_hero_code: heroCode });
+    },
     async senseiGiveCard(heroCode, cardId) {
       return rpc('sensei_give_card', { p_hero_code: heroCode, p_card: cardId });
     },

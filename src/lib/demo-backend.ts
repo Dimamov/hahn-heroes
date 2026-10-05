@@ -1247,6 +1247,16 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       commit();
       return { repeat: false, card: 'e-keeper', coins: 20 };
     },
+    async senseiDeleteHero(heroCode) {
+      meAdult('sensei');
+      const code = normalizeHeroCode(heroCode);
+      const acct = db.accounts[code];
+      if (!acct) throw new Error('no hero has that code');
+      delete db.accounts[code];
+      if (db.current === acct.id) db.current = null;
+      commit();
+      return acct.displayName;
+    },
     async senseiGiveCard(heroCode, cardId) {
       meAdult('sensei');
       const acct = db.accounts[normalizeHeroCode(heroCode)];
