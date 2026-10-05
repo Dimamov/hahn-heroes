@@ -94,6 +94,7 @@ interface Db {
   history: HistoryRow[];
   stats: { childId: string; subject: Subject; skill: string; attempts: number; correct: number }[];
   ledger: LedgerRow[];
+  pings?: { userId: string; role: 'hero' | 'parent' | 'teacher' | 'sensei'; screen: string; at: number }[];
   current: string | null; // hero id or adult id
 }
 
@@ -540,6 +541,63 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
         pendingTeachers: db.adults.filter((a) => a.role === 'teacher' && !a.approved).length,
         classes: db.classes.length,
         triviaNight: db.triviaNight,
+      };
+    },
+    async ping(screen) {
+      const hero = db.accounts && Object.values(db.accounts).find((a) => a.id === db.current);
+      const adult = db.adults.find((a) => a.id === db.current);
+      const who = hero ? { id: hero.id, role: 'hero' as const } : adult ? { id: adult.id, role: adult.role } : null;
+      if (!who) return;
+      const list = (db.pings ??= []);
+      const clean = /^[a-z0-9:_-]{1,24}$/.test(screen) ? screen : 'other';
+      const last = [...list].reverse().find((p) => p.userId === who.id);
+      if (last && last.screen === clean && at() - last.at < 45_000) return;
+      list.push({ userId: who.id, role: who.role, screen: clean, at: at() });
+      if (list.length > 5000) list.splice(0, list.length - 5000);
+      commit();
+    },
+    async senseiTraffic() {
+      meAdult('sensei');
+      const list = (db.pings ??= []);
+      const nowMs = at();
+      const today = schoolDate(now());
+      const dayOf = (ms: number) => schoolDate(new Date(ms));
+      const hourOf = (ms: number) => Number(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', hourCycle: 'h23' }).format(new Date(ms)));
+      const heroPings = list.filter((p) => p.role === 'hero');
+      const latest = new Map<string, (typeof list)[number]>();
+      for (const p of list) if (p.role !== 'sensei') latest.set(p.userId, p);
+      const recent = [...latest.values()].filter((p) => nowMs - p.at < 5 * 60_000);
+      const uniq = (rows: typeof list) => new Set(rows.map((p) => p.userId)).size;
+      const since = (n: number) => heroPings.filter((p) => nowMs - p.at < n * DAY);
+      const days = Array.from({ length: 14 }, (_, i) => {
+        const day = dayOf(nowMs - (13 - i) * DAY);
+        const rows = list.filter((p) => dayOf(p.at) === day);
+        return {
+          day,
+          heroes: uniq(rows.filter((p) => p.role === 'hero')),
+          adults: uniq(rows.filter((p) => p.role === 'parent' || p.role === 'teacher')),
+          minutes: rows.filter((p) => p.role === 'hero').length,
+          newHeroes: 0,
+        };
+      });
+      const todayRows = heroPings.filter((p) => dayOf(p.at) === today);
+      const screens = new Map<string, number>();
+      const activeHeroes = recent.filter((p) => p.role === 'hero');
+      for (const p of activeHeroes) screens.set(p.screen, (screens.get(p.screen) ?? 0) + 1);
+      return {
+        totalHeroes: Object.keys(db.accounts).length,
+        nowHeroes: activeHeroes.length,
+        nowAdults: recent.filter((p) => p.role === 'parent' || p.role === 'teacher').length,
+        todayHeroes: uniq(todayRows),
+        weekHeroes: uniq(since(7)),
+        monthHeroes: uniq(since(30)),
+        active: activeHeroes.sort((a, b) => b.at - a.at).slice(0, 40).map((p) => {
+          const h = heroById(p.userId);
+          return { name: h?.displayName ?? 'Hero', grade: h?.grade ?? 5, screen: p.screen, secondsAgo: Math.round((nowMs - p.at) / 1000) };
+        }),
+        days,
+        hours: Array.from({ length: 24 }, (_, hour) => ({ hour, heroes: uniq(todayRows.filter((p) => hourOf(p.at) === hour)) })),
+        screens: [...screens].map(([screen, count]) => ({ screen, count })).sort((a, b) => b.count - a.count),
       };
     },
     async pendingTeachers() {
