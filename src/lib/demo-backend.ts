@@ -2060,6 +2060,14 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       else if (!a.approved) db.adults = db.adults.filter((x) => x.id !== id);
       commit();
     },
+    async aiStatus() {
+      meAdult('teacher');
+      return { configured: false, limit: 10, left: 10 };
+    },
+    async aiDraftQuiz() {
+      meAdult('teacher');
+      throw new Error('not_set_up');
+    },
     async senseiDeleteAnnouncement(id) {
       meAdult('sensei');
       const a = db.announcements.find((x) => x.id === id && !(x as { deleted?: boolean }).deleted);

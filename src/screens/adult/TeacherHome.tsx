@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { Adult, Backend, ClassInfo, ClassMissionResults, NewClassMission } from '../../lib/backend.ts';
+import type { AiQuiz, AiStatus, Adult, Backend, ClassInfo, ClassMissionResults, NewClassMission } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 import { TeacherHouse } from './TeacherHouse.tsx';
@@ -96,6 +96,8 @@ function NewClassMissionScreen({ backend, cls, onBack }: { backend: Backend; cls
   const [coins, setCoins] = useState(50);
   const [drafts, setDrafts] = useState<Draft[]>([blank()]);
   const [error, setError] = useState('');
+  const [ai, setAi] = useState(false);
+  const [aiNote, setAiNote] = useState('');
 
   const q = drafts[step - 1];
   const patch = (p: Partial<Draft>) => setDrafts(drafts.map((d, i) => (i === step - 1 ? { ...d, ...p } : d)));
@@ -114,6 +116,21 @@ function NewClassMissionScreen({ backend, cls, onBack }: { backend: Backend; cls
     try { await backend.createClassMission(cls.id, mission); onBack(); } catch { setError("Couldn't send that mission. Please try again."); }
   };
 
+  if (ai) {
+    return (
+      <AiDraft backend={backend} cls={cls} onBack={() => setAi(false)} onDraft={(quiz) => {
+        if (!title.trim()) setTitle(quiz.title);
+        setDrafts(quiz.questions.map((x) => {
+          const choices = [...x.choices, '', '', ''].slice(0, 4);
+          return { prompt: x.prompt, choices, correct: x.answer, why: x.explanation };
+        }));
+        setAiNote('AI draft: read every question and fix anything wrong before you send.');
+        setAi(false);
+        setStep(1);
+      }} />
+    );
+  }
+
   if (step === 0) {
     return (
       <main className="screen">
@@ -123,13 +140,17 @@ function NewClassMissionScreen({ backend, cls, onBack }: { backend: Backend; cls
           <textarea value={passage} maxLength={3000} onChange={(e) => setPassage(e.target.value)} /></label>
         <div className="chips">{[25, 50, 100, 200].map((c) => <button key={c} className={`chip${coins === c ? ' chosen' : ''}`} onClick={() => setCoins(c)}>💎 {c}</button>)}</div>
         <p className="note">Top reward for a perfect score. Students need 80% to pass.</p>
-        <button className="btn primary" disabled={!title.trim()} onClick={() => setStep(1)}>Next: questions</button>
+        <div className="btn-grid">
+          <button className="btn ghost" onClick={() => setAi(true)}>✨ Draft with AI</button>
+          <button className="btn primary" disabled={!title.trim()} onClick={() => setStep(1)}>Next: questions</button>
+        </div>
       </main>
     );
   }
   return (
     <main className="screen">
       <ScreenBar title={`Question ${step} of ${drafts.length}`} onBack={() => setStep(step - 1)} />
+      {aiNote && <p className="note" role="status">{aiNote}</p>}
       <label className="field plain"><span>Question</span><input value={q.prompt} maxLength={160} onChange={(e) => patch({ prompt: e.target.value })} /></label>
       <p className="hint">Tap the circle by the right answer</p>
       {q.choices.map((c, i) => (
@@ -148,6 +169,63 @@ function NewClassMissionScreen({ backend, cls, onBack }: { backend: Backend; cls
         <button className="btn primary" disabled={!ready} onClick={send}>Send ({drafts.length})</button>
       </div>
       <p className="note">Needs at least {MIN_Q} questions, up to {MAX_Q}.</p>
+    </main>
+  );
+}
+
+const AI_ERRORS: Record<string, string> = {
+  not_set_up: 'The AI helper is not set up yet.',
+  too_short: 'Paste a little more lesson text (at least 200 characters).',
+  too_long: 'That is too long. Paste up to 12,000 characters (about 5 pages).',
+  daily_limit: "You've used today's AI drafts. Try again tomorrow.",
+  ai_unavailable: "The AI couldn't be reached. Please try again.",
+  bad_output: "The AI's draft wasn't usable. Please try again.",
+  teachers_only: 'Only approved teachers can use this.',
+};
+
+/** Paste lesson text, get a draft quiz to review. Only the text goes to the AI, never names or student data. */
+function AiDraft({ backend, cls, onBack, onDraft }: { backend: Backend; cls: ClassInfo; onBack: () => void; onDraft: (q: AiQuiz) => void }) {
+  const [status, setStatus] = useState<AiStatus | null>(null);
+  const [lesson, setLesson] = useState('');
+  const [count, setCount] = useState(5);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => { backend.aiStatus().then(setStatus).catch(() => setStatus({ configured: false, limit: 0, left: 0 })); }, [backend]);
+  const load = async (f: File | undefined) => {
+    if (!f) return;
+    if (!/\.(txt|md|csv)$/i.test(f.name) && !f.type.startsWith('text/')) { setError('Upload a .txt file, or paste the text. For PDF or Word, copy the text and paste it.'); return; }
+    setError(''); setLesson((await f.text()).slice(0, 12000));
+  };
+  const go = async () => {
+    setBusy(true); setError('');
+    try { onDraft(await backend.aiDraftQuiz(lesson, cls.grade, count)); }
+    catch (e) { setError(AI_ERRORS[(e as Error).message] ?? AI_ERRORS.ai_unavailable); }
+    setBusy(false);
+  };
+  if (!status) return <main className="screen center"><div className="spinner" /></main>;
+  if (!status.configured) {
+    return (
+      <main className="screen center">
+        <ScreenBar title="Draft with AI" onBack={onBack} />
+        <div className="grow" /><div className="soon-icon" aria-hidden>✨</div>
+        <h3>AI not set up yet</h3>
+        <p className="hint">Once the school turns the AI helper on, you can paste a lesson here and get a draft quiz to review. For now, write your questions by hand.</p>
+        <div className="grow" />
+        <button className="btn primary" onClick={onBack}>Back</button>
+      </main>
+    );
+  }
+  return (
+    <main className="screen">
+      <ScreenBar title="Draft with AI" onBack={onBack} />
+      <p className="hint">Paste your lesson. The AI sees only this text, so leave out student names. You check and edit every question before it goes to your class.</p>
+      <label className="field plain grow-field"><span>Lesson text ({lesson.length}/12000)</span>
+        <textarea value={lesson} maxLength={12000} onChange={(e) => setLesson(e.target.value)} /></label>
+      <input type="file" accept=".txt,.md,.csv,text/plain" onChange={(e) => load(e.target.files?.[0])} aria-label="Upload a text file" />
+      <div className="chips">{[3, 5, 8].map((n) => <button key={n} className={`chip${count === n ? ' chosen' : ''}`} onClick={() => setCount(n)}>{n} questions</button>)}</div>
+      <p className="error" role="alert">{error}</p>
+      <small className="muted">{status.left} of {status.limit} drafts left today</small>
+      <button className="btn primary" disabled={busy || lesson.trim().length < 200 || status.left < 1} onClick={go}>{busy ? 'Writing questions…' : 'Draft questions'}</button>
     </main>
   );
 }
