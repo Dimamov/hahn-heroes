@@ -790,6 +790,11 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const unread = items.filter((a) => !db.reads.some((r) => r.userId === userId && r.announcementId === a.id)).length;
       return { items, unread };
     },
+    async pushKey() { return { configured: false, key: null }; },
+    async pushPrefs() { return null; },
+    async pushSetPrefs() { /* demo mode has no push */ },
+    async pushSubscribe() { throw new Error('push is not available in demo mode'); },
+    async pushUnsubscribe() { /* nothing to do */ },
     async markAnnouncementsRead() {
       const userId = db.current ?? '';
       for (const a of db.announcements.filter((x) => !(x as { deleted?: boolean }).deleted)) {

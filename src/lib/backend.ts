@@ -161,6 +161,10 @@ export interface HouseChallenge {
 }
 export interface SenseiChallenge { theme: string | null; goal: number | null; coins: number | null; houses: { name: string; members: number; progress: number }[] }
 
+export interface PushPrefs {
+  chore_waiting: boolean; weekly_summary: boolean; chore_accepted: boolean; quiz_soon: boolean; sensei_message: boolean; quiet_hours: boolean;
+}
+
 export interface Announcement {
   id: number;
   title: string;
@@ -486,6 +490,12 @@ export interface Backend {
   announcements(): Promise<{ items: Announcement[]; unread: number }>;
   senseiDeleteAnnouncement(id: number): Promise<void>;
   markAnnouncementsRead(): Promise<void>;
+  /** Push notifications: is the server set up (and its public key), this person's choices, and their devices. */
+  pushKey(): Promise<{ configured: boolean; key: string | null }>;
+  pushPrefs(): Promise<PushPrefs | null>;
+  pushSetPrefs(prefs: Partial<PushPrefs>): Promise<void>;
+  pushSubscribe(sub: { endpoint: string; p256dh: string; auth: string }): Promise<void>;
+  pushUnsubscribe(endpoint: string): Promise<void>;
   /** The next Trivia Night, and whether this hero said they are coming. */
   triviaState(): Promise<TriviaState>;
   triviaRsvp(going: boolean): Promise<TriviaState>;
