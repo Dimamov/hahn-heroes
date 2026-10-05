@@ -5,11 +5,12 @@ import { CARDS } from '../../lib/cards.ts';
 import { SECRET_PLACES, type Adult, type Announcement, type Backend, type CharacterRequest, type SenseiSecret, ChatLogLine, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { shrinkImage } from '../../lib/image-file.ts';
+import { UsageReportScreen } from './UsageReport.tsx';
 import { KindReview } from './KindReview.tsx';
 import { CodeMaker } from './CodeMaker.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
-type View = 'home' | 'challenge' | 'events' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes' | 'kind';
+type View = 'home' | 'challenge' | 'events' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes' | 'kind' | 'usage';
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
@@ -24,6 +25,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
   if (view === 'announce') return <Announce backend={backend} onBack={back} />;
   if (view === 'drawings') return <DrawingReports backend={backend} onBack={back} />;
   if (view === 'codes') return <CodeMaker backend={backend} onBack={back} />;
+  if (view === 'usage') return <UsageReportScreen backend={backend} onBack={back} />;
   if (view === 'kind') return <KindReview backend={backend} onBack={back} />;
   if (view === 'secret') return <SecretHunt backend={backend} onBack={back} />;
   if (view === 'characters') return <Characters backend={backend} onBack={back} />;
@@ -57,6 +59,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
         <button className="btn" onClick={() => setView('chat')}>💬 Chat unlocks</button>
         <button className="btn" onClick={() => setView('drawings')}>🚩 Drawing reports</button>
         <button className="btn" onClick={() => setView('traffic')}>📈 Players and traffic</button>
+        <button className="btn" onClick={() => setView('usage')}>🗓 Monthly report</button>
         <button className="btn" onClick={() => setView('teachers')}>Teachers to approve{overview && overview.pendingTeachers > 0 ? ` (${overview.pendingTeachers})` : ''}</button>
         <button className="btn" onClick={() => setView('announce')}>📣 Post an announcement</button>
         <button className="btn" onClick={() => setView('challenge')}>🏁 Weekly House challenge</button>
