@@ -478,6 +478,9 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('sticker_give', { p_sticker: stickerId, p_to: toHero });
       return { ok: !!d.ok, reason: d.reason };
     },
+    async badgeWall() {
+      return (await rpc('badge_wall')) as string[];
+    },
     async codeCreate(classId, coins, xp, announce = false) {
       return (await rpc('code_create', { p_class: classId, p_coins: coins, p_xp: xp, p_announce: announce })) as string;
     },

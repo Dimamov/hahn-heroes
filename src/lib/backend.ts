@@ -579,6 +579,8 @@ export interface Backend {
   stickerList(): Promise<StickerBook>;
   stickerMake(design: StickerDesign): Promise<{ ok: boolean; reason?: 'daily_limit' | 'full' }>;
   stickerGive(stickerId: number, toHero: string): Promise<{ ok: boolean; reason?: 'full' }>;
+  /** Ids of the achievement-wall badges this hero has earned. */
+  badgeWall(): Promise<string[]>;
   /** Secret codes: a teacher (their class) or the Sensei (everyone) makes a code word; kids redeem it once. */
   codeCreate(classId: string | null, coins: number, xp: number, announce?: boolean): Promise<string>;
   codeMine(): Promise<MadeCode[]>;
