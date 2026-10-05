@@ -20,6 +20,7 @@ export const DESTINATIONS: Destination[] = [
   { id: 'stickers', label: 'Stickers', icon: '🏷️', tint: '#f472b6', blurb: 'Make stickers and give them to your squad.', milestone: 'Collections' },
   { id: 'comics', label: 'Comics', icon: '💬', tint: '#fb923c', blurb: 'Build a three-panel comic and share it with your squad.', milestone: 'Collections' },
   { id: 'contest', label: 'Room Contest', icon: '🏆', tint: '#facc15', blurb: 'Show off your room and vote for your friends.', milestone: 'Events' },
+  { id: 'codes', label: 'Secret Code', icon: '🔑', tint: '#a3e635', blurb: 'Type a code from your teacher to win a prize.', milestone: 'Rewards' },
   { id: 'quest', label: 'Daily Quest', icon: '🎯', tint: '#f59e0b', blurb: 'Three tasks a day and a streak that grows.', milestone: 'Rewards' },
   { id: 'missions', label: 'Missions', icon: '📋', tint: '#22d3ee', blurb: 'Home missions from your grown-up and class missions from your teacher.', milestone: 'Parents, teachers and the Sensei' },
   { id: 'hero', label: 'My Hero', icon: '🦸', tint: '#a78bfa', blurb: 'Wardrobe, shop and skills for your hero.', milestone: 'Collections' },

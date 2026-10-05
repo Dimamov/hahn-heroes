@@ -4,6 +4,7 @@ import type { ShowcaseState } from './showcase.ts';
 import type { StickerBook, StickerDesign } from './stickers.ts';
 import type { Comic, ComicPanels } from './comics.ts';
 import type { ContestState } from './contest.ts';
+import type { MadeCode, RedeemResult } from './codes.ts';
 import type { AdvAnswerResult, AdvDone, AdvProgress } from './adventures.ts';
 import type { StoryAnswerResult, StoryChoiceResult, StoryDone, StoryProgress } from './story.ts';
 
@@ -578,6 +579,10 @@ export interface Backend {
   stickerList(): Promise<StickerBook>;
   stickerMake(design: StickerDesign): Promise<{ ok: boolean; reason?: 'daily_limit' | 'full' }>;
   stickerGive(stickerId: number, toHero: string): Promise<{ ok: boolean; reason?: 'full' }>;
+  /** Secret codes: a teacher (their class) or the Sensei (everyone) makes a code word; kids redeem it once. */
+  codeCreate(classId: string | null, coins: number, xp: number, announce?: boolean): Promise<string>;
+  codeMine(): Promise<MadeCode[]>;
+  codeRedeem(code: string): Promise<RedeemResult>;
   /** Weekly room contest: enter your room, vote once for a squad or House mate's room. */
   contestState(): Promise<ContestState>;
   contestEnter(): Promise<void>;

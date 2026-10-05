@@ -763,3 +763,5 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .arena-bar small { position: relative; display: block; text-align: center; font-size: .65rem; line-height: 14px; }
 .arena-moves { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 @media (max-height: 480px) and (orientation: landscape) { .arena { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: auto auto 1fr; gap: 4px 12px; } .arena-field { grid-row: 1 / 4; } .arena-moves { grid-column: 2; } .arena-hero { height: min(40vh, 150px); } }
+.screen.scrolly .panel { height: auto; }
+.code-word { letter-spacing: .04em; margin: 0; }

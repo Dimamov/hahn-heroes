@@ -19,6 +19,7 @@ import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
 import { RAID_BOSSES, RAID_RULES } from './raid.ts';
 import { HEROES } from './heroes.ts';
+import { CODE_LIMITS, CODE_WORDS_A, CODE_WORDS_B } from './codes.ts';
 import { CONTEST_POINTS, contestTheme } from './contest.ts';
 import { COMIC_LINES, COMIC_MAX, COMIC_POSES, COMIC_SCENES, type ComicPanels } from './comics.ts';
 import { STICKER_BGS, STICKER_COST, STICKER_DAILY, STICKER_DECOS, STICKER_FRAMES, STICKER_MAX, STICKER_WORDS } from './stickers.ts';
@@ -284,6 +285,8 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  codes?: { id: number; code: string; by: string; classId: string | null; coins: number; xp: number; day: string; expires: number; used: string[] }[];
+  codeTries?: { heroId: string; at: number }[];
   contest?: { entries: { week: string; heroId: string }[]; votes: { week: string; voter: string; entry: string }[]; claims: { week: string; heroId: string }[] };
   comics?: { id: number; maker: string; panels: ComicPanels; shared: boolean; deleted?: boolean }[];
   stickers?: { id: number; maker: string; owner: string; hero: string; bg: string; frame: string; deco: string; word: string; day: string }[];
@@ -1647,6 +1650,45 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       s.owner = toHero;
       commit();
       return { ok: true };
+    },
+    async codeCreate(classId, coins, xp, announce = false) {
+      const a = meAdult();
+      if (a.role !== 'sensei' && a.role !== 'teacher') throw new Error('only teachers and the Sensei');
+      const sensei = a.role === 'sensei';
+      const all = (db.codes ??= []);
+      const day = schoolDate(now());
+      const lim = sensei ? CODE_LIMITS.sensei : CODE_LIMITS.teacher;
+      if (!sensei && (!classId || !db.classes.some((c) => c.id === classId && c.teacherId === a.id))) throw new Error('pick one of your classes');
+      if (coins > lim.coins || xp > lim.xp) throw new Error(sensei ? 'too much for one code' : 'teacher codes can give up to 5 diamonds and 25 stars');
+      if (coins < 0 || xp < 0 || coins + xp <= 0) throw new Error('give at least something');
+      const today = all.filter((c) => c.by === a.id && c.day === day).length;
+      if (!sensei && today >= 1) throw new Error('you already made a code today');
+      if (sensei && today >= 5) throw new Error('five codes a day is the limit');
+      let code = '';
+      do { code = `${CODE_WORDS_A[Math.floor(Math.random() * 16)]}-${CODE_WORDS_B[Math.floor(Math.random() * 16)]}-${10 + Math.floor(Math.random() * 90)}`; } while (all.some((c) => c.code === code));
+      all.push({ id: Math.max(0, ...all.map((c) => c.id)) + 1, code, by: a.id, classId: sensei ? null : classId, coins, xp, day, expires: now().getTime() + 7 * 86400000, used: [] });
+      if (sensei && announce) db.announcements.push({ id: Math.max(0, ...db.announcements.map((x) => x.id)) + 1, title: 'Secret code!', body: `Type this code in the Nexus to win a prize: ${code}`, createdAt: now().toISOString() });
+      commit();
+      return code;
+    },
+    async codeMine() {
+      const a = meAdult();
+      return (db.codes ??= []).filter((c) => c.by === a.id).sort((x, y) => y.id - x.id).slice(0, 10)
+        .map((c) => ({ id: c.id, code: c.code, coins: c.coins, xp: c.xp, expiresAt: new Date(c.expires).toISOString(), className: db.classes.find((k) => k.id === c.classId)?.name ?? null, redeemed: c.used.length }));
+    },
+    async codeRedeem(code) {
+      const me = meHero().id;
+      const tries = (db.codeTries ??= []);
+      if (tries.filter((t) => t.heroId === me && t.at > now().getTime() - 3600000).length >= 5) return { ok: false, reason: 'too_many_tries' };
+      const word = code.trim().toUpperCase().replace(/\s+/g, '-');
+      const c = (db.codes ??= []).find((x) => x.code === word && x.expires > now().getTime());
+      if (!c || (c.classId && !db.members.some((m) => m.classId === c.classId && m.childId === me))) { tries.push({ heroId: me, at: now().getTime() }); commit(); return { ok: false, reason: 'not_found' }; }
+      if (c.used.includes(me)) return { ok: false, reason: 'already_used' };
+      c.used.push(me);
+      if (c.coins) award(me, 'coins', c.coins, 'event', `code:${c.id}`);
+      if (c.xp) award(me, 'xp', c.xp, 'event', `code:${c.id}`);
+      commit();
+      return { ok: true, coins: c.coins, xp: c.xp };
     },
     async contestState() {
       const me = meHero().id;
