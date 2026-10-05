@@ -152,6 +152,38 @@ describe('demo backend: grown-ups and missions', () => {
     expect(board.heroes.find((h) => h.me)).toBeUndefined();
   });
 
+  it('runs the weekly House challenge: Sensei sets it, the House reaches it, a helper collects once', async () => {
+    const { b, hero, cls } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.joinClass(cls.joinCode!);
+    expect(await b.houseChallenge()).toEqual({ state: 'none' });
+    await b.signOut();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    await b.houseProposeOptions(cls.id, [
+      { name: 'Ember Owls', color: '#f97316', power: 'flame', motto: '' },
+      { name: 'Tide Titans', color: '#06b6d4', power: 'tide', motto: '' },
+    ]);
+    await b.signOut();
+    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.houseVote((await b.houseState()).options![0].id);
+    await b.signOut();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    await b.houseCloseVote(cls.id);
+    await b.signOut();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    await expect(b.senseiSetChallenge('X', 5, 15)).rejects.toThrow('theme');
+    await b.senseiSetChallenge('Reading Week', 8, 15);
+    expect((await b.senseiChallenge()).theme).toBe('Reading Week');
+    await b.signOut();
+    await b.signIn(hero.heroCode, [0, 4, 8]);
+    expect(await b.houseChallenge()).toMatchObject({ state: 'active', theme: 'Reading Week', progress: 0, reached: false });
+    await expect(b.houseChallengeClaim()).rejects.toThrow('not reached');
+    for (const q of (await b.startPractice('math')).questions) await b.answerQuestion(q.id, keyOf(q.id));
+    expect(await b.houseChallenge()).toMatchObject({ reached: true, myPoints: 10 });
+    expect(await b.houseChallengeClaim()).toMatchObject({ awarded: 15 });
+    expect(await b.houseChallengeClaim()).toMatchObject({ duplicate: true });
+  });
+
   it('sells items once, only with enough points, and keeps the wardrobe and room', async () => {
     const b = make();
     await b.signUp(input);

@@ -345,6 +345,21 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiTriviaPrize(coins) {
       return rpc('sensei_trivia_prize', { p_coins: coins });
     },
+    async houseChallenge() {
+      const d = await rpc('house_challenge');
+      return { state: d.state, theme: d.theme, goal: d.goal, coins: d.coins, progress: d.progress === undefined ? undefined : Number(d.progress), reached: d.reached,
+               myPoints: d.my_points, needMine: d.need_mine, claimed: d.claimed };
+    },
+    async houseChallengeClaim() {
+      return rpc('house_challenge_claim');
+    },
+    async senseiChallenge() {
+      const d = await rpc('sensei_challenge_view');
+      return { theme: d.theme, goal: d.goal, coins: d.coins, houses: (d.houses ?? []).map((h: any) => ({ name: h.name, members: h.members, progress: Number(h.progress) })) };
+    },
+    async senseiSetChallenge(theme, goal, coins) {
+      await rpc('sensei_set_challenge', { p_theme: theme, p_goal: goal, p_coins: coins });
+    },
     async questState() {
       const d = await rpc('quest_state');
       return { streak: d.streak, milestones: d.milestones, tasks: d.tasks, questCoins: d.quest_coins, questClaimed: d.quest_claimed };

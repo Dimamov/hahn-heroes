@@ -275,6 +275,7 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  challenge?: { week: string; theme: string; goal: number; coins: number } | null;
   adv?: { heroId: string; caseId: string; solved: string[]; done: boolean }[];
   story?: { heroId: string; episode: string; panel: number; done: boolean; choices: Record<string, string>; solved: string[] }[];
   history: HistoryRow[];
@@ -1345,6 +1346,48 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const vote = (db.houseOptions ??= []).find((v) => v.classId === link.classId && v.open);
       if (vote) return { state: 'voting', weekPoints, cap: HOUSE_CAP, options: vote.options, myVote: vote.votes[hero.id] ?? null };
       return { state: 'none', weekPoints, cap: HOUSE_CAP };
+    },
+    async houseChallenge() {
+      const hero = meHero();
+      const c = db.challenge && db.challenge.week === schoolWeek(now()) ? db.challenge : null;
+      if (!c) return { state: 'none' };
+      const link = db.members.find((m) => m.childId === hero.id);
+      const house = link && (db.houses ??= []).find((h) => h.classId === link.classId);
+      if (!link || !house) return { state: 'no_house', theme: c.theme, goal: c.goal, coins: c.coins };
+      const mates = db.members.filter((m) => m.classId === link.classId);
+      const progress = Math.round((mates.reduce((s, m) => s + Math.min(heroWeekPoints(m.childId), HOUSE_CAP), 0) / Math.max(mates.length, 1)) * 10) / 10;
+      const mine = Math.min(heroWeekPoints(hero.id), HOUSE_CAP);
+      return { state: 'active', theme: c.theme, goal: c.goal, coins: c.coins, progress, reached: progress >= c.goal, myPoints: mine, needMine: 10,
+               claimed: db.ledger.some((r) => r.heroId === hero.id && r.currency === 'coins' && r.key === `hchal:${c.week}`) };
+    },
+    async houseChallengeClaim() {
+      const hero = meHero();
+      const s = await this.houseChallenge();
+      if (s.state !== 'active') throw new Error('no challenge for your House');
+      if (!s.reached) throw new Error('your House has not reached the goal yet');
+      if ((s.myPoints ?? 0) < (s.needMine ?? 10)) throw new Error('earn at least 10 points yourself first');
+      const key = `hchal:${db.challenge!.week}`;
+      award(hero.id, 'xp', 5, 'event', key);
+      const r = award(hero.id, 'coins', s.coins!, 'event', key);
+      return { awarded: r.awarded, duplicate: r.duplicate };
+    },
+    async senseiChallenge() {
+      meAdult('sensei');
+      const c = db.challenge && db.challenge.week === schoolWeek(now()) ? db.challenge : null;
+      const houses = (db.houses ?? []).map((h) => {
+        const mates = db.members.filter((m) => m.classId === h.classId);
+        return { name: h.name, members: mates.length, progress: Math.round((mates.reduce((s, m) => s + Math.min(heroWeekPoints(m.childId), HOUSE_CAP), 0) / Math.max(mates.length, 1)) * 10) / 10 };
+      }).filter((h) => h.members >= 1).sort((a, b) => b.progress - a.progress);
+      return { theme: c?.theme ?? null, goal: c?.goal ?? null, coins: c?.coins ?? null, houses };
+    },
+    async senseiSetChallenge(theme, goal, coins) {
+      meAdult('sensei');
+      const t = theme.trim().replace(/\s+/g, ' ');
+      if (!/^[A-Za-z][A-Za-z ,.!'-]{2,39}$/.test(t)) throw new Error('theme needs 3 to 40 letters');
+      if (!Number.isInteger(goal) || goal < 5 || goal > 80) throw new Error('goal is 5 to 80 points per hero');
+      if (!Number.isInteger(coins) || coins < 5 || coins > 50) throw new Error('reward is 5 to 50 points');
+      db.challenge = { week: schoolWeek(now()), theme: t, goal, coins };
+      commit();
     },
     async houseVote(optionId) {
       const hero = meHero();
