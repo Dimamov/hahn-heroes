@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import {
   AdultAuthError, SignInError, emptyBalances,
   type Adult, type Backend, type ClassMission, type ClassResult, type Hero, type HomeMission, type Identity,
-  type NewClassMission, type QuizQuestion, type SignUpInput, type SubjectProgress, type TriviaState,
+  type NewClassMission, type PushPrefs, type QuizQuestion, type SignUpInput, type SubjectProgress, type TriviaState,
 } from './backend.ts';
 import type { Currency } from '../../supabase/functions/_shared/rewards.ts';
 
@@ -204,6 +204,23 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     },
     async markAnnouncementsRead() {
       await rpc('mark_announcements_read');
+    },
+    async pushKey() {
+      const { data, error } = await sb.functions.invoke('push-send', { body: { action: 'key' } });
+      if (error || !data?.configured) return { configured: false, key: null };
+      return { configured: true, key: data.key as string };
+    },
+    async pushPrefs() {
+      return (await rpc('push_prefs_get')) as PushPrefs | null;
+    },
+    async pushSetPrefs(prefs) {
+      await rpc('push_prefs_set', { p_prefs: prefs });
+    },
+    async pushSubscribe(sub) {
+      await rpc('push_subscribe', { p_endpoint: sub.endpoint, p_p256dh: sub.p256dh, p_auth: sub.auth });
+    },
+    async pushUnsubscribe(endpoint) {
+      await rpc('push_unsubscribe', { p_endpoint: endpoint });
     },
 
     // ---- Grown-ups ----------------------------------------------------------------------

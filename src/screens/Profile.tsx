@@ -38,6 +38,7 @@ export function Profile() {
         <button className="btn ghost" onClick={() => go('showcase')}>⭐ Showcase</button>
         <button className="btn ghost" onClick={() => go('studio')}>🎨 Studio</button>
         <button className="btn ghost" onClick={() => go('parentcode')}>👪 Grown-up code</button>
+        <button className="btn ghost" onClick={() => go('notifications')}>🔔 Alerts</button>
         <button className="btn ghost" onClick={signOut}>Switch hero</button>
       </div>
     </main>
