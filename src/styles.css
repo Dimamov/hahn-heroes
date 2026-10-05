@@ -542,3 +542,8 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .mini-card i { position: absolute; right: 1px; bottom: 0; font: 800 .65rem 'Baloo 2', system-ui; color: var(--gold); }
 .warn { margin: 0; text-align: center; font-weight: 800; color: #fbbf24; }
 @media (max-height: 480px) and (orientation: landscape) { .tcard { min-height: 70px; } .tcard.small { min-height: 60px; } }
+
+/* Do Not Press: the surprise video fills the whole screen */
+.dnp-full { position: fixed; inset: 0; z-index: 50; background: #000; display: flex; align-items: center; justify-content: center; }
+.dnp-full iframe { width: 100%; height: 100%; border: 0; }
+.dnp-close { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); right: 12px; background: #000a; }
