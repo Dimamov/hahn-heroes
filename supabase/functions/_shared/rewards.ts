@@ -40,4 +40,4 @@ export function classMissionCoins(maxCoins: number, scorePct: number): number {
 export const LEARNING_REWARDS = { coins: 2, xp: 5, skillPoints: 1, setSize: 5, resumeMinutes: 30 } as const;
 
 /** Solo arcade: each listed game pays once per school day. Small on purpose; learning is the way to earn. */
-export const ARCADE_REWARDS = { coins: 5, xp: 3, games: ['pattern-pulse', 'memory-flip', 'word-builder', 'spot-difference', 'whack-shadow', 'bubble-pop', 'block-blast', 'hero-defense'] } as const;
+export const ARCADE_REWARDS = { coins: 5, xp: 3, games: ['pattern-pulse', 'memory-flip', 'word-builder', 'spot-difference', 'whack-shadow', 'bubble-pop', 'block-blast', 'hero-defense', 'chrono-rift'] } as const;
