@@ -422,3 +422,14 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .vote-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .vote-grid .chip { min-height: 52px; }
 .stepper-n { font: 800 1.5rem 'Baloo 2', 'Nunito', system-ui; }
+
+/* Squad Drawing */
+.dwlabel { margin: 0; text-align: center; font: 800 1.3rem 'Baloo 2', 'Nunito', system-ui; letter-spacing: .08em; white-space: pre; overflow: hidden; text-overflow: ellipsis; }
+.dwlabel.artist { color: var(--gold); letter-spacing: 0; }
+.dwcanvas-wrap { flex: 1; min-height: 0; display: grid; place-items: center; }
+.dwcanvas { aspect-ratio: 1; width: min(100%, 52vh); border-radius: 14px; background: #fff; touch-action: none; border: 3px solid var(--violet); }
+.dwtools { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; }
+.swatch { width: 32px; height: 32px; border-radius: 50%; border: 3px solid #fff4; }
+.swatch.on { border-color: var(--cyan); transform: scale(1.12); }
+.dwfeed { display: flex; flex-direction: column; gap: 2px; min-height: 3.6em; font-size: .85rem; font-weight: 700; color: var(--muted); }
+.dwfeed .ok { color: #4ade80; }

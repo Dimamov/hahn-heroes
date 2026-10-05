@@ -1,5 +1,6 @@
 // Demo mode: the same rules as the server, saved only on this device. Lets the app run
 // before a Supabase project is connected. Nothing here is secure; it is for trying the app.
+import { DRAWING_WORDS, isRightGuess, maskWord, scribble, type DrawStroke } from './drawing-rules.ts';
 import { BOT_CLUES, isCaught, newRound, tallyVotes } from './shadow-rules.ts';
 import { botMove, deal, move as odinMoveRule, type OdinGame } from './odin-rules.ts';
 import {
@@ -146,11 +147,70 @@ function demoShadowTick(r: DemoRoom, now: number) {
   }
 }
 
+interface DemoDrawing {
+  order: string[];
+  round: number;
+  word: string;
+  used: string[];
+  phase: 'draw' | 'reveal';
+  phaseStart: number;
+  strokes: DrawStroke[];
+  solved: Record<string, number>;
+  voided: boolean;
+  guesses: { round: number; id: string; name: string; text: string; correct: boolean; at: number }[];
+  plan: Record<string, number>;
+  reports: string[];
+  botSeed: number;
+}
+const DRAWING_SECONDS = 60;
+const DRAWING_REVEAL = 6;
+
+function drawingStartRound(r: DemoRoom, d: DemoDrawing, now: number) {
+  d.phase = 'draw'; d.phaseStart = now; d.strokes = []; d.solved = {}; d.voided = false; d.reports = [];
+  d.plan = {};
+  d.botSeed = Math.floor(Math.random() * 10_000);
+  for (const p of r.players.filter((x) => x.bot)) d.plan[p.id] = (6 + Math.random() * 40) * 1000;
+}
+
+/** Runs the Squad Drawing clock: bots draw and guess, rounds close, the next artist is up. */
+function demoDrawingTick(r: DemoRoom, now: number) {
+  const d = r.drawing;
+  if (!d || r.state !== 'playing') return;
+  for (let guard = 0; guard < 30 && r.state === 'playing'; guard++) {
+    const artist = d.order[d.round];
+    if (d.phase === 'draw') {
+      const botArtist = r.players.find((p) => p.id === artist)?.bot;
+      if (botArtist) {
+        const plan = scribble(d.botSeed);
+        d.strokes = plan.slice(0, Math.min(plan.length, Math.floor((now - d.phaseStart) / 2000) + 1));
+      }
+      for (const p of r.players.filter((x) => x.bot && x.id !== artist && d.solved[x.id] === undefined)) {
+        if (now >= d.phaseStart + (d.plan[p.id] ?? Infinity)) {
+          const points = 100 + Math.floor(50 * Math.max(0, 1 - (d.plan[p.id] ?? 0) / 1000 / DRAWING_SECONDS));
+          d.solved[p.id] = points; p.score += points;
+          d.guesses.push({ round: d.round, id: p.id, name: p.name, text: '', correct: true, at: now });
+        }
+      }
+      const guessers = r.players.filter((p) => p.id !== artist).length;
+      if (d.voided || Object.keys(d.solved).length >= guessers || now > d.phaseStart + DRAWING_SECONDS * 1000) {
+        if (!d.voided) { const a = r.players.find((p) => p.id === artist); if (a) a.score += 50 * Object.keys(d.solved).length; }
+        d.phase = 'reveal'; d.phaseStart = Math.min(now, d.phaseStart + DRAWING_SECONDS * 1000);
+      } else break;
+    } else if (now > d.phaseStart + DRAWING_REVEAL * 1000) {
+      if (d.round + 1 >= d.order.length) { r.state = 'done'; break; }
+      const pool = DRAWING_WORDS.filter((w) => !d.used.includes(w));
+      d.round += 1; d.word = pool[Math.floor(Math.random() * pool.length)]; d.used.push(d.word);
+      drawingStartRound(r, d, d.phaseStart + DRAWING_REVEAL * 1000);
+    } else break;
+  }
+}
+
 interface DemoRoom {
   code: string;
   game: string;
   odin?: OdinGame;
   shadow?: DemoShadow;
+  drawing?: DemoDrawing;
   hostId: string;
   state: 'lobby' | 'playing' | 'done' | 'closed';
   phase: 'question' | 'reveal';
@@ -181,6 +241,7 @@ interface Db {
   friendships?: { id: string; a: string; b: string; status: 'pending' | 'accepted' | 'declined' | 'removed' }[];
   squads?: { id: string; leader: string; name: string; disbanded: boolean; members: { childId: string; status: 'invited' | 'member' | 'declined' | 'left' }[] }[];
   room?: DemoRoom | null;
+  drawingReports?: { artist: string; reporter: string; word: string; at: string }[];
   chat?: { messages: { id: number; childId: string; name: string; body: string; at: number }[]; status: Record<string, { strikes: number; banned: boolean; requested: boolean }> };
   pings?: { userId: string; role: 'hero' | 'parent' | 'teacher' | 'sensei'; screen: string; at: number }[];
   current: string | null; // hero id or adult id
@@ -786,7 +847,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     },
     async createRoom(game) {
       const me = meHero();
-      if (!['trivia-clash', 'odin', 'shadow-signal'].includes(game)) throw new Error('unknown game');
+      if (!['trivia-clash', 'odin', 'shadow-signal', 'squad-drawing'].includes(game)) throw new Error('unknown game');
       if (await this.currentRoom!()) throw new Error('leave your room first');
       const code = generateCode(4).replace(/[^A-Z]/g, 'K');
       db.room = { code, game, hostId: me.id, state: 'lobby', phase: 'question', idx: 0, phaseStart: at(), questions: [], players: [{ id: me.id, name: me.displayName, starter: me.starter, score: 0, bot: false, answers: {} }] };
@@ -820,6 +881,15 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const r = db.room;
       if (!r || r.hostId !== me.id || r.state !== 'lobby') throw new Error('you are not hosting a room');
       if (r.players.length < ROOM_RULES.min) throw new Error('you need at least 2 players');
+      if (r.game === 'squad-drawing') {
+        const order = r.players.map((p) => p.id).sort(() => Math.random() - 0.5);
+        const word = DRAWING_WORDS[Math.floor(Math.random() * DRAWING_WORDS.length)];
+        r.drawing = { order, round: 0, word, used: [word], phase: 'draw', phaseStart: at(), strokes: [], solved: {}, voided: false, guesses: [], plan: {}, reports: [], botSeed: 1 };
+        drawingStartRound(r, r.drawing, at());
+        r.state = 'playing'; r.phase = 'question'; r.idx = 0; r.phaseStart = at();
+        commit();
+        return;
+      }
       if (r.game === 'shadow-signal') {
         if (r.players.length < 3) throw new Error('you need at least 3 players');
         const round = newRound(r.players.length);
@@ -989,6 +1059,100 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       sh.guess = word;
       demoShadowFinish(r, sh, word.toLowerCase() === sh.word.toLowerCase(), at());
       commit();
+    },
+    async drawingView(code, since) {
+      const me = meHero().id;
+      const r = db.room;
+      if (!r || r.game !== 'squad-drawing' || r.code !== code.trim().toUpperCase() || !r.players.some((p) => p.id === me)) throw new Error('you are not in that room');
+      const d = r.drawing;
+      if (!d) throw new Error('you are not in that room');
+      demoDrawingTick(r, at());
+      commit();
+      const artist = d.order[d.round];
+      const elapsed = (at() - d.phaseStart) / 1000;
+      const know = artist === me || d.solved[me] !== undefined || d.phase === 'reveal' || r.state === 'done';
+      const from = Math.min(Math.max(0, since), d.strokes.length);
+      return {
+        state: r.state, phase: d.phase, round: d.round, rounds: d.order.length,
+        seconds: d.phase === 'draw' ? DRAWING_SECONDS : DRAWING_REVEAL,
+        secondsLeft: Math.max(0, Math.ceil((d.phase === 'draw' ? DRAWING_SECONDS : DRAWING_REVEAL) - elapsed)),
+        isArtist: artist === me, solved: d.solved[me] !== undefined, voided: d.voided,
+        artist: r.players.find((p) => p.id === artist)!.name,
+        word: know ? d.word : null, pattern: know ? null : maskWord(d.word, elapsed > DRAWING_SECONDS / 2),
+        strokesFrom: from, strokes: d.strokes.slice(from),
+        guesses: d.guesses.filter((g) => g.round === d.round).slice(-12).map((g) => ({ name: g.name, text: g.correct ? null : g.text, correct: g.correct, me: g.id === me })),
+        players: [...r.players].sort((a, b) => b.score - a.score).map((p) => ({
+          name: p.name, starter: p.starter, score: p.score, me: p.id === me, artist: p.id === artist && r.state === 'playing', solved: d.solved[p.id] !== undefined, left: false,
+        })),
+      };
+    },
+    async drawingStroke(id, color, width, points) {
+      const me = meHero().id;
+      const r = db.room;
+      const d = r?.drawing;
+      if (!r || !d || r.state !== 'playing') throw new Error('you are not in a game');
+      demoDrawingTick(r, at());
+      if (d.phase !== 'draw' || d.order[d.round] !== me) throw new Error('you are not drawing');
+      if (!/^#[0-9a-f]{6}$/.test(color) || width < 1 || width > 24) throw new Error('bad pen');
+      if (!points.length || points.length > 150 || points.some(([x, y]) => !(x >= 0 && x <= 1000 && y >= 0 && y <= 1000))) throw new Error('bad stroke');
+      const last = d.strokes[d.strokes.length - 1];
+      if (last && last.id === id) last.p.push(...points);
+      else d.strokes.push({ id, c: color, w: width, p: [...points] });
+      commit();
+    },
+    async drawingClear() {
+      const me = meHero().id;
+      const r = db.room;
+      const d = r?.drawing;
+      if (!r || !d || d.phase !== 'draw' || d.order[d.round] !== me) throw new Error('you are not drawing');
+      d.strokes = [];
+      commit();
+    },
+    async drawingGuess(text) {
+      const me = meHero();
+      const r = db.room;
+      const d = r?.drawing;
+      if (!r || !d || r.state !== 'playing') throw new Error('you are not in a game');
+      demoDrawingTick(r, at());
+      if (d.phase !== 'draw') throw new Error('the round is over');
+      if (d.order[d.round] === me.id) throw new Error('you are drawing');
+      if (d.solved[me.id] !== undefined) throw new Error('you already got it');
+      const g = text.trim().toLowerCase().replace(/\s+/g, ' ');
+      if (!/^[a-z ]{1,24}$/.test(g)) throw new Error('letters only');
+      if (chatFlagged(g)) throw new Error('pick a different word');
+      const mine = d.guesses.filter((x) => x.id === me.id).pop();
+      if (mine && at() - mine.at < 1000) throw new Error('slow down');
+      const ok = isRightGuess(g, d.word);
+      let points = 0;
+      if (ok) {
+        points = 100 + Math.floor(50 * Math.max(0, 1 - (at() - d.phaseStart) / 1000 / DRAWING_SECONDS));
+        d.solved[me.id] = points;
+        r.players.find((p) => p.id === me.id)!.score += points;
+      }
+      d.guesses.push({ round: d.round, id: me.id, name: me.displayName, text: g, correct: ok, at: at() });
+      demoDrawingTick(r, at());
+      commit();
+      return { correct: ok, points };
+    },
+    async drawingReport() {
+      const me = meHero().id;
+      const r = db.room;
+      const d = r?.drawing;
+      if (!r || !d || r.state !== 'playing') throw new Error('you are not in a game');
+      const artist = d.order[d.round];
+      if (artist === me) throw new Error('you are drawing');
+      const reports = (db.drawingReports ??= []);
+      if (!d.reports.includes(me)) {
+        d.reports.push(me);
+        reports.push({ artist: r.players.find((p) => p.id === artist)!.name, reporter: r.players.find((p) => p.id === me)!.name, word: d.word, at: new Date(at()).toISOString() });
+      }
+      const guessers = r.players.filter((p) => p.id !== artist).length;
+      if (d.phase === 'draw' && d.reports.length >= Math.min(2, guessers)) { d.voided = true; d.strokes = []; demoDrawingTick(r, at()); }
+      commit();
+    },
+    async senseiDrawingReports() {
+      meAdult('sensei');
+      return [...(db.drawingReports ?? [])].reverse().slice(0, 40);
     },
     async chatSend(text) {
       const me = meHero();
