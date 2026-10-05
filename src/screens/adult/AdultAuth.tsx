@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AdultAuthError, type Adult, type Backend } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 
@@ -19,6 +19,24 @@ export function AdultAuth({ backend, onDone, onBack }: { backend: Backend; onDon
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [wait, setWait] = useState(0);
+  const [note, setNote] = useState('');
+  const [told, setTold] = useState(false);
+
+  // "Send again" rests for a minute so the email service isn't hammered.
+  useEffect(() => {
+    if (wait <= 0) return;
+    const t = setTimeout(() => setWait((w) => w - 1), 1000);
+    return () => clearTimeout(t);
+  }, [wait]);
+  const resend = async () => {
+    setNote('');
+    setWait(60);
+    setNote((await backend.adultResendConfirmation(email).catch(() => false)) ? 'Sent again. Give it a minute.' : 'The email service says to wait a little. Try again in a few minutes.');
+  };
+  const tell = async () => {
+    setTold((await backend.emailHelpRequest(email).catch(() => false)) || told);
+  };
 
   const ready = email.includes('@') && (mode === 'forgot' || password.length >= 6) && (mode !== 'signup' || name.trim().length >= 2) && !busy;
 
@@ -57,7 +75,12 @@ export function AdultAuth({ backend, onDone, onBack }: { backend: Backend; onDon
         <div className="grow" />
         <div className="soon-icon" aria-hidden>📬</div>
         <p className="hint">We sent a link to {email}. Tap it, then come back and sign in.</p>
+        <p className="note">Can't find it? Check your spam or junk folder. It can take a few minutes. If it's in junk, tap "Not junk" so future emails arrive.</p>
+        <p className="hint" role="status">{note}</p>
+        {told && <p className="hint" role="status">Thanks, we've told the Sensei and will help.</p>}
         <div className="grow" />
+        <button className="btn ghost" disabled={wait > 0} onClick={resend}>{wait > 0 ? `Send again in ${wait}s` : 'Send again'}</button>
+        <button className="btn ghost" disabled={told} onClick={tell}>{told ? 'The Sensei knows' : "Didn't get it? Let the Sensei know"}</button>
         <button className="btn primary" onClick={() => { setConfirm(false); setMode('signin'); }}>I confirmed, sign in</button>
       </main>
     );

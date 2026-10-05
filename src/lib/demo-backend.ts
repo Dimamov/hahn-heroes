@@ -331,6 +331,7 @@ interface Db {
   room?: DemoRoom | null;
   drawingReports?: { artist: string; reporter: string; word: string; at: string }[];
   friendChat?: { id: number; from: string; to: string; name: string; body: string; at: number }[];
+  emailHelp?: { id: number; email: string; at: number; done: boolean }[];
   chat?: { messages: { id: number; childId: string; name: string; body: string; at: number }[]; status: Record<string, { strikes: number; banned: boolean; requested: boolean }> };
   hiddenGames?: string[];
   pings?: { userId: string; role: 'hero' | 'parent' | 'teacher' | 'sensei'; screen: string; at: number }[];
@@ -1069,7 +1070,27 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       commit();
     },
     async adultRequestReset() { /* demo mode has no email to send */ },
+    async adultResendConfirmation() { return true; },
+    async emailHelpRequest(email) {
+      const e = email.trim().toLowerCase();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return false;
+      const list = (db.emailHelp ??= []);
+      if (list.filter((r) => r.email === e && Date.now() - r.at < 3600_000).length < 3) { list.push({ id: list.length + 1, email: e, at: Date.now(), done: false }); commit(); }
+      return true;
+    },
+    async senseiEmailRequests() {
+      meAdult('sensei');
+      return (db.emailHelp ?? []).filter((r) => !r.done).reverse().map((r) => ({ id: r.id, email: r.email, at: new Date(r.at).toISOString() }));
+    },
+    async senseiEmailRequestDone(id) {
+      meAdult('sensei');
+      const email = (db.emailHelp ?? []).find((r) => r.id === id)?.email;
+      for (const r of db.emailHelp ?? []) if (r.email === email) r.done = true;
+      commit();
+    },
     resetPending() { return false; },
+    pendingEmailLink() { return null; },
+    async completeEmailLink() { throw new Error('demo mode has no email links'); },
     async adultSetPassword(password) {
       const a = meAdult();
       if (password.length < 8) throw new AdultAuthError('weak');

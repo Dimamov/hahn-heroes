@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ItemGrid } from '../../components/ItemGrid.tsx';
 import { CardFace } from '../../components/CardFace.tsx';
 import { CARDS } from '../../lib/cards.ts';
-import { SECRET_PLACES, type Adult, type Announcement, type Backend, type CharacterRequest, type SenseiSecret, ChatLogLine, ChatRequest, DrawingReport, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
+import { SECRET_PLACES, type Adult, type Announcement, type Backend, type CharacterRequest, type SenseiSecret, ChatLogLine, ChatRequest, DrawingReport, EmailHelpRequest, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { shrinkImage } from '../../lib/image-file.ts';
 import { UsageReportScreen } from './UsageReport.tsx';
@@ -10,7 +10,7 @@ import { KindReview } from './KindReview.tsx';
 import { CodeMaker } from './CodeMaker.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
-type View = 'home' | 'challenge' | 'events' | 'delete' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes' | 'kind' | 'usage';
+type View = 'home' | 'challenge' | 'events' | 'delete' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes' | 'kind' | 'usage' | 'email';
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
@@ -30,6 +30,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
   if (view === 'secret') return <SecretHunt backend={backend} onBack={back} />;
   if (view === 'characters') return <Characters backend={backend} onBack={back} />;
   if (view === 'card') return <GiveCard backend={backend} onBack={back} />;
+  if (view === 'email') return <EmailHelp backend={backend} onBack={back} />;
   if (view === 'chat') return <ChatUnlocks backend={backend} onBack={back} />;
   if (view === 'traffic') return <Traffic backend={backend} onBack={back} />;
   if (view === 'challenge') return <Challenge backend={backend} onBack={back} />;
@@ -58,6 +59,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
         <button className="btn" onClick={() => setView('kind')}>💛 Kindness</button>
         <button className="btn" onClick={() => setView('card')}>🎁 Give a card</button>
         <button className="btn" onClick={() => setView('chat')}>💬 Chat unlocks</button>
+        <button className="btn" onClick={() => setView('email')}>📧 Email help</button>
         <button className="btn" onClick={() => setView('drawings')}>🚩 Drawing reports</button>
         <button className="btn" onClick={() => setView('traffic')}>📈 Players and traffic</button>
         <button className="btn" onClick={() => setView('usage')}>🗓 Monthly report</button>
@@ -391,6 +393,30 @@ function DrawingReports({ backend, onBack }: { backend: Backend; onBack: () => v
             <div className="card" key={`${r.at}-${r.reporter}`}>
               <div className="card-top"><b>{r.artist}</b><small className="muted">{new Date(r.at).toLocaleString()}</small></div>
               <small className="muted">The word was “{r.word}”. Reported by {r.reporter}.</small>
+            </div>
+          )} />
+      )}
+    </main>
+  );
+}
+
+/** Grown-ups who said their sign-up email never arrived. Reach out, then mark the address done. */
+function EmailHelp({ backend, onBack }: { backend: Backend; onBack: () => void }) {
+  const [list, setList] = useState<EmailHelpRequest[] | null>(null);
+  const load = () => backend.senseiEmailRequests().then(setList).catch(() => setList([]));
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const done = async (r: EmailHelpRequest) => { await backend.senseiEmailRequestDone(r.id).catch(() => {}); load(); };
+  return (
+    <main className="screen">
+      <ScreenBar title="Email help" onBack={onBack} />
+      <p className="hint">These grown-ups said their email never arrived. Check the address, then mark it done.</p>
+      {list === null ? <div className="spinner" /> : (
+        <PagedList items={list} perPage={4} empty="Nobody is waiting for an email."
+          render={(r) => (
+            <div className="card" key={r.id}>
+              <div className="card-top"><b>{r.email}</b></div>
+              <small className="muted">{new Date(r.at).toLocaleString()}</small>
+              <div className="card-bottom"><button className="btn small primary" onClick={() => done(r)}>Mark done</button></div>
             </div>
           )} />
       )}

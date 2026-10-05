@@ -67,6 +67,7 @@ import { EscapeNexus } from './games/EscapeNexus.tsx';
 import { DoNotPress } from './games/DoNotPress.tsx';
 import { AdultAuth } from './screens/adult/AdultAuth.tsx';
 import { NewPassword } from './screens/adult/NewPassword.tsx';
+import { EmailLinkScreen } from './screens/adult/EmailLink.tsx';
 import { AdultApp } from './screens/adult/AdultApp.tsx';
 
 interface Session {
@@ -98,6 +99,7 @@ export default function App() {
   const [adult, setAdult] = useState<Adult | null>(null);
   const [screen, setScreen] = useState<Screen>('welcome');
   const [resetting, setResetting] = useState(() => backend.resetPending());
+  const [emailLink, setEmailLink] = useState(() => backend.pendingEmailLink());
   const [balances, setBalances] = useState<Balances>(() => {
     try { return { ...emptyBalances(), ...JSON.parse(localStorage.getItem('hh-balances') ?? '{}') }; } catch { return emptyBalances(); }
   });
@@ -175,6 +177,11 @@ export default function App() {
   if (!ready) return <main className="screen center"><div className="spinner" aria-label="Loading" /></main>;
 
   if (privacy) return <Privacy onBack={() => setPrivacy(false)} />;
+
+  if (emailLink) {
+    const close = () => { window.history.replaceState(null, '', window.location.pathname); setEmailLink(null); };
+    return <EmailLinkScreen backend={backend} link={emailLink} onClose={close} onRecovery={() => { setEmailLink(null); setResetting(true); }} onAdult={(a) => { setEmailLink(null); setAdult(a); }} />;
+  }
 
   if (resetting) return <NewPassword backend={backend} onDone={() => { setResetting(false); backend.restore().then((who) => { if (who?.kind === 'adult') setAdult(who.adult); }).catch(() => undefined); }} />;
 
