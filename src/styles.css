@@ -684,3 +684,14 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .room-hero-art { height: 100%; width: auto; object-fit: contain; }
 @media (max-height: 480px) and (orientation: landscape) { .room-hero { display: none; } }
 @media (prefers-reduced-motion: reduce) { .emote-wave, .emote-spin, .emote-dance, .emote-flex, .emote-bow, .emote-jump { animation: none; } }
+
+/* Boss raid */
+.raid-boss { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.raid-icon { font-size: min(22vh, 9rem); line-height: 1; transition: transform .3s; }
+.raid-icon.hit { transform: translateX(10px) rotate(6deg); }
+.raid-icon.down { opacity: .35; filter: grayscale(1); }
+.raid-boss small { color: var(--muted, #b6b3d9); font-weight: 600; }
+.raid-bar { position: relative; height: 28px; border-radius: 14px; background: #2a1030; overflow: hidden; border: 2px solid #ffffff22; }
+.raid-bar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #ef4444, #f97316); transition: width .6s; }
+.raid-bar span { position: relative; display: block; text-align: center; font-weight: 800; font-size: .85rem; line-height: 24px; }
+@media (max-height: 480px) and (orientation: landscape) { .raid-icon { font-size: 4rem; } }

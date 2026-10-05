@@ -17,6 +17,7 @@ import { CARDS, cardById, fairness as tradeFairness, type OfferItem, type Rarity
 import { SKILLS, dailyBonus, growthMultipliers, surgeRules } from './skills.ts';
 import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
+import { RAID_BOSSES, RAID_RULES } from './raid.ts';
 import { EMOTES, type EmoteId, type Pose } from './showcase.ts';
 import {
   AdultAuthError, HOUSE_COLORS, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
@@ -279,6 +280,7 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  raid?: { week: string; boss: string; maxHp: number; strikes: { heroId: string; day: string; damage: number }[] };
   showcase?: { heroId: string; title: string; pose: Pose; emote?: string }[];
   eventEdits?: Record<string, { starts: string; ends: string; enabled: boolean }>;
   challenge?: { week: string; theme: string; goal: number; coins: number } | null;
@@ -449,6 +451,16 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     };
   };
   /** Mirrors title_unlocked(): each title is worked out from what the hero actually did. */
+  /** This week's boss, with health fixed the first time anyone looks. */
+  const raidWeek = () => {
+    const week = schoolWeek(now());
+    if (!db.raid || db.raid.week !== week) {
+      const n = Math.floor(new Date(`${week}T00:00:00Z`).getTime() / 604800000);
+      db.raid = { week, boss: RAID_BOSSES[n % RAID_BOSSES.length].id, maxHp: Math.max(RAID_RULES.minHp, RAID_RULES.hpPerHero * Math.max(1, Object.keys(db.accounts).length)), strikes: [] };
+    }
+    return db.raid;
+  };
+  const raidPower = (heroId: string) => 10 + Math.min(60, 3 * db.history.filter((h) => h.childId === heroId && h.correct && schoolDate(new Date(h.servedAt)) === schoolDate(now())).length);
   const xpOf = (heroId: string) => db.ledger.filter((r) => r.heroId === heroId && r.currency === 'xp').reduce((s, r) => s + r.amount, 0);
   const unlockedTitles = (heroId: string): string[] => {
     const mine = db.ledger.filter((r) => r.heroId === heroId && r.currency === 'coins');
@@ -1484,6 +1496,44 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const mine = Math.min(heroWeekPoints(hero.id), HOUSE_CAP);
       return { state: 'active', theme: c.theme, goal: c.goal, coins: c.coins, progress, reached: progress >= c.goal, myPoints: mine, needMine: 10,
                claimed: db.ledger.some((r) => r.heroId === hero.id && r.currency === 'coins' && r.key === `hchal:${c.week}`) };
+    },
+    async raidState() {
+      const hero = meHero();
+      const r = raidWeek();
+      const damage = r.strikes.reduce((n, x) => n + x.damage, 0);
+      const mine = r.strikes.filter((x) => x.heroId === hero.id);
+      const claimed = db.ledger.some((l) => l.heroId === hero.id && l.currency === 'coins' && l.key === `raid:${r.week}`);
+      const boss = RAID_BOSSES.find((b) => b.id === r.boss)!;
+      return {
+        boss: { id: boss.id, name: boss.name, icon: boss.icon, blurb: boss.blurb },
+        maxHp: r.maxHp, damage: Math.min(damage, r.maxHp), defeated: damage >= r.maxHp,
+        strikers: new Set(r.strikes.map((x) => x.heroId)).size,
+        struckToday: mine.some((x) => x.day === schoolDate(now())),
+        power: raidPower(hero.id), myDamage: mine.reduce((n, x) => n + x.damage, 0),
+        canClaim: damage >= r.maxHp && mine.length > 0 && !claimed, claimed,
+        reward: { coins: RAID_RULES.coins, xp: RAID_RULES.xp },
+      };
+    },
+    async raidStrike() {
+      const hero = meHero();
+      const r = raidWeek();
+      const total = r.strikes.reduce((n, x) => n + x.damage, 0);
+      if (total >= r.maxHp) return { ok: false, reason: 'defeated' as const };
+      if (r.strikes.some((x) => x.heroId === hero.id && x.day === schoolDate(now()))) return { ok: false, reason: 'already_struck' as const };
+      const damage = raidPower(hero.id);
+      r.strikes.push({ heroId: hero.id, day: schoolDate(now()), damage });
+      commit();
+      return { ok: true, damage, defeated: total + damage >= r.maxHp };
+    },
+    async raidClaim() {
+      const hero = meHero();
+      const r = raidWeek();
+      if (r.strikes.reduce((n, x) => n + x.damage, 0) < r.maxHp) throw new Error('not_defeated');
+      if (!r.strikes.some((x) => x.heroId === hero.id)) throw new Error('did_not_strike');
+      const key = `raid:${r.week}`;
+      award(hero.id, 'xp', RAID_RULES.xp, 'event', key);
+      const res = award(hero.id, 'coins', RAID_RULES.coins, 'event', key);
+      return { awarded: res.awarded, duplicate: res.duplicate };
     },
     async houseChallengeClaim() {
       const hero = meHero();

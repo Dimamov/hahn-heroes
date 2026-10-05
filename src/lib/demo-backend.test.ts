@@ -204,6 +204,18 @@ describe('demo backend: grown-ups and missions', () => {
     expect((await b.dormGet()).emote).toBe('wave');
   });
 
+  it('lets a hero strike the school boss once a day and collect when it falls', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    const before = await b.raidState();
+    expect(before).toMatchObject({ defeated: false, struckToday: false, damage: 0, power: 10 });
+    await expect(b.raidClaim()).rejects.toThrow('not_defeated');
+    expect(await b.raidStrike()).toMatchObject({ ok: true, damage: 10 });
+    expect(await b.raidStrike()).toMatchObject({ ok: false, reason: 'already_struck' });
+    const after = await b.raidState();
+    expect(after).toMatchObject({ damage: 10, myDamage: 10, struckToday: true, strikers: 1 });
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);

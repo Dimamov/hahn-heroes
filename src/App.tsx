@@ -16,6 +16,7 @@ import { Quest } from './screens/Quest.tsx';
 import { Showcase } from './screens/Showcase.tsx';
 import { Guide } from './screens/Guide.tsx';
 import { MyWeek } from './screens/MyWeek.tsx';
+import { Raid } from './screens/Raid.tsx';
 import { Announcements, ClassMissions, HomeMissions, MissionsHome, ParentCode, Quiz } from './screens/Missions.tsx';
 import { Squad } from './screens/Squad.tsx';
 import { House } from './screens/House.tsx';
@@ -177,6 +178,7 @@ export default function App() {
       {screen === 'showcase' && <Showcase />}
       {screen === 'guide' && <Guide />}
       {screen === 'myweek' && <MyWeek />}
+      {screen === 'raid' && <Raid />}
       {screen === 'game:pattern-pulse' && <PatternPulse />}
       {screen === 'game:rhythm-tap' && <RhythmTap />}
       {screen === 'game:memory-flip' && <MemoryFlip />}
@@ -192,7 +194,7 @@ export default function App() {
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }
