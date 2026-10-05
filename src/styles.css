@@ -886,3 +886,9 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
   .rift-list { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
   .rift-card { min-height: 34px; padding: 3px 8px; font-size: .8rem; }
 }
+
+/* Nexus Dash */
+.dash-stage { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; touch-action: none; }
+.dash-canvas { max-width: 100%; max-height: 100%; aspect-ratio: 2 / 1; border-radius: 16px; background: #0b0a24; touch-action: none; }
+.dash-pads { display: flex; gap: 10px; height: min(15vh, 96px); }
+.dash-pad { flex: 1; font-size: 1.2rem; touch-action: manipulation; }
