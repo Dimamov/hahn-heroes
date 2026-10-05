@@ -615,3 +615,7 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .btn-grid .btn { padding-inline: 8px; font-size: .9rem; }
 @media (max-height: 480px) and (orientation: landscape) { .btn-grid { grid-template-columns: repeat(4, 1fr); } .btn-grid .btn { padding-block: 8px; font-size: .8rem; } }
+
+/* Read aloud */
+.read-aloud { width: 44px; height: 44px; border-radius: 50%; border: 0; background: #ffffff1c; color: inherit; font-size: 1.3rem; }
+.read-aloud[aria-pressed="true"] { background: #fbbf2433; }

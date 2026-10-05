@@ -7,6 +7,8 @@ import { cardById } from '../lib/cards.ts';
 import { CHRONICLE, LAB_CASES, type AdvProgress, type LabCase } from '../lib/adventures.ts';
 import { EPISODES, episodeById, type StoryPanel, type StoryProgress } from '../lib/story.ts';
 import { CardFace } from '../components/CardFace.tsx';
+import { ReadAloud } from '../components/ReadAloud.tsx';
+import { questionText } from '../lib/speak.ts';
 
 /** Adventures: the story episodes, plus the Mystery Lab and Chronicle Quest while they are being written. */
 export function Adventures() {
@@ -68,9 +70,11 @@ function Reader({ progress, onBack }: { progress: StoryProgress; onBack: () => v
   const [solved, setSolved] = useState(progress.solved);
   const [done, setDone] = useState(progress.completed);
   const best = useRef(progress.panel);
+  const [cur, setCur] = useState(Math.min(progress.panel, ep.panels.length - 1));
   const checkpoints = ep.panels.filter((p) => p.kind === 'quiz').length;
 
   const onPage = useCallback((i: number) => {
+    setCur(i);
     if (i > best.current) { best.current = i; backend.storySave(ep.id, i).catch(() => undefined); }
   }, [backend, ep.id]);
 
@@ -83,10 +87,17 @@ function Reader({ progress, onBack }: { progress: StoryProgress; onBack: () => v
   ));
   return (
     <main className="screen story">
-      <ScreenBar title={ep.title} onBack={onBack} />
+      <ScreenBar title={ep.title} onBack={onBack} right={<ReadAloud text={panelText(ep.panels[cur])} />} />
       <Pager pages={pages} start={Math.min(progress.panel, ep.panels.length - 1)} onPage={onPage} />
     </main>
   );
+}
+
+/** What a story panel sounds like when read out. */
+function panelText(panel: StoryPanel): string {
+  if (panel.kind === 'quiz') return `${panel.tip} ${questionText(panel.q, panel.choices)}`;
+  const spoken = 'name' in panel && panel.name ? `${panel.name} says: ` : '';
+  return spoken + panel.text;
 }
 
 function Speaker({ panel }: { panel: Extract<StoryPanel, { kind: 'scene' }> }) {
