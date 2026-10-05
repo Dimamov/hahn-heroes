@@ -246,6 +246,23 @@ describe('demo backend: grown-ups and missions', () => {
     await expect(b.stickerGive(s.id, 'someone-else')).rejects.toThrow('squad');
   });
 
+  it('makes comics from fixed lists, caps the shelf and only shares inside a squad', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    const p = { hero: 'ana', scene: 'forest', pose: 'cheer', line: 'We did it!' };
+    const panels: [typeof p, typeof p, typeof p] = [p, p, p];
+    await expect(b.comicMake([p, p, { ...p, line: 'hello there' }])).rejects.toThrow('lists');
+    await b.comicMake(panels);
+    const [c] = await b.comicList();
+    expect(c).toMatchObject({ shared: false });
+    await expect(b.comicShare(c.id, true)).rejects.toThrow('squad');
+    for (let i = 0; i < 9; i++) await b.comicMake(panels);
+    await expect(b.comicMake(panels)).rejects.toThrow('full');
+    await b.comicDelete(c.id);
+    expect(await b.comicList()).toHaveLength(9);
+    expect(await b.comicSquad()).toEqual([]);
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);

@@ -724,3 +724,20 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .frame-neon { border-color: #22d3ee; box-shadow: 0 0 12px #22d3ee; }
 @media (max-height: 480px) and (orientation: landscape) { .sticker:not(.small) { width: 22vh; } }
 @media (max-height: 480px) and (orientation: landscape) { .sticker-make { display: grid; grid-template-columns: 1fr 1.3fr; gap: 6px 12px; align-content: start; grid-auto-rows: min-content; } .sticker-make > * { min-width: 0; } .sticker-make > .bar { grid-column: 1 / -1; } .sticker-make .sticker { grid-row: 2 / 5; } .sticker-make .paged { grid-column: 2; min-height: 0; } .sticker-make > .note, .sticker-make > .btn { grid-column: 2; } }
+
+/* Comics */
+.comic-panel { position: relative; display: flex; align-items: flex-end; justify-content: center; width: min(60vw, 26vh); aspect-ratio: 1; margin: 0 auto; border-radius: 12px; overflow: hidden; color: #fff; border: 3px solid #fff; box-shadow: 0 3px 10px #0007; }
+.comic-hero { position: absolute; inset: 22% 0 0 0; width: 100%; height: 78%; object-fit: contain; object-position: top; transform-origin: bottom center; }
+.comic-hero.pose-cheer { transform: scale(1.08) rotate(-5deg); }
+.comic-hero.pose-cool { transform: rotate(4deg); filter: drop-shadow(0 0 6px #22d3ee); }
+.comic-hero.pose-power { transform: scale(1.18); filter: drop-shadow(0 0 8px #f59e0b); }
+.comic-bubble { position: absolute; top: 5px; left: 5px; right: 5px; padding: 3px 6px; border-radius: 12px; background: #fff; color: #1a1440; text-align: center; font-size: .72rem; line-height: 1.1; }
+.comic-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.comic-strip .comic-panel { width: 100%; }
+.comic-card { display: flex; flex-direction: column; gap: 8px; }
+@media (max-height: 480px) and (orientation: landscape) { .comic-panel:not(.comic-strip .comic-panel) { width: 22vh; } .comic-make { display: grid; grid-template-columns: 1fr 1.3fr; gap: 6px 12px; align-content: start; grid-auto-rows: min-content; } .comic-make > * { min-width: 0; } .comic-make > .bar { grid-column: 1 / -1; } .comic-make > .comic-panel { grid-row: 2 / 5; } .comic-make .paged, .comic-make > .note, .comic-make > .btn-grid { grid-column: 2; } }
+.comic-card { grid-column: 1 / -1; align-self: start; }
+.item-grid:has(.comic-card) { grid-template-columns: 1fr; grid-auto-rows: auto; }
+@media (max-height: 480px) and (orientation: landscape) { .comic-strip { max-width: 60vh; margin: 0 auto; } }
+.comic-card { align-items: stretch; width: 100%; }
+.comic-strip { width: 100%; }

@@ -18,6 +18,7 @@ export const DESTINATIONS: Destination[] = [
   { id: 'raid', label: 'Boss Raid', icon: '🐲', tint: '#ef4444', blurb: 'The whole school fights a boss together.', milestone: 'Events' },
   { id: 'secret', label: 'Secret Hunt', icon: '✨', tint: '#fde047', blurb: 'Find the hidden sparkle before other squads.', milestone: 'Events' },
   { id: 'stickers', label: 'Stickers', icon: '🏷️', tint: '#f472b6', blurb: 'Make stickers and give them to your squad.', milestone: 'Collections' },
+  { id: 'comics', label: 'Comics', icon: '💬', tint: '#fb923c', blurb: 'Build a three-panel comic and share it with your squad.', milestone: 'Collections' },
   { id: 'quest', label: 'Daily Quest', icon: '🎯', tint: '#f59e0b', blurb: 'Three tasks a day and a streak that grows.', milestone: 'Rewards' },
   { id: 'missions', label: 'Missions', icon: '📋', tint: '#22d3ee', blurb: 'Home missions from your grown-up and class missions from your teacher.', milestone: 'Parents, teachers and the Sensei' },
   { id: 'hero', label: 'My Hero', icon: '🦸', tint: '#a78bfa', blurb: 'Wardrobe, shop and skills for your hero.', milestone: 'Collections' },
