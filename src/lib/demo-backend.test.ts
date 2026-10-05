@@ -216,6 +216,21 @@ describe('demo backend: grown-ups and missions', () => {
     expect(after).toMatchObject({ damage: 10, myDamage: 10, struckToday: true, strikers: 1 });
   });
 
+  it('hides a weekly secret: each hero finds it once and the first squad wins the card', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    const s0 = await b.secretState();
+    expect(s0).toMatchObject({ found: false, won: false, mySquadWon: false });
+    expect(await b.secretFind()).toMatchObject({ ok: true, firstSquad: false });
+    expect(await b.secretFind()).toMatchObject({ ok: false });
+    expect(await b.secretClaim()).toEqual({ ok: false });
+    expect(await b.secretState()).toMatchObject({ found: true, finders: 1 });
+    await b.signOut();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    await expect(b.senseiSecretSet('learn', '', s0.card.id)).rejects.toThrow('already found');
+    expect((await b.senseiSecret()).finders).toBe(1);
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);
