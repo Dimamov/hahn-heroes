@@ -629,3 +629,7 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 @media (max-height: 480px) and (orientation: landscape) { .showcase { display: grid; grid-template-columns: 1fr 1.3fr; gap: 8px 12px; align-content: start; } .showcase > * { min-width: 0; } .showcase > .bar { grid-column: 1 / -1; } .showcase .paged { min-height: 0; } .showcase-stage .profile-hero { height: 110px; } }
 .title-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 @media (max-height: 480px) and (orientation: landscape) { .title-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; } .title-chip { padding: 6px 8px; font-size: .8rem; } }
+
+/* Read aloud */
+.read-aloud { width: 44px; height: 44px; border-radius: 50%; border: 0; background: #ffffff1c; color: inherit; font-size: 1.3rem; }
+.read-aloud[aria-pressed="true"] { background: #fbbf2433; }

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSession } from '../App.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
+import { ReadAloud } from '../components/ReadAloud.tsx';
+import { questionText } from '../lib/speak.ts';
 import type { AnswerResult, PracticeQuestion, Subject, SubjectProgress, SurgeView } from '../lib/backend.ts';
 
 export const SUBJECT_INFO: Record<Subject, { label: string; icon: string; blurb: string }> = {
@@ -119,7 +121,7 @@ export function Practice({ subject }: { subject: Subject }) {
 
   return (
     <main className="screen">
-      <ScreenBar title={`${info.label} ${i + 1}/${set.questions.length}`} onBack={back} />
+      <ScreenBar title={`${info.label} ${i + 1}/${set.questions.length}`} onBack={back} right={<ReadAloud text={questionText(question, q.choices, passage)} />} />
       {surge && (surge.active && surge.endAt > Date.now()
         ? <div className="surge on" role="status">⚡ Nexus Surge! Points x{surge.mult} · {Math.floor((surge.endAt - Date.now()) / 60000)}:{String(Math.floor(((surge.endAt - Date.now()) % 60000) / 1000)).padStart(2, '0')} left{surge.started ? ' 🎉 It just started!' : ''}</div>
         : <div className="surge" role="status">⚡ Surge: {surge.streak}/{surge.need} right in a row</div>)}
