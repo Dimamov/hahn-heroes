@@ -17,7 +17,7 @@ import { CARDS, cardById, fairness as tradeFairness, type OfferItem, type Rarity
 import { SKILLS, dailyBonus, growthMultipliers, surgeRules } from './skills.ts';
 import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
-import type { Pose } from './showcase.ts';
+import { EMOTES, type EmoteId, type Pose } from './showcase.ts';
 import {
   AdultAuthError, HOUSE_COLORS, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
   type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
@@ -279,7 +279,7 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
-  showcase?: { heroId: string; title: string; pose: Pose }[];
+  showcase?: { heroId: string; title: string; pose: Pose; emote?: string }[];
   eventEdits?: Record<string, { starts: string; ends: string; enabled: boolean }>;
   challenge?: { week: string; theme: string; goal: number; coins: number } | null;
   adv?: { heroId: string; caseId: string; solved: string[]; done: boolean }[];
@@ -449,6 +449,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     };
   };
   /** Mirrors title_unlocked(): each title is worked out from what the hero actually did. */
+  const xpOf = (heroId: string) => db.ledger.filter((r) => r.heroId === heroId && r.currency === 'xp').reduce((s, r) => s + r.amount, 0);
   const unlockedTitles = (heroId: string): string[] => {
     const mine = db.ledger.filter((r) => r.heroId === heroId && r.currency === 'coins');
     const xp = db.ledger.filter((r) => r.heroId === heroId && r.currency === 'xp').reduce((s, r) => s + r.amount, 0);
@@ -1414,6 +1415,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       }
       return {
         mine: owner.id === me.id, name: owner.displayName, starter: owner.starter,
+        emote: (db.showcase ?? []).find((s) => s.heroId === owner.id)?.emote ?? 'wave',
         layout: [...((db.rooms ??= []).find((r) => r.heroId === owner.id)?.layout ?? [])].sort((a, b) => a.cell - b.cell),
         equipped: Object.fromEntries((db.equipped ??= []).filter((e) => e.heroId === owner.id && e.itemId).map((e) => [e.slot, e.itemId])),
         owned: owner.id === me.id ? (db.owned ??= []).filter((o) => o.heroId === me.id && itemById(o.itemId)?.kind === 'decor').map((o) => o.itemId) : null,
@@ -1450,7 +1452,16 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     async showcaseState() {
       const me = meHero().id;
       const row = (db.showcase ?? []).find((s) => s.heroId === me);
-      return { title: row?.title ?? 'rookie', pose: row?.pose ?? 'stand', unlocked: unlockedTitles(me) };
+      return { title: row?.title ?? 'rookie', pose: row?.pose ?? 'stand', emote: (row?.emote ?? 'wave') as EmoteId, xp: xpOf(me), unlocked: unlockedTitles(me) };
+    },
+    async emoteSet(emote) {
+      const me = meHero().id;
+      const e = EMOTES.find((x) => x.id === emote);
+      if (!e || e.xp > xpOf(me)) throw new Error('you have not unlocked that emote yet');
+      const rows = (db.showcase ??= []);
+      const row = rows.find((s) => s.heroId === me);
+      if (row) row.emote = emote; else rows.push({ heroId: me, title: 'rookie', pose: 'stand', emote });
+      commit();
     },
     async showcaseSet(title, pose) {
       const me = meHero().id;

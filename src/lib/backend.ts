@@ -244,6 +244,8 @@ export interface DormView {
   mine: boolean;
   name: string;
   starter: string;
+  /** The owner's chosen emote, shown on their hero in the room. */
+  emote: string;
   layout: { item: string; cell: number }[];
   equipped: Record<string, string | null>;
   /** Decorations this hero owns. Only sent for your own room. */
@@ -588,6 +590,8 @@ export interface Backend {
   senseiSetEvent(id: string, starts: string, ends: string, enabled: boolean): Promise<void>;
   showcaseState(): Promise<ShowcaseState>;
   showcaseSet(title: string, pose: string): Promise<void>;
+  /** Pick an emote you have enough XP for. */
+  emoteSet(emote: string): Promise<void>;
   questState(): Promise<QuestState>;
   questClaim(): Promise<{ awarded: number; duplicate: boolean }>;
   streakClaim(days: number): Promise<{ awarded: number; duplicate: boolean }>;

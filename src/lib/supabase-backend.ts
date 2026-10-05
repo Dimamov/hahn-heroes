@@ -418,6 +418,9 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async showcaseState() {
       return rpc('showcase_state');
     },
+    async emoteSet(emote) {
+      await rpc('emote_set', { p_emote: emote });
+    },
     async showcaseSet(title, pose) {
       await rpc('showcase_set', { p_title: title, p_pose: pose });
     },
