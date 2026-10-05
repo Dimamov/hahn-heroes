@@ -812,3 +812,13 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .whack-pop { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; transform: translateY(100%); transition: transform .12s ease-out; }
 .whack-pop.up { transform: translateY(8%); }
 @media (max-height: 480px) and (orientation: landscape) { .whack-board { grid-template-columns: repeat(3, 1fr); width: min(100%, 90vh); max-height: 70vh; } .whack-hole { font-size: min(9vw, 11vh); } }
+
+/* Rhythm Tap song picker */
+.song-btn { display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.15; }
+.song-btn small { font-size: .72rem; font-weight: 600; opacity: .75; }
+.hint.credits { font-size: .75rem; opacity: .7; margin: 0; }
+.rt-songs { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+@media (max-height: 480px) and (orientation: landscape) {
+  .rt-songs .list-page { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start; }
+  .song-btn { min-height: 0; padding: 6px 10px; }
+}
