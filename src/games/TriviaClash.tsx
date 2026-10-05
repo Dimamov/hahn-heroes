@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from '../App.tsx';
 import { GameFrame } from './GameFrame.tsx';
+import { ChatButton } from './ChatBox.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
 import type { RoomState } from '../lib/backend.ts';
 
@@ -63,7 +64,7 @@ export function TriviaClash() {
 
   if (room.state === 'lobby') {
     return (
-      <GameFrame title="Trivia Clash" onExit={leave}>
+      <GameFrame title="Trivia Clash" onExit={leave} right={<ChatButton />}>
         <p className="hint">Tell your friends this code:</p>
         <div className="big-code"><b>{room.code}</b></div>
         <PlayerList room={room} />
@@ -100,7 +101,7 @@ export function TriviaClash() {
   const reveal = room.phase === 'reveal';
   const picked = room.myChoice ?? null;
   return (
-    <GameFrame title={`Question ${room.idx + 1}/${room.total}`} onExit={leave}>
+    <GameFrame title={`Question ${room.idx + 1}/${room.total}`} onExit={leave} right={<ChatButton />}>
       <div className="rush-timer" aria-label={`${room.secondsLeft} seconds left`}>
         <i style={{ width: `${((room.secondsLeft ?? 0) / (reveal ? 5 : room.seconds ?? 20)) * 100}%` }} />
       </div>

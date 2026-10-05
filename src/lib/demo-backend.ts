@@ -77,6 +77,16 @@ interface SubmissionRow extends ClassResult {
   missionId: string;
   childId: string;
 }
+// A small version of the server's filter, for demo mode.
+const BLOCK_ANYWHERE = ['shit', 'fuck', 'bitch', 'nigg', 'fagg', 'cunt', 'whore', 'slut', 'bastard', 'retard'];
+const BLOCK_WHOLE = ['ass', 'asshole', 'damn', 'crap', 'dick', 'piss', 'fck', 'fuk', 'fag', 'kys', 'wtf', 'stfu', 'hoe', 'sex', 'porn', 'nude'];
+function chatFlagged(text: string): boolean {
+  const map: Record<string, string> = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '@': 'a', '$': 's', '!': 'i' };
+  const clean = [...text.toLowerCase()].map((c) => map[c] ?? c).join('').replace(/[^a-z ]/g, '');
+  const squashed = clean.replace(/ /g, '');
+  return BLOCK_ANYWHERE.some((w) => squashed.includes(w)) || BLOCK_WHOLE.some((w) => new RegExp(`(^| )${w}( |$)`).test(clean));
+}
+
 interface DemoRoom {
   code: string;
   hostId: string;
@@ -109,6 +119,7 @@ interface Db {
   friendships?: { id: string; a: string; b: string; status: 'pending' | 'accepted' | 'declined' | 'removed' }[];
   squads?: { id: string; leader: string; name: string; disbanded: boolean; members: { childId: string; status: 'invited' | 'member' | 'declined' | 'left' }[] }[];
   room?: DemoRoom | null;
+  chat?: { messages: { id: number; childId: string; name: string; body: string; at: number }[]; status: Record<string, { strikes: number; banned: boolean; requested: boolean }> };
   pings?: { userId: string; role: 'hero' | 'parent' | 'teacher' | 'sensei'; screen: string; at: number }[];
   current: string | null; // hero id or adult id
 }
@@ -773,6 +784,58 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
         }
       }
       return out;
+    },
+    async chatSend(text) {
+      const me = meHero();
+      const r = db.room;
+      if (!r || !r.players.some((p) => p.id === me.id)) throw new Error('join a room to chat');
+      const chat = (db.chat ??= { messages: [], status: {} });
+      const st = (chat.status[me.id] ??= { strikes: 0, banned: false, requested: false });
+      const body = text.trim().replace(/\s+/g, ' ');
+      if (!body || body.length > 80) throw new Error('messages are 1 to 80 letters');
+      if (st.banned) return { ok: false, reason: 'banned' };
+      const mine = chat.messages.filter((m) => m.childId === me.id).pop();
+      if (mine && at() - mine.at < 1000) return { ok: false, reason: 'slow' };
+      if (/(https?:|www\.|\.com|\.net|\.org|@)/i.test(body) || /(\d\D*){6}/.test(body)) return { ok: false, reason: 'private' };
+      if (chatFlagged(body)) {
+        st.strikes += 1;
+        st.banned = st.strikes >= 2;
+        commit();
+        return { ok: false, reason: st.banned ? 'banned' : 'warning' };
+      }
+      chat.messages.push({ id: chat.messages.length + 1, childId: me.id, name: me.displayName, body, at: at() });
+      commit();
+      return { ok: true };
+    },
+    async chatRead() {
+      const me = meHero().id;
+      const chat = (db.chat ??= { messages: [], status: {} });
+      return {
+        banned: !!chat.status[me]?.banned,
+        messages: chat.messages.slice(-25).map((m) => ({ id: m.id, name: m.name, me: m.childId === me, body: m.body })),
+      };
+    },
+    async childChat(childId) {
+      if (!isParentOf(childId)) throw new Error('not your child');
+      const st = (db.chat ??= { messages: [], status: {} }).status[childId];
+      return { banned: !!st?.banned, requested: !!st?.banned && st.requested };
+    },
+    async chatRequestUnlock(childId) {
+      if (!isParentOf(childId)) throw new Error('not your child');
+      const st = (db.chat ??= { messages: [], status: {} }).status[childId];
+      if (st?.banned) { st.requested = true; commit(); }
+    },
+    async senseiChatRequests() {
+      meAdult('sensei');
+      return Object.entries((db.chat ??= { messages: [], status: {} }).status).filter(([, st]) => st.banned).map(([id, st]) => {
+        const h = heroById(id);
+        return { childId: id, name: h?.displayName ?? 'Hero', grade: h?.grade ?? 5, requested: st.requested };
+      });
+    },
+    async chatUnlock(childId) {
+      meAdult('sensei');
+      const st = (db.chat ??= { messages: [], status: {} }).status[childId];
+      if (st?.banned) { st.banned = false; st.requested = false; st.strikes = 1; commit(); }
     },
     async senseiOverview() {
       meAdult('sensei');

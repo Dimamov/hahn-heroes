@@ -324,6 +324,26 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
         rightChoice: d.right_choice, explanation: d.explanation, myPoints: d.my_points,
       };
     },
+    async chatSend(text) {
+      const d = await rpc('chat_send', { p_text: text });
+      if (d.ok) return { ok: true };
+      return { ok: false, reason: d.banned ? 'banned' : d.warning ? 'warning' : d.private ? 'private' : 'slow' };
+    },
+    async chatRead() {
+      return rpc('chat_read');
+    },
+    async childChat(childId) {
+      return rpc('child_chat', { p_child: childId });
+    },
+    async chatRequestUnlock(childId) {
+      await rpc('chat_request_unlock', { p_child: childId });
+    },
+    async senseiChatRequests() {
+      return ((await rpc('sensei_chat_requests')) as any[]).map((r) => ({ childId: r.child_id, name: r.name, grade: r.grade, requested: r.requested }));
+    },
+    async chatUnlock(childId) {
+      await rpc('chat_unlock', { p_child: childId });
+    },
     async senseiOverview() {
       const d = await rpc('sensei_overview');
       return {

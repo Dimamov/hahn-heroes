@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import type { Adult, Backend, PendingTeacher, SenseiOverview, SenseiTraffic } from '../../lib/backend.ts';
+import type { Adult, Backend, ChatRequest, PendingTeacher, SenseiOverview, SenseiTraffic } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
-type View = 'home' | 'teachers' | 'announce' | 'trivia' | 'traffic';
+type View = 'home' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat';
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
@@ -16,6 +16,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
 
   if (view === 'teachers') return <Teachers backend={backend} onBack={back} />;
   if (view === 'announce') return <Announce backend={backend} onBack={back} />;
+  if (view === 'chat') return <ChatUnlocks backend={backend} onBack={back} />;
   if (view === 'traffic') return <Traffic backend={backend} onBack={back} />;
   if (view === 'trivia') return <Trivia backend={backend} current={overview?.triviaNight} onBack={back} />;
 
@@ -33,6 +34,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
         </div>
       )}
       <div className="grow" />
+      <button className="btn" onClick={() => setView('chat')}>💬 Chat unlocks</button>
       <button className="btn" onClick={() => setView('traffic')}>📈 Players and traffic</button>
       <button className="btn" onClick={() => setView('teachers')}>Teachers to approve{overview && overview.pendingTeachers > 0 ? ` (${overview.pendingTeachers})` : ''}</button>
       <button className="btn" onClick={() => setView('announce')}>📣 Post an announcement</button>
@@ -183,6 +185,31 @@ function Traffic({ backend, onBack }: { backend: Backend; onBack: () => void }) 
         </>
       )}
       <div className="grow" />
+    </main>
+  );
+}
+
+function ChatUnlocks({ backend, onBack }: { backend: Backend; onBack: () => void }) {
+  const [list, setList] = useState<ChatRequest[] | null>(null);
+  const load = () => backend.senseiChatRequests().then(setList).catch(() => setList([]));
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const unlock = async (r: ChatRequest) => { await backend.chatUnlock(r.childId).catch(() => {}); load(); };
+  return (
+    <main className="screen">
+      <ScreenBar title="Chat unlocks" onBack={onBack} />
+      <p className="hint">Heroes whose chat is paused. Parents can ask for an unlock.</p>
+      {list === null ? <div className="spinner" /> : (
+        <PagedList items={list} perPage={3} empty="Nobody's chat is paused."
+          render={(r) => (
+            <div className="card" key={r.childId}>
+              <div className="card-top"><b>{r.name}</b><small className="muted">Grade {r.grade}</small></div>
+              <small className="muted">{r.requested ? 'A parent asked for an unlock' : 'No request yet'}</small>
+              <div className="card-bottom"><span />
+                <button className="btn small primary" onClick={() => unlock(r)}>Unlock chat</button>
+              </div>
+            </div>
+          )} />
+      )}
     </main>
   );
 }
