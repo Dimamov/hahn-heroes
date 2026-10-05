@@ -200,9 +200,7 @@ export default function App() {
       {screen === 'adventures' && <Adventures />}
       {screen === 'quest' && <Quest />}
       {screen === 'showcase' && <Showcase />}
-<<<<<<< HEAD
       {screen === 'privacy' && <Privacy onBack={() => setScreen('profile')} />}
-=======
       {screen === 'guide' && <Guide />}
       {screen === 'myweek' && <MyWeek />}
       {screen === 'raid' && <Raid />}
@@ -219,7 +217,6 @@ export default function App() {
       {treasure && !treasure.done && HUNTS[treasure.hunt].steps[treasure.step].place === screen && <TreasureSpot step={treasure.step} place={screen} onFound={() => backend.treasureState().then(setTreasure).catch(() => undefined)} />}
       {screen === 'secret' && <Secret />}
       {secret && !secret.found && secret.place === screen && <SecretSpot week={Math.floor(Date.parse(new Date().toISOString().slice(0, 10)) / 604800000)} onFound={() => backend.secretState().then(setSecret).catch(() => undefined)} />}
->>>>>>> origin/main
       {screen === 'game:pattern-pulse' && <PatternPulse />}
       {screen === 'game:rhythm-tap' && <RhythmTap />}
       {screen === 'game:arena' && <Arena />}
@@ -237,11 +234,7 @@ export default function App() {
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
-<<<<<<< HEAD
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'privacy', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
-=======
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'badges', 'treasure', 'base', 'studio', 'race', 'kindness', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
->>>>>>> origin/main
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'badges', 'treasure', 'base', 'studio', 'race', 'kindness', 'privacy', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }
