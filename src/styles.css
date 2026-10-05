@@ -191,7 +191,7 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 
 /* Profile and placeholders */
 .profile { display: flex; gap: 14px; align-items: center; min-height: 0; flex: 1 1 auto; }
-.profile-hero { flex: 0 1 46%; min-width: 0; max-height: 52vh; height: auto; object-fit: contain; }
+.profile-hero { flex: 0 1 46%; min-width: 0; max-height: 40vh; height: auto; object-fit: contain; }
 .profile-info { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
 .profile-info strong { font: 800 1.5rem 'Baloo 2', 'Nunito', system-ui; line-height: 1.1; }
 .profile-info code { font: 800 1.2rem 'Baloo 2', system-ui; color: var(--cyan); letter-spacing: .08em; white-space: nowrap; }
@@ -940,3 +940,19 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .hw-back { top: 30%; left: 4%; transform: translateX(-30%) rotate(-12deg); font-size: 1.9em; opacity: .9; z-index: 0; }
 .hero-wrap .stage-hero { position: relative; z-index: 1; }
 .hw-hat, .hw-face, .hw-outfit { z-index: 2; }
+
+/* Link your parent */
+.parent-card { display: flex; gap: 12px; align-items: center; text-align: left; width: 100%; padding: 12px 14px; border-radius: 18px; border: 2px solid var(--cyan); background: linear-gradient(135deg, #22d3ee22, #a855f722); color: inherit; }
+.parent-card-icon { font-size: 2.2rem; }
+.parent-card b { display: block; font-size: 1.05rem; }
+.parent-card small { display: block; font-size: .8rem; color: var(--muted); line-height: 1.25; }
+.parent-card.compact { padding: 8px 12px; }
+.parent-card.compact .parent-card-icon { font-size: 1.6rem; }
+.profile-info .stats { margin-top: 4px; gap: 4px; }
+.profile-info .stats div { padding: 3px 10px; }
+.profile-info .stats dt { font-size: .85rem; }
+.profile-info strong { font-size: 1.3rem; }
+.profile-info .btn.link { font-size: .85rem; padding: 0; text-align: left; }
+.profile-info { gap: 3px; }
+.profile-info .stats { margin-top: 0; }
+.parent-card { margin-top: 4px; }

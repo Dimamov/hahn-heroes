@@ -1,3 +1,4 @@
+import { ParentLinkCard } from '../components/ParentLinkCard.tsx';
 import { useCallback, useEffect, useState } from 'react';
 import { useSession } from '../App.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
@@ -61,6 +62,7 @@ export function MyHero() {
           {WEAR_SLOTS.map((s) => <span key={s.id} className="worn-slot" title={s.label}>{worn[s.id] ? itemById(worn[s.id]!)?.icon : <i>{s.icon}</i>}</span>)}
         </div>
       </div>
+      <ParentLinkCard compact />
       <div className="chips">
         <button className={`chip${tab === 'wardrobe' ? ' chosen' : ''}`} onClick={() => setTab('wardrobe')}>Wardrobe</button>
         <button className={`chip${tab === 'shop' ? ' chosen' : ''}`} onClick={() => setTab('shop')}>Shop</button>

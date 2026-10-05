@@ -3,6 +3,7 @@ import { useSession } from '../App.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
 import { formatHeroCode } from '../../supabase/functions/_shared/kid-auth.ts';
 import type { LookState } from '../lib/look.ts';
+import { ParentLinkCard } from '../components/ParentLinkCard.tsx';
 import { LookCard } from '../components/LookCard.tsx';
 import { titleById, type ShowcaseState } from '../lib/showcase.ts';
 
@@ -23,7 +24,7 @@ export function Profile() {
           <span>Grade {hero.grade}{look?.pinned ? ` · ❤ ${look.likes}` : ''}</span>
           {reveal
             ? <code aria-label="Your secret sign-in code">{formatHeroCode(hero.heroCode)}</code>
-            : <button className="btn link" onClick={() => setReveal(true)}>Show my secret sign-in code</button>}
+            : <button className="btn link" onClick={() => setReveal(true)}>Show my sign-in code</button>}
           <dl className="stats">
             <div><dt>💎 Nexus points</dt><dd>{balances.coins}</dd></div>
             <div><dt>⭐ XP</dt><dd>{balances.xp}</dd></div>
@@ -31,6 +32,7 @@ export function Profile() {
           </dl>
         </div>
       </div>
+      <ParentLinkCard compact />
       {backend.mode === 'demo' && <p className="note">Demo mode: this hero lives on this device only.</p>}
       <div className="grow" />
       <div className="btn-grid profile-actions">

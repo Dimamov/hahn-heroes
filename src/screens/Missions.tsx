@@ -301,6 +301,7 @@ export function ParentCode() {
     <main className="screen center">
       <ScreenBar title="Grown-up code" onBack={() => go('profile')} />
       <p className="hint">Show this to your parent or guardian. They make their own account, then type this code or scan it. It works once and ends in 7 days.</p>
+      <p className="note">With a parent account they can see how your week is going, give you home chores and approve them, and get your weekly summary. They never see your secret sign-in code.</p>
       {info ? (
         <>
           <code className="big-code">{formatHeroCode(info.code)}</code>

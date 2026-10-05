@@ -720,6 +720,10 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const r = award(meHero().id, 'coins', DAILY_LOGIN_COINS + dailyBonus(hasSkill(meHero().id)), 'daily', dailyKey());
       return { awarded: r.awarded, duplicate: r.duplicate };
     },
+    async parentCount() {
+      const me = meHero().id;
+      return db.parentLinks.filter((l) => l.childId === me).length;
+    },
     async linkCode() {
       const id = meHero().id;
       let row = db.linkCodes.filter((c) => c.childId === id && !c.used && c.expiresAt > at()).pop();
