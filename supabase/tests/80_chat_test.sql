@@ -89,3 +89,28 @@ begin
   perform as_user(11); perform room_leave();
   perform as_admin();
 end $$;
+
+-- Friend chat: only accepted friends, same filter and pause.
+do $$
+declare r jsonb;
+begin
+  perform as_admin();
+  insert into friendships (a, b, status) values (u(11), u(13), 'accepted');
+  perform as_user(11);
+  perform expect_error(format('select friend_chat_send(%L, ''hi'')', u(21)), 'only chat with friends');
+  assert (friend_chat_send(u(13), 'hey friend!')->>'ok')::boolean, 'friend message posts';
+  assert (friend_chat_send(u(13), 'too fast')->>'slow')::boolean, 'one a second';
+  perform pg_sleep(1.1);
+  assert (friend_chat_send(u(13), 'call 555 123 4567')->>'private')::boolean, 'numbers blocked';
+  perform as_user(13);
+  r := friend_chat_read(u(11));
+  assert (r->>'can_chat')::boolean and jsonb_array_length(r->'messages') = 1 and not (r->'messages'->0->>'me')::boolean, 'friend sees it';
+  perform as_admin();
+  update friendships set status = 'removed' where a = u(11) and b = u(13);
+  perform as_user(13);
+  r := friend_chat_read(u(11));
+  assert not (r->>'can_chat')::boolean and jsonb_array_length(r->'messages') = 0, 'removed friend, closed';
+  perform as_admin();
+  delete from friend_messages;
+  delete from friendships where a = u(11) and b = u(13);
+end $$;

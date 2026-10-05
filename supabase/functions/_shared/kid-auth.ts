@@ -24,14 +24,36 @@ export type StarterHeroId = (typeof STARTER_HERO_IDS)[number];
 
 /** Hero names come from a picker, never free typing, so every name is school-safe. */
 export const NAME_ADJECTIVES = [
-  'Brave', 'Bright', 'Swift', 'Clever', 'Mighty', 'Cosmic', 'Glowing', 'Lucky',
-  'Bold', 'Kind', 'Fearless', 'Radiant', 'Silent', 'Stellar', 'Thunder', 'Crystal',
-  'Electric', 'Golden', 'Hidden', 'Shining', 'Rapid', 'Steady', 'Wild', 'Wise',
+  'Brave', 'Bright', 'Swift', 'Clever', 'Mighty', 'Cosmic', 'Glowing', 'Lucky', 'Bold', 'Kind', 'Fearless',
+  'Radiant', 'Silent', 'Stellar', 'Thunder', 'Crystal', 'Electric', 'Golden', 'Hidden', 'Shining', 'Rapid',
+  'Steady', 'Wild', 'Wise', 'Blazing', 'Shadow', 'Spirit', 'Lunar', 'Solar', 'Crimson', 'Azure', 'Violet',
+  'Emerald', 'Silver', 'Scarlet', 'Indigo', 'Amber', 'Ember', 'Frost', 'Misty', 'Stormy', 'Sunny', 'Starry',
+  'Mystic', 'Secret', 'Legendary', 'Epic', 'Ultra', 'Turbo', 'Super', 'Hyper', 'Mega', 'Astral', 'Celestial',
+  'Infinite', 'Eternal', 'Ancient', 'Noble', 'Loyal', 'Daring', 'Gallant', 'Valiant', 'Heroic', 'Dazzling',
+  'Sparkling', 'Gleaming', 'Flaming', 'Icy', 'Windy', 'Rocky', 'Mossy', 'Dreamy', 'Sleepy', 'Sneaky',
+  'Speedy', 'Zippy', 'Bouncy', 'Fluffy', 'Gentle', 'Playful', 'Charming', 'Cheerful', 'Joyful', 'Jolly',
+  'Snappy', 'Plucky', 'Feisty', 'Fiery', 'Frosty', 'Prismatic', 'Neon', 'Cyber', 'Quantum', 'Atomic',
+  'Rainbow', 'Midnight', 'Dawn', 'Twilight', 'Sakura', 'Kawaii', 'Awesome', 'Amazing', 'Fantastic',
+  'Marvelous', 'Magnificent', 'Unstoppable', 'Invincible', 'Phantom', 'Ghostly', 'Steel', 'Iron', 'Jade',
+  'Pearl', 'Coral', 'Cobalt', 'Mythic', 'Savage', 'Primal', 'Elemental', 'Arcane', 'Enchanted', 'Magical',
+  'Wandering', 'Roaming', 'Soaring', 'Rising', 'Charging', 'Dashing', 'Glimmering', 'Shimmering',
 ] as const;
 export const NAME_NOUNS = [
-  'Comet', 'Falcon', 'Phoenix', 'Wolf', 'Owl', 'Nova', 'Spark', 'Storm',
-  'Tiger', 'Dragon', 'Star', 'Rocket', 'Ranger', 'Knight', 'Pilot', 'Fox',
-  'Eagle', 'Lion', 'Panther', 'Guardian', 'Voyager', 'Blaze', 'Echo', 'Orbit',
+  'Comet', 'Falcon', 'Phoenix', 'Wolf', 'Owl', 'Nova', 'Spark', 'Storm', 'Tiger', 'Dragon', 'Star', 'Rocket',
+  'Ranger', 'Knight', 'Pilot', 'Fox', 'Eagle', 'Lion', 'Panther', 'Guardian', 'Voyager', 'Blaze', 'Echo',
+  'Orbit', 'Ninja', 'Samurai', 'Shinobi', 'Ronin', 'Kitsune', 'Tanuki', 'Sakura', 'Hikari', 'Kaze', 'Tsuki',
+  'Hoshi', 'Sora', 'Yume', 'Akari', 'Mochi', 'Boba', 'Ramune', 'Onigiri', 'Dango', 'Taiyaki', 'Neko', 'Inu',
+  'Usagi', 'Koi', 'Tora', 'Ryu', 'Raiden', 'Tsunami', 'Typhoon', 'Tornado', 'Cyclone', 'Thunderbolt',
+  'Lightning', 'Aurora', 'Meteor', 'Galaxy', 'Nebula', 'Pulsar', 'Quasar', 'Eclipse', 'Horizon', 'Vortex',
+  'Phantom', 'Specter', 'Spirit', 'Wisp', 'Sprite', 'Golem', 'Griffin', 'Pegasus', 'Unicorn', 'Hydra',
+  'Kraken', 'Basilisk', 'Chimera', 'Wyvern', 'Sphinx', 'Cerberus', 'Thunderbird', 'Firebird', 'Moonbeam',
+  'Sunbeam', 'Starlight', 'Stardust', 'Moonlight', 'Skyblade', 'Wingmaster', 'Champion', 'Hero', 'Legend',
+  'Titan', 'Striker', 'Warden', 'Sentinel', 'Paladin', 'Mage', 'Wizard', 'Sorcerer', 'Alchemist', 'Monk',
+  'Archer', 'Scout', 'Racer', 'Dasher', 'Glider', 'Jumper', 'Spinner', 'Sparkler', 'Dreamer', 'Wanderer',
+  'Seeker', 'Hunter', 'Defender', 'Protector', 'Captain', 'Commander', 'Ace', 'Prodigy', 'Rookie', 'Hotshot',
+  'Whirlwind', 'Frostbite', 'Rainbow', 'Cloud', 'Panda', 'Penguin', 'Otter', 'Bunny', 'Kitten', 'Puppy',
+  'Dolphin', 'Shark', 'Whale', 'Octopus', 'Turtle', 'Gecko', 'Mantis', 'Beetle', 'Hawk', 'Raven', 'Crane',
+  'Sparrow', 'Lynx', 'Jaguar', 'Cobra', 'Viper', 'Bison', 'Stallion',
 ] as const;
 
 export function heroDisplayName(adjective: string, noun: string): string | null {

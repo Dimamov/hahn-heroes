@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from '../App.tsx';
-import type { ChatMessage } from '../lib/backend.ts';
+import type { ChatMessage, ChatResult } from '../lib/backend.ts';
 
 const NOTES = {
   warning: 'Please keep chat friendly. One more and chat is paused.',
@@ -13,6 +13,17 @@ const NOTES = {
 /** A small chat for a game room. A button opens a sheet; the server filters every message. */
 export function ChatButton() {
   const { backend } = useSession();
+  return <ChatPanel title="Room chat" read={() => backend.chatRead()} send={(t) => backend.chatSend(t)} />;
+}
+
+/** Direct chat with one accepted friend, same sheet and same filter. */
+export function FriendChatButton({ friendId, name }: { friendId: string; name: string }) {
+  const { backend } = useSession();
+  return <ChatPanel title={`Chat with ${name.split(' ')[0]}`} read={() => backend.friendChatRead(friendId)} send={(t) => backend.friendChatSend(friendId, t)} />;
+}
+
+type ReadResult = { banned: boolean; canChat: boolean; messages: ChatMessage[] };
+function ChatPanel({ title, read, send: sendFn }: { title: string; read: () => Promise<ReadResult>; send: (text: string) => Promise<ChatResult> }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [banned, setBanned] = useState(false);
@@ -23,11 +34,12 @@ export function ChatButton() {
 
   useEffect(() => {
     let alive = true;
-    const load = () => backend.chatRead().then((d) => { if (alive) { setMessages(d.messages); setBanned(d.banned); setCanChat(d.canChat); } }).catch(() => undefined);
+    const load = () => read().then((d) => { if (alive) { setMessages(d.messages); setBanned(d.banned); setCanChat(d.canChat); } }).catch(() => undefined);
     load();
     const id = setInterval(load, 2000);
     return () => { alive = false; clearInterval(id); };
-  }, [backend]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const last = messages.length ? messages[messages.length - 1].id : 0;
   useEffect(() => { if (open) setSeen(last); }, [open, last]);
@@ -41,10 +53,10 @@ export function ChatButton() {
     if (!body) return;
     setText('');
     try {
-      const r = await backend.chatSend(body);
+      const r = await sendFn(body);
       setNote(r.ok ? '' : NOTES[r.reason]);
       if (!r.ok && r.reason === 'banned') setBanned(true);
-      if (r.ok) setMessages((await backend.chatRead()).messages);
+      if (r.ok) setMessages((await read()).messages);
     } catch { setNote("Couldn't send that."); }
   };
 
@@ -54,10 +66,10 @@ export function ChatButton() {
         💬{unread && <i className="red-dot" aria-label="New messages" />}
       </button>
       {open && (
-        <div className="chat-sheet" role="dialog" aria-label="Room chat">
+        <div className="chat-sheet" role="dialog" aria-label={title}>
           <header className="bar">
             <button className="back" onClick={() => setOpen(false)} aria-label="Close chat">✕</button>
-            <h2>Room chat</h2>
+            <h2>{title}</h2>
           </header>
           <div className="chat-list" ref={listRef}>
             {messages.length === 0 && <p className="note">Say hi! Be kind and keep it short.</p>}

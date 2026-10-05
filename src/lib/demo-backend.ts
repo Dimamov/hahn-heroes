@@ -103,7 +103,7 @@ interface SubmissionRow extends ClassResult {
 // A small version of the server's filter, for demo mode.
 const BLOCK_ANYWHERE = ['shit', 'fuck', 'bitch', 'nigg', 'fagg', 'cunt', 'whore', 'slut', 'bastard', 'retard'];
 const BLOCK_WHOLE = ['ass', 'asshole', 'damn', 'crap', 'dick', 'piss', 'fck', 'fuk', 'fag', 'kys', 'wtf', 'stfu', 'hoe', 'sex', 'porn', 'nude'];
-function chatFlagged(text: string): boolean {
+export function chatFlagged(text: string): boolean {
   const map: Record<string, string> = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '@': 'a', '$': 's', '!': 'i' };
   const clean = [...text.toLowerCase()].map((c) => map[c] ?? c).join('').replace(/[^a-z ]/g, '');
   const squashed = clean.replace(/ /g, '');
@@ -330,6 +330,7 @@ interface Db {
   houseOptions?: { classId: string; options: (HouseIdentity & { id: number })[]; open: boolean; votes: Record<string, number> }[];
   room?: DemoRoom | null;
   drawingReports?: { artist: string; reporter: string; word: string; at: string }[];
+  friendChat?: { id: number; from: string; to: string; name: string; body: string; at: number }[];
   chat?: { messages: { id: number; childId: string; name: string; body: string; at: number }[]; status: Record<string, { strikes: number; banned: boolean; requested: boolean }> };
   hiddenGames?: string[];
   pings?: { userId: string; role: 'hero' | 'parent' | 'teacher' | 'sensei'; screen: string; at: number }[];
@@ -2602,6 +2603,37 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       chat.messages.push({ id: chat.messages.length + 1, childId: me.id, name: me.displayName, body, at: at() });
       commit();
       return { ok: true };
+    },
+    async friendChatSend(friendId, text) {
+      const me = meHero();
+      if (!areFriends(me.id, friendId)) throw new Error('you can only chat with friends');
+      const chat = (db.chat ??= { messages: [], status: {} });
+      const st = (chat.status[me.id] ??= { strikes: 0, banned: false, requested: false });
+      const body = text.trim().replace(/\s+/g, ' ');
+      if (!body || body.length > 80) throw new Error('messages are 1 to 80 letters');
+      if (st.banned) return { ok: false, reason: 'banned' };
+      const list = (db.friendChat ??= []);
+      const mine = list.filter((m) => m.from === me.id).pop();
+      if (mine && at() - mine.at < 1000) return { ok: false, reason: 'slow' };
+      if (/(https?:|www\.|\.com|\.net|\.org|@)/i.test(body) || /(\d\D*){6}/.test(body)) return { ok: false, reason: 'private' };
+      if (chatFlagged(body)) {
+        st.strikes += 1;
+        st.banned = st.strikes >= 2;
+        commit();
+        return { ok: false, reason: st.banned ? 'banned' : 'warning' };
+      }
+      list.push({ id: list.length + 1, from: me.id, to: friendId, name: me.displayName, body, at: at() });
+      commit();
+      return { ok: true };
+    },
+    async friendChatRead(friendId) {
+      const me = meHero().id;
+      const ok = areFriends(me, friendId);
+      const st = (db.chat ??= { messages: [], status: {} }).status[me];
+      return {
+        banned: !!st?.banned, canChat: ok,
+        messages: !ok ? [] : (db.friendChat ??= []).filter((m) => (m.from === me && m.to === friendId) || (m.from === friendId && m.to === me)).slice(-30).map((m) => ({ id: m.id, name: m.name, me: m.from === me, body: m.body })),
+      };
     },
     async chatRead() {
       const me = meHero().id;

@@ -1052,6 +1052,15 @@ describe('demo backend: grown-ups and missions', () => {
     });
   });
 
+  describe('friend chat', () => {
+    it('only works between accepted friends', async () => {
+      const { b, hero } = await setup();
+      await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+      await expect(b.friendChatSend('someone-else', 'hi')).rejects.toThrow('friends');
+      expect(await b.friendChatRead('someone-else')).toEqual({ banned: false, canChat: false, messages: [] });
+    });
+  });
+
   describe('chat', () => {
     it('warns once, pauses on the second swear, and lets the Sensei unlock after a parent asks', async () => {
       const { b, hero, cls } = await setup();

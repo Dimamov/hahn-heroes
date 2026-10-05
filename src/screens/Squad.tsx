@@ -3,6 +3,7 @@ import { useSession } from '../App.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
 import { PagedList } from '../components/PagedList.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
+import { FriendChatButton } from '../games/ChatBox.tsx';
 import { SQUAD_WORDS, type Friends, type SquadView } from '../lib/backend.ts';
 
 type Tab = 'squad' | 'friends' | 'add';
@@ -121,6 +122,7 @@ function FriendsTab({ friends, squad, run, backend }: { friends: Friends | null;
           <div className="card member" key={f.id}>
             <HeroArt id={f.starter} className="chip-hero" />
             <span><b>{f.name}</b><small className="muted"> Grade {f.grade}</small></span>
+            <FriendChatButton friendId={f.heroId} name={f.name} />
             <button className="btn small ghost" onClick={() => run(() => backend.removeFriend(f.id))}>Remove</button>
           </div>
         )} />
