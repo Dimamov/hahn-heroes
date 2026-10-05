@@ -647,6 +647,11 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 @media (max-height: 480px) and (orientation: landscape) { .profile-hero { max-height: 38vh; } .profile-info { gap: 3px; } .profile-info strong { font-size: 1.2rem; } .profile .stats > div { padding: 4px 10px; } }
 @media (max-height: 480px) and (orientation: landscape) { .big-code b { font-size: 1.3rem; } .big-code { margin: 0; } }
 
+/* Privacy page */
+.privacy-line { margin: 0; line-height: 1.35; }
+@media (max-height: 480px) and (orientation: landscape) { .privacy-line { font-size: .85rem; line-height: 1.25; } }
+.welcome .stack.row { justify-content: center; flex-wrap: wrap; gap: 4px 16px; }
+@media (max-height: 480px) and (orientation: landscape) { .welcome .logo { width: 56px; height: 56px; } .welcome h1 { font-size: 2rem; } .welcome { gap: 4px; } }
 .char-art, .char-photo { display: block; margin: 0 auto; max-width: 100%; max-height: 32vh; object-fit: contain; border-radius: 12px; }
 @media (max-height: 480px) and (orientation: landscape) {
   .char-art, .char-photo { max-height: 12vh; }
