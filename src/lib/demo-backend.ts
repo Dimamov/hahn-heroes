@@ -205,12 +205,34 @@ function demoDrawingTick(r: DemoRoom, now: number) {
   }
 }
 
+interface DemoSeal { qids: string[]; pos: number; solved: number; need: number; wrong: number; hidden: number[]; boostUsed: boolean; botNext?: number }
+interface DemoNexus { startedAt: number; base: number; penalty: number; outcome: 'play' | 'won' | 'lost'; order: string[]; seals: Record<string, DemoSeal> }
+const NEXUS = { seals: 3, spares: 3, base: 60, perPlayer: 50, wrong: 10, exhausted: 30 };
+
+/** Runs the Escape the Nexus clock: buddies open a lock every so often and the squad wins or runs out of time. */
+function demoNexusTick(r: DemoRoom, now: number) {
+  const n = r.nexus;
+  if (!n || n.outcome !== 'play' || r.state !== 'playing') return;
+  for (const p of r.players.filter((x) => x.bot)) {
+    const seal = n.seals[p.id];
+    for (let guard = 0; guard < 10 && seal.solved < seal.need; guard++) {
+      seal.botNext ??= n.startedAt + (8 + Math.random() * 10) * 1000;
+      if (now < seal.botNext) break;
+      if (Math.random() < 0.75) seal.solved += 1; else { seal.wrong += 1; n.penalty += NEXUS.wrong; }
+      seal.botNext += (8 + Math.random() * 10) * 1000;
+    }
+  }
+  if (r.players.every((p) => n.seals[p.id].solved >= n.seals[p.id].need)) { n.outcome = 'won'; r.state = 'done'; }
+  else if (now > n.startedAt + (n.base + n.penalty) * 1000) { n.outcome = 'lost'; r.state = 'done'; }
+}
+
 interface DemoRoom {
   code: string;
   game: string;
   odin?: OdinGame;
   shadow?: DemoShadow;
   drawing?: DemoDrawing;
+  nexus?: DemoNexus;
   hostId: string;
   state: 'lobby' | 'playing' | 'done' | 'closed';
   phase: 'question' | 'reveal';
@@ -847,7 +869,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     },
     async createRoom(game) {
       const me = meHero();
-      if (!['trivia-clash', 'odin', 'shadow-signal', 'squad-drawing'].includes(game)) throw new Error('unknown game');
+      if (!['trivia-clash', 'odin', 'shadow-signal', 'squad-drawing', 'escape-nexus'].includes(game)) throw new Error('unknown game');
       if (await this.currentRoom!()) throw new Error('leave your room first');
       const code = generateCode(4).replace(/[^A-Z]/g, 'K');
       db.room = { code, game, hostId: me.id, state: 'lobby', phase: 'question', idx: 0, phaseStart: at(), questions: [], players: [{ id: me.id, name: me.displayName, starter: me.starter, score: 0, bot: false, answers: {} }] };
@@ -881,6 +903,20 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const r = db.room;
       if (!r || r.hostId !== me.id || r.state !== 'lobby') throw new Error('you are not hosting a room');
       if (r.players.length < ROOM_RULES.min) throw new Error('you need at least 2 players');
+      if (r.game === 'escape-nexus') {
+        const seals: Record<string, DemoSeal> = {};
+        for (const p of r.players) {
+          const seen = new Set(db.history.filter((h) => h.childId === p.id).map((h) => h.questionId));
+          const pool = QUESTIONS.filter((q) => q.grade === me.grade && !seen.has(q.id)).sort(() => Math.random() - 0.5).slice(0, NEXUS.seals + NEXUS.spares);
+          if (pool.length < NEXUS.seals) throw new Error('not enough fresh questions');
+          if (!p.bot) for (const q of pool) db.history.push({ childId: p.id, questionId: q.id, servedAt: at() });
+          seals[p.id] = { qids: pool.map((q) => q.id), pos: 0, solved: 0, need: NEXUS.seals, wrong: 0, hidden: [], boostUsed: false };
+        }
+        r.nexus = { startedAt: at(), base: NEXUS.base + r.players.length * NEXUS.perPlayer, penalty: 0, outcome: 'play', order: r.players.map((p) => p.id), seals };
+        r.state = 'playing'; r.phase = 'question'; r.idx = 0; r.phaseStart = at();
+        commit();
+        return;
+      }
       if (r.game === 'squad-drawing') {
         const order = r.players.map((p) => p.id).sort(() => Math.random() - 0.5);
         const word = DRAWING_WORDS[Math.floor(Math.random() * DRAWING_WORDS.length)];
@@ -1153,6 +1189,64 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     async senseiDrawingReports() {
       meAdult('sensei');
       return [...(db.drawingReports ?? [])].reverse().slice(0, 40);
+    },
+    async nexusView(code) {
+      const me = meHero().id;
+      const r = db.room;
+      if (!r || r.game !== 'escape-nexus' || r.code !== code.trim().toUpperCase() || !r.players.some((p) => p.id === me) || !r.nexus) throw new Error('you are not in that room');
+      demoNexusTick(r, at());
+      commit();
+      const n = r.nexus;
+      const mine = n.seals[me];
+      const total = n.base + n.penalty;
+      const q = mine.solved < mine.need && n.outcome === 'play' ? QUESTIONS.find((x) => x.id === mine.qids[mine.pos]) : undefined;
+      return {
+        state: r.state, outcome: n.outcome, secondsLeft: Math.max(0, Math.ceil(total - (at() - n.startedAt) / 1000)), secondsTotal: total, penalty: n.penalty,
+        solved: mine.solved, need: mine.need, wrong: mine.wrong,
+        question: q ? { prompt: q.prompt, choices: q.choices, hidden: mine.hidden } : null,
+        canBoost: mine.solved >= mine.need && !mine.boostUsed && n.outcome === 'play',
+        players: n.order.map((id, i) => {
+          const p = r.players.find((x) => x.id === id)!;
+          const s = n.seals[id];
+          return { i, name: p.name, starter: p.starter, me: id === me, solved: s.solved, need: s.need, done: s.solved >= s.need, left: false };
+        }),
+      };
+    },
+    async nexusAnswer(choice) {
+      const me = meHero().id;
+      const r = db.room;
+      const n = r?.nexus;
+      if (!r || !n || r.state !== 'playing') throw new Error('you are not in a game');
+      demoNexusTick(r, at());
+      if (n.outcome !== 'play') return { correct: false, rightChoice: -1, explanation: '', penalty: 0, over: true };
+      const seal = n.seals[me];
+      if (seal.solved >= seal.need) throw new Error('your seal is already open');
+      const res = await this.answerQuestion(seal.qids[seal.pos], choice);
+      seal.pos += 1; seal.hidden = [];
+      if (res.correct) seal.solved += 1; else { seal.wrong += 1; n.penalty += NEXUS.wrong; }
+      if (seal.solved < seal.need && seal.pos >= seal.qids.length) { n.penalty += (seal.need - seal.solved) * NEXUS.exhausted; seal.solved = seal.need; }
+      demoNexusTick(r, at());
+      commit();
+      return { correct: res.correct, rightChoice: res.rightChoice, explanation: res.explanation, penalty: res.correct ? 0 : NEXUS.wrong };
+    },
+    async nexusBoost(index) {
+      const me = meHero().id;
+      const r = db.room;
+      const n = r?.nexus;
+      if (!r || !n || r.state !== 'playing') throw new Error('you are not in a game');
+      const mine = n.seals[me];
+      if (mine.solved < mine.need) throw new Error('open your own seal first');
+      if (mine.boostUsed) throw new Error('you already boosted someone');
+      const target = n.order[index];
+      const theirs = target && n.seals[target];
+      if (!theirs || target === me || theirs.solved >= theirs.need) throw new Error('pick a teammate who still needs help');
+      const q = QUESTIONS.find((x) => x.id === theirs.qids[theirs.pos]);
+      if (q) {
+        const options = q.choices.map((_, i) => i).filter((i) => i !== q.answer && !theirs.hidden.includes(i));
+        if (options.length > 1) theirs.hidden.push(options[Math.floor(Math.random() * options.length)]);
+      }
+      mine.boostUsed = true;
+      commit();
     },
     async chatSend(text) {
       const me = meHero();

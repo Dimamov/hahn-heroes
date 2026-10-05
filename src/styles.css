@@ -291,6 +291,7 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
 /* Learning */
+.subjects.games { grid-template-rows: repeat(3, 1fr); flex: 1 1 100%; }
 .subjects { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; flex: 1 1 auto; min-height: 0; }
 .folder.subject { padding: 8px; text-align: center; }
 .folder.subject b { font-size: 1.2rem; }
@@ -433,3 +434,14 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .swatch.on { border-color: var(--cyan); transform: scale(1.12); }
 .dwfeed { display: flex; flex-direction: column; gap: 2px; min-height: 3.6em; font-size: .85rem; font-weight: 700; color: var(--muted); }
 .dwfeed .ok { color: #4ade80; }
+
+/* Escape the Nexus */
+.nxclock { display: flex; flex-direction: column; gap: 4px; text-align: center; }
+.nxclock b { font: 800 1.4rem 'Baloo 2', 'Nunito', system-ui; }
+.nxclock.low b { color: var(--magenta); }
+.nxsquad { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.nxmate { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 14px; background: var(--panel); border: 2px solid transparent; font-weight: 800; font-size: .8rem; }
+.nxmate .chip-hero { width: 26px; height: 26px; }
+.nxmate.me { border-color: var(--cyan); }
+.nxmate.done { border-color: #4ade80; }
+.soon-icon.small { font-size: 3.5rem; text-align: center; }
