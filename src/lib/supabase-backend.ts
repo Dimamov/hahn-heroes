@@ -345,6 +345,16 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiTriviaPrize(coins) {
       return rpc('sensei_trivia_prize', { p_coins: coins });
     },
+    async questState() {
+      const d = await rpc('quest_state');
+      return { streak: d.streak, milestones: d.milestones, tasks: d.tasks, questCoins: d.quest_coins, questClaimed: d.quest_claimed };
+    },
+    async questClaim() {
+      return rpc('quest_claim');
+    },
+    async streakClaim(days) {
+      return rpc('streak_claim', { p_days: days });
+    },
     async storyState() {
       return rpc('story_state');
     },

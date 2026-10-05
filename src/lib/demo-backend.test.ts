@@ -783,6 +783,29 @@ describe('demo backend: grown-ups and missions', () => {
     });
   });
 
+  describe('daily streak and quest', () => {
+    it('grows a streak over days, pays milestones once and needs all three tasks for the quest', async () => {
+      const b = make();
+      await b.signUp(input);
+      for (let day = 0; day < 3; day++) {
+        await b.claimDaily();
+        if (day < 2) clock = new Date(clock.getTime() + DAY_MS);
+      }
+      let q = await b.questState();
+      expect(q.streak).toBe(3);
+      expect(q.milestones.map((m) => m.reached)).toEqual([true, false, false, false]);
+      await expect(b.streakClaim(7)).rejects.toThrow('not there yet');
+      expect(await b.streakClaim(3)).toMatchObject({ awarded: 5 });
+      expect(await b.streakClaim(3)).toMatchObject({ duplicate: true });
+      await expect(b.questClaim()).rejects.toThrow('three tasks');
+      await b.arcadeClaim('memory-flip');
+      q = await b.questState();
+      expect(q.tasks.find((t) => t.id === 'game')?.have).toBe(1);
+      clock = new Date(clock.getTime() + 3 * DAY_MS);
+      expect((await b.questState()).streak).toBe(0);
+    });
+  });
+
   describe('trivia night', () => {
     it('takes an RSVP and pays the prize once, to the heroes who said yes', async () => {
       const b = make();

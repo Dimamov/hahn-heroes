@@ -594,3 +594,16 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .clue.seen { outline: 2px solid var(--gold, #fbbf24); }
 .clue-text { min-height: 3.2em; }
 @media (max-height: 480px) and (orientation: landscape) { .clue-grid { grid-template-columns: repeat(4, 1fr); } .clue { padding: 6px; font-size: .8rem; } }
+
+/* Daily quest */
+.streak-card { align-items: center; text-align: center; gap: 2px; }
+.flame { font-size: 2.6rem; line-height: 1; }
+.miles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.mile { position: relative; display: flex; flex-direction: column; align-items: center; padding: 8px 2px; border-radius: 14px; border: 2px solid #ffffff22; background: #ffffff10; color: inherit; }
+.mile.ready { border-color: var(--gold, #fbbf24); background: #fbbf2422; }
+.mile.got { opacity: .65; }
+.mile b { font-size: 1.4rem; }
+.task { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.task span:nth-child(2) { flex: 1; }
+.task.ok span:nth-child(2) { opacity: .7; text-decoration: line-through; }
+@media (max-height: 480px) and (orientation: landscape) { .quest { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; align-content: start; } .quest > .bar { grid-column: 1 / -1; } .flame { font-size: 1.6rem; } }
