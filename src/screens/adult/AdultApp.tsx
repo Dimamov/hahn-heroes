@@ -4,8 +4,8 @@ import { TeacherHome } from './TeacherHome.tsx';
 import { SenseiHome } from './SenseiHome.tsx';
 
 /** Grown-up tools live apart from student play. Each role gets its own home. */
-export function AdultApp({ backend, adult, onAdult, onSignOut }: { backend: Backend; adult: Adult; onAdult: (a: Adult) => void; onSignOut: () => void }) {
-  const props = { backend, adult, onSignOut };
+export function AdultApp({ backend, adult, onAdult, onSignOut, onPrivacy }: { backend: Backend; adult: Adult; onAdult: (a: Adult) => void; onSignOut: () => void; onPrivacy: () => void }) {
+  const props = { backend, adult, onSignOut, onPrivacy };
   if (adult.role === 'parent') return <ParentHome {...props} />;
   if (adult.role === 'sensei') return <SenseiHome {...props} />;
   if (!adult.approved) {

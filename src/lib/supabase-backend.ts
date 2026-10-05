@@ -1,8 +1,10 @@
+import { fallbackHint } from './hints.ts';
+import { GOOFY } from './goofy.ts';
 import { createClient } from '@supabase/supabase-js';
 import {
   AdultAuthError, SignInError, emptyBalances,
   type Adult, type Backend, type ClassMission, type ClassResult, type Hero, type HomeMission, type Identity,
-  type NewClassMission, type QuizQuestion, type SignUpInput, type SubjectProgress, type TriviaState,
+  type NewClassMission, type PushPrefs, type QuizQuestion, type SignUpInput, type SubjectProgress, type TriviaState,
 } from './backend.ts';
 import type { Currency } from '../../supabase/functions/_shared/rewards.ts';
 
@@ -204,6 +206,23 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     },
     async markAnnouncementsRead() {
       await rpc('mark_announcements_read');
+    },
+    async pushKey() {
+      const { data, error } = await sb.functions.invoke('push-send', { body: { action: 'key' } });
+      if (error || !data?.configured) return { configured: false, key: null };
+      return { configured: true, key: data.key as string };
+    },
+    async pushPrefs() {
+      return (await rpc('push_prefs_get')) as PushPrefs | null;
+    },
+    async pushSetPrefs(prefs) {
+      await rpc('push_prefs_set', { p_prefs: prefs });
+    },
+    async pushSubscribe(sub) {
+      await rpc('push_subscribe', { p_endpoint: sub.endpoint, p_p256dh: sub.p256dh, p_auth: sub.auth });
+    },
+    async pushUnsubscribe(endpoint) {
+      await rpc('push_unsubscribe', { p_endpoint: endpoint });
     },
 
     // ---- Grown-ups ----------------------------------------------------------------------
@@ -492,6 +511,25 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('kind_decide', { p_id: id, p_approve: approve });
       return { awarded: d.awarded };
     },
+    async hintFor(questionId, subject) {
+      try {
+        const { data, error } = await sb.functions.invoke('hint-ai', { body: { id: questionId } });
+        if (!error && data?.hint) return { hint: String(data.hint), ai: true, left: typeof data.left === 'number' ? data.left : null };
+      } catch { /* fall through to the built-in hint */ }
+      return { hint: fallbackHint(subject, questionId), ai: false, left: null };
+    },
+    async goofyState() {
+      const d = await rpc('goofy_state');
+      return { status: d.status, prompt: d.prompt, doneToday: d.done_today };
+    },
+    async goofyAccept() {
+      const d = await rpc('goofy_accept', { p_count: GOOFY.length });
+      return { status: d.status, prompt: d.prompt, doneToday: d.done_today };
+    },
+    async goofyFinish(done) {
+      const d = await rpc('goofy_finish', { p_done: done });
+      return { awarded: d.awarded };
+    },
     async raceState(back = 0) {
       const d = await rpc('class_race', { p_back: back });
       return { month: d.month, minMembers: d.min_members, classes: d.classes };
@@ -626,6 +664,9 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     },
     async storyComplete(episode) {
       return rpc('story_complete', { p_episode: episode });
+    },
+    async senseiDeleteHero(heroCode) {
+      return rpc('sensei_delete_hero', { p_hero_code: heroCode });
     },
     async senseiGiveCard(heroCode, cardId) {
       return rpc('sensei_give_card', { p_hero_code: heroCode, p_card: cardId });

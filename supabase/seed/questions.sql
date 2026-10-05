@@ -170,124 +170,124 @@ insert into public.question_keys (question_id, answer, explanation) values
   ('v6-020', 3, 'Contrast means pointing out differences.')
 on conflict (question_id) do update set answer = excluded.answer, explanation = excluded.explanation;
 insert into public.questions (id, subject, grade, skill, difficulty, prompt, choices) values
-  ('r5-001', 'reading', 5, 'main-idea', 1, 'Honeybees live in large groups called colonies. Each bee has a job. Some collect nectar, some care for young bees, and some guard the hive. Working together keeps the colony alive.
+  ('r5-001', 'reading', 5, 'main-idea', 1, 'Honeybees live in large groups called colonies. A single colony can hold thousands of bees, and each bee has a job. Some collect nectar from flowers, some care for the young bees, and some guard the hive from visitors that do not belong. Working together keeps the colony alive through the whole year.
 
 What is the main idea?', '["Honeybees work together in colonies by doing different jobs.","Honeybees only collect nectar.","Guard bees are the most important.","Honeybees live alone."]'::jsonb),
-  ('r5-002', 'reading', 5, 'inference', 2, 'Mia grabbed her umbrella and rain boots, then looked at the dark clouds. She checked the clock and hurried out the door to catch the bus.
+  ('r5-002', 'reading', 5, 'inference', 2, 'Mia grabbed her umbrella and rain boots, then looked out the window at the dark clouds. A cool wind was pushing the leaves across the yard. She checked the clock and hurried out the door to catch the bus.
 
 What can you infer from the passage?', '["It is a sunny day.","It looks like it is going to rain.","Mia has already missed the bus.","Mia is going to bed."]'::jsonb),
-  ('r5-003', 'reading', 5, 'sequence', 1, 'To make a paper airplane, first fold the paper in half lengthwise. Next, unfold it and fold the top corners to the center. Then fold the edges in again. Finally, fold the wings down.
+  ('r5-003', 'reading', 5, 'sequence', 1, 'Paper airplanes are fun to make, and anyone can learn how. To make one, first fold the paper in half lengthwise. Next, unfold it and fold the top corners to the center. Then fold the edges in again. Finally, fold the wings down, and your plane is ready to fly.
 
 What step comes right after folding the paper in half?', '["Fold the wings down.","Fold the edges in again.","Unfold it and fold the top corners to the center.","Throw the plane."]'::jsonb),
-  ('r5-004', 'reading', 5, 'authors-purpose', 2, 'Did you know an octopus has three hearts? Two pump blood to its gills, and one pumps blood to the rest of its body. This surprising animal is full of amazing facts.
+  ('r5-004', 'reading', 5, 'authors-purpose', 2, 'Did you know an octopus has three hearts? Two pump blood to its gills, and one pumps blood to the rest of its body. An octopus can also squeeze through a gap no bigger than its eye. This surprising animal is full of amazing facts.
 
 The author mostly wrote this passage to:', '["tell a made-up story","convince readers to buy a pet","explain how to draw an animal","inform readers about octopuses"]'::jsonb),
-  ('r5-005', 'reading', 5, 'theme', 3, 'A turtle kept practicing every day while the others laughed at his slow pace. Season after season he kept going. At last he crossed the finish line of the long trail, tired but proud.
+  ('r5-005', 'reading', 5, 'theme', 3, 'A turtle kept practicing every day while the others laughed at his slow pace. Rain or shine, he walked a little farther than the day before. Season after season he kept going. At last he crossed the finish line of the long trail, tired but proud.
 
 Which theme fits this story best?', '["Patience and steady effort lead to success.","Fast animals always win.","Laughing at others is fun.","It is best to give up early."]'::jsonb),
-  ('r5-006', 'reading', 5, 'vocabulary-in-context', 2, 'The tiny village was remote, miles from any town or highway. Visitors needed a full day to reach it.
+  ('r5-006', 'reading', 5, 'vocabulary-in-context', 2, 'The tiny village was remote, miles from any town or highway. No bus stopped there, and the only road was narrow and full of bumps. Visitors needed a full day to reach it, but those who made the trip said the quiet was worth it.
 
 In this passage, what does remote mean?', '["crowded","far away","famous","controlled by a button"]'::jsonb),
-  ('r5-007', 'reading', 5, 'cause-effect', 2, 'After a week without rain, the grass in the park turned brown and the pond got smaller. Park workers asked visitors to use less water.
+  ('r5-007', 'reading', 5, 'cause-effect', 2, 'After a week without rain, the grass in the park turned brown and the pond got smaller. The flowers drooped, and the ducks had less space to swim. Park workers asked visitors to use less water until the weather changed.
 
 What caused the grass to turn brown?', '["Too many visitors","Cold weather","A week without rain","A smaller pond"]'::jsonb),
-  ('r5-008', 'reading', 5, 'details', 1, 'The library opens at 9 a.m. on weekdays and 10 a.m. on Saturdays. It is closed on Sundays. Students can borrow up to five books at a time.
+  ('r5-008', 'reading', 5, 'details', 1, 'The library opens at 9 a.m. on weekdays and 10 a.m. on Saturdays. It is closed on Sundays. Students can borrow up to five books at a time, and they have two weeks to bring them back. A friendly librarian is always ready to help find a good story.
 
 How many books can students borrow at a time?', '["Three","Nine","Ten","Five"]'::jsonb),
-  ('r5-009', 'reading', 5, 'main-idea', 2, 'Recycling aluminum cans saves energy. Making a new can from recycled metal uses far less energy than making one from raw materials. It also keeps cans out of landfills.
+  ('r5-009', 'reading', 5, 'main-idea', 2, 'Recycling aluminum cans saves energy. Making a new can from recycled metal uses far less energy than making one from raw materials. It also keeps cans out of landfills, where they would sit for many years. A recycled can can be back on a store shelf in about two months.
 
 What is the passage mostly about?', '["the benefits of recycling aluminum cans","how cans are shaped","why landfills are large","the cost of soda"]'::jsonb),
-  ('r5-010', 'reading', 5, 'inference', 3, 'The coach looked at the scoreboard, then smiled as the team ran off the field. Everyone was hugging, and a few players were jumping up and down.
+  ('r5-010', 'reading', 5, 'inference', 3, 'The coach looked at the scoreboard, then smiled as the team ran off the field. Everyone was hugging, and a few players were jumping up and down. Parents in the stands were cheering and waving signs, and someone had already started singing.
 
 What most likely happened?', '["The team lost badly.","The team won the game.","The game was canceled.","The coach quit."]'::jsonb),
-  ('r5-011', 'reading', 5, 'sequence', 2, 'Before dinner, Ben set the table. After eating, he washed the dishes. Later, he did his homework and read for twenty minutes before bed.
+  ('r5-011', 'reading', 5, 'sequence', 2, 'Ben had a busy evening. Before dinner, Ben set the table. After eating, he washed the dishes. Later, he did his homework and read for twenty minutes before bed. By the time he turned off the light, he was ready for sleep.
 
 What did Ben do right after eating?', '["He set the table.","He did his homework.","He washed the dishes.","He read before bed."]'::jsonb),
-  ('r5-012', 'reading', 5, 'authors-purpose', 2, 'Every student should walk or bike to school when possible. It keeps you healthy, saves money, and helps the air stay clean. Try it this week!
+  ('r5-012', 'reading', 5, 'authors-purpose', 2, 'Every student should walk or bike to school when possible. It keeps you healthy, saves money, and helps the air stay clean. It can also be a fun way to talk with friends before the day begins. Try it this week!
 
 What does the author want to do?', '["teach how to fix a bike","tell a funny story","describe a school building","persuade readers to walk or bike to school"]'::jsonb),
-  ('r5-013', 'reading', 5, 'theme', 2, 'A young crow dropped pebbles into a tall jar until the water rose high enough to drink. It had not been strong, but it had been clever.
+  ('r5-013', 'reading', 5, 'theme', 2, 'A young crow was very thirsty, and he found a tall jar with a little water at the bottom. His beak could not reach it. He dropped pebbles into the jar, one at a time, until the water rose high enough to drink. He had not been strong, but he had been clever.
 
 What lesson does this story teach?', '["Thinking cleverly can solve problems.","Strong birds always win.","Never drink from a jar.","Pebbles are heavy."]'::jsonb),
-  ('r5-014', 'reading', 5, 'vocabulary-in-context', 3, 'The hikers were weary after climbing all day. They dropped their packs and fell asleep as soon as they lay down.
+  ('r5-014', 'reading', 5, 'vocabulary-in-context', 3, 'The hikers were weary after climbing all day. Their legs ached and their backpacks felt twice as heavy as they had that morning. They dropped their packs and fell asleep as soon as they lay down.
 
 What does weary mean?', '["excited","very tired","cold","hungry"]'::jsonb),
-  ('r5-015', 'reading', 5, 'inference', 2, 'When the other kids teased him, Leo took a deep breath and walked away without a word. Later he told his teacher what happened.
+  ('r5-015', 'reading', 5, 'inference', 2, 'When the other kids teased him, Leo took a deep breath and walked away without a word. His face felt hot, but he did not shout. Later he told his teacher what happened, and she thanked him for coming to her.
 
 What does this show about Leo?', '["He wanted to tease them back.","He did not care.","He handled the problem calmly and responsibly.","He was angry at his teacher."]'::jsonb),
-  ('r5-016', 'reading', 5, 'cause-effect', 1, 'The power went out during the storm, so the family lit candles and played board games.
+  ('r5-016', 'reading', 5, 'cause-effect', 1, 'A big storm rolled in at dinnertime, with thunder and heavy rain. The power went out during the storm, so the family lit candles and played board games. They laughed and told stories until the lights came back on.
 
 Why did the family light candles?', '["It was someone''s birthday.","The storm ended.","They bought new games.","The power went out."]'::jsonb),
-  ('r5-017', 'reading', 5, 'compare-contrast', 2, 'Frogs and toads look alike, but they differ. Frogs have smooth, moist skin and long legs for jumping. Toads have dry, bumpy skin and shorter legs.
+  ('r5-017', 'reading', 5, 'compare-contrast', 2, 'Frogs and toads look alike, but they differ. Frogs have smooth, moist skin and long legs for jumping. Toads have dry, bumpy skin and shorter legs. Frogs usually stay near water, while toads can spend more time on dry land.
 
 How are frogs different from toads?', '["Frogs have smooth skin and toads have bumpy skin.","Frogs have bumpy skin and toads have smooth skin.","Toads have longer legs than frogs.","Frogs have dry skin and toads have moist skin."]'::jsonb),
-  ('r5-018', 'reading', 5, 'vocabulary-in-context', 2, 'The chef used fresh herbs to enhance the soup''s flavor. After adding basil, the soup tasted much richer.
+  ('r5-018', 'reading', 5, 'vocabulary-in-context', 2, 'The chef used fresh herbs to enhance the soup''s flavor. First she tasted the soup and thought it was a little plain. After adding basil, the soup tasted much richer, and everyone at the table asked for a second bowl.
 
 What does enhance mean?', '["hide","improve","cool down","spill"]'::jsonb),
-  ('r5-019', 'reading', 5, 'main-idea', 3, 'Many people think deserts are empty, but they hold plenty of life. Cacti store water, lizards hide in cool burrows by day, and owls hunt after dark. Each living thing is suited to dry heat.
+  ('r5-019', 'reading', 5, 'main-idea', 3, 'Many people think deserts are empty, but they hold plenty of life. Cacti store water in their thick stems, lizards hide in cool burrows by day, and owls hunt after dark when the air is cooler. Even tiny seeds wait in the sand for rain. Each living thing is suited to dry heat.
 
 What is the main idea?', '["Deserts are empty.","Owls are the best hunters.","Desert life has ways to survive in dry places.","Cacti are very tall."]'::jsonb),
-  ('r5-020', 'reading', 5, 'inference', 3, 'A sign at the pool reads: Walk, don''t run. Wet floors are slippery. Please shower before swimming.
+  ('r5-020', 'reading', 5, 'inference', 3, 'A sign at the pool reads: Walk, don''t run. Wet floors are slippery. Please shower before swimming. Another sign by the deep end reminds swimmers to ask a lifeguard before they dive. The pool is open every afternoon after school.
 
 Why does the sign say Walk, don''t run?', '["Because the pool is far away","To help swimmers swim faster","Because walking is more fun","To keep people from slipping"]'::jsonb),
-  ('r6-001', 'reading', 6, 'main-idea', 1, 'Volcanoes form when melted rock from deep inside Earth rises to the surface. Over time, layers of cooled lava and ash pile up and build a mountain. Some volcanoes are still active today.
+  ('r6-001', 'reading', 6, 'main-idea', 1, 'Volcanoes form when melted rock from deep inside Earth rises to the surface. Over time, layers of cooled lava and ash pile up and build a mountain. The process can take thousands of years. Some volcanoes are still active today, and scientists watch them closely.
 
 What is the main idea?', '["Rising melted rock builds volcanoes over time.","All volcanoes are active.","Ash harms plants.","Mountains form overnight."]'::jsonb),
-  ('r6-002', 'reading', 6, 'inference', 2, 'The cafeteria was unusually quiet. Students stared at their trays, and the usual chatter was gone. A few kept glancing at the clock, waiting for the announcement about test scores.
+  ('r6-002', 'reading', 6, 'inference', 2, 'The cafeteria was unusually quiet. Students stared at their trays, and the usual chatter was gone. Nobody was trading snacks or telling jokes. A few kept glancing at the clock, waiting for the announcement about test scores.
 
 How do the students probably feel?', '["excited about a party","nervous about the results","bored with lunch","angry at the cooks"]'::jsonb),
-  ('r6-003', 'reading', 6, 'authors-purpose', 2, 'The bright yellow lemon looked cheerful on the counter. Its skin was bumpy and smelled sweetly sour, like sunshine in a bottle.
+  ('r6-003', 'reading', 6, 'authors-purpose', 2, 'The bright yellow lemon looked cheerful on the counter, sitting beside a bowl of green apples. Its skin was bumpy and smelled sweetly sour, like sunshine in a bottle. Even before it was cut, the whole kitchen seemed a little brighter.
 
 Why does the author write sunshine in a bottle?', '["to prove lemons need sun","to explain how to make juice","to help readers imagine the smell","to compare prices"]'::jsonb),
-  ('r6-004', 'reading', 6, 'sequence', 2, 'The sea turtle crawled from the water and dug a hole in the sand. She laid her eggs, covered them, and returned to the sea. Weeks later, the hatchlings dug out and scurried to the waves.
+  ('r6-004', 'reading', 6, 'sequence', 2, 'The sea turtle crawled from the water and dug a hole in the sand. She laid her eggs, covered them, and returned to the sea. The sun warmed the sand for weeks. Later, the hatchlings dug out and scurried to the waves, guided by the shining water.
 
 What happens right after she lays her eggs?', '["The hatchlings reach the waves.","She digs a hole.","The hatchlings dig out.","She covers them with sand."]'::jsonb),
-  ('r6-005', 'reading', 6, 'theme', 3, 'Everyone said the old bridge could not be fixed. Neighbors brought boards, tools, and lunches anyway. By sunset, they had rebuilt it, and everyone crossed together.
+  ('r6-005', 'reading', 6, 'theme', 3, 'Everyone said the old bridge could not be fixed. It sagged in the middle, and half its boards were gone. Neighbors brought boards, tools, and lunches anyway. They worked side by side all day. By sunset, they had rebuilt it, and everyone crossed together.
 
 Which theme fits this story?', '["Working together can accomplish hard goals.","Old things should be thrown away.","Bridges are easy to build.","Lunch is the most important part of work."]'::jsonb),
-  ('r6-006', 'reading', 6, 'vocabulary-in-context', 2, 'The lawyer''s argument was so compelling that the jury listened without moving. Many members changed their minds.
+  ('r6-006', 'reading', 6, 'vocabulary-in-context', 2, 'The lawyer''s argument was so compelling that the jury listened without moving. Not a single person looked at the clock or whispered to a neighbor. When she finished, the room stayed silent for a moment. Many members changed their minds.
 
 What does compelling mean?', '["confusing","convincing","lengthy","rude"]'::jsonb),
-  ('r6-007', 'reading', 6, 'cause-effect', 2, 'When the factory closed, many families moved away. With fewer customers, the town''s shops lost business, and several closed too.
+  ('r6-007', 'reading', 6, 'cause-effect', 2, 'The factory had been the center of the town for fifty years. When the factory closed, many families moved away. With fewer customers, the town''s shops lost business, and several closed too. Soon, the busy main street felt much quieter.
 
 What was a result of fewer customers?', '["The factory closed.","More families moved in.","Several shops closed.","The factory reopened."]'::jsonb),
-  ('r6-008', 'reading', 6, 'authors-purpose', 1, 'Our class garden needs volunteers! Join us Saturday at 9 a.m. to plant seeds and pull weeds. Bring gloves and a water bottle.
+  ('r6-008', 'reading', 6, 'authors-purpose', 1, 'Our class garden needs volunteers! The beds are full of weeds, and the new seeds have not gone in yet. Join us Saturday at 9 a.m. to plant seeds and pull weeds. Bring gloves and a water bottle. We will finish by lunchtime, and snacks will be provided.
 
 What is the main purpose of this passage?', '["to explain how seeds grow","to tell about a past trip","to describe weeds","to invite readers to help"]'::jsonb),
-  ('r6-009', 'reading', 6, 'main-idea', 2, 'Sleep is important for growing students. During sleep, the body repairs itself and the brain stores new memories. Students who sleep nine to eleven hours often do better in class.
+  ('r6-009', 'reading', 6, 'main-idea', 2, 'Sleep is important for growing students. During sleep, the body repairs itself and the brain stores new memories. Sleeping well can also help your mood stay steady during a long school day. Students who sleep nine to eleven hours often do better in class.
 
 Which sentence best summarizes the passage?', '["Enough sleep helps the body and the brain.","Students should skip homework.","Memory only works during class.","Sleep is only for adults."]'::jsonb),
-  ('r6-010', 'reading', 6, 'inference', 3, 'The path was covered with small paw prints that led to the edge of the pond. Near the water, the mud was churned up, and a few feathers floated nearby.
+  ('r6-010', 'reading', 6, 'inference', 3, 'The path was covered with small paw prints that led to the edge of the pond. The prints looked fresh, with sharp edges in the damp soil. Near the water, the mud was churned up, and a few feathers floated nearby.
 
 What can you infer?', '["No animals live nearby.","An animal visited the pond recently.","The pond froze solid.","People built the path yesterday."]'::jsonb),
-  ('r6-011', 'reading', 6, 'vocabulary-in-context', 3, 'The scientist''s theory was tentative, so she planned more experiments before announcing it as fact.
+  ('r6-011', 'reading', 6, 'vocabulary-in-context', 3, 'The scientist''s theory was tentative. Her first experiment had gone well, but one result still surprised her. She wrote in her notebook that the idea might change. The theory was tentative, so she planned more experiments before announcing it as fact.
 
 What does tentative mean?', '["final","secret","not yet certain","famous"]'::jsonb),
-  ('r6-012', 'reading', 6, 'sequence', 1, 'First, the team gathered data on bird visits. Then they graphed the results. Last, they wrote a summary.
+  ('r6-012', 'reading', 6, 'sequence', 1, 'The students wanted to learn which birds visited the school feeder. First, the team gathered data on bird visits. Then they graphed the results. Last, they wrote a summary to share with the class and hung it on the science wall.
 
 What did the team do second?', '["They gathered data.","They wrote a summary.","They fed the birds.","They graphed the results."]'::jsonb),
-  ('r6-013', 'reading', 6, 'theme', 2, 'Though the little fox lost the race, she congratulated the winner and asked for tips. Next time, she trained with them and ran her best time yet.
+  ('r6-013', 'reading', 6, 'theme', 2, 'The little fox ran hard, but she lost the race by a few steps. She was disappointed, though she did not sulk. Though the little fox lost the race, she congratulated the winner and asked for tips. Next time, she trained with them and ran her best time yet.
 
 Which theme fits this story?', '["Learning from setbacks leads to growth.","Winning is everything.","Losing is shameful.","Foxes are fast."]'::jsonb),
-  ('r6-014', 'reading', 6, 'cause-effect', 3, 'Because mangrove roots trap soil, coastlines with mangroves lose less land to waves. When people cut the trees down, shores often wash away faster.
+  ('r6-014', 'reading', 6, 'cause-effect', 3, 'Mangrove trees grow along warm coastlines, with tangled roots that rise out of the water. Because mangrove roots trap soil, coastlines with mangroves lose less land to waves. They also give young fish a safe place to hide. When people cut the trees down, shores often wash away faster.
 
 What happens when mangroves are cut down?', '["Roots trap more soil.","Shores may wash away faster.","Waves stop.","Coastlines grow."]'::jsonb),
-  ('r6-015', 'reading', 6, 'compare-contrast', 2, 'Both lakes and ponds hold fresh water. Lakes are generally larger and deeper, while ponds are shallow enough for sunlight to reach the bottom.
+  ('r6-015', 'reading', 6, 'compare-contrast', 2, 'Both lakes and ponds hold fresh water, and both are home to fish, frogs, and plants. Lakes are generally larger and deeper, while ponds are shallow enough for sunlight to reach the bottom. Because of that, plants can grow across a whole pond.
 
 How is a pond different from a lake?', '["Ponds are salty.","Ponds are deeper.","Ponds are generally shallower.","Ponds get no sunlight."]'::jsonb),
-  ('r6-016', 'reading', 6, 'mood', 2, 'The old house stood alone on the hill, its windows dark and its shutters creaking in the wind. No one had lived there for years.
+  ('r6-016', 'reading', 6, 'mood', 2, 'The old house stood alone on the hill, its windows dark and its shutters creaking in the wind. Weeds had grown up through the porch, and a loose gate swung back and forth. No one had lived there for years.
 
 What mood does the author create?', '["cheerful and busy","angry and loud","excited and proud","lonely and eerie"]'::jsonb),
-  ('r6-017', 'reading', 6, 'main-idea', 3, 'Coral reefs cover less than one percent of the ocean floor, yet about a quarter of ocean species depend on them. Warming water can cause corals to lose color and weaken. Protecting reefs protects countless animals.
+  ('r6-017', 'reading', 6, 'main-idea', 3, 'Coral reefs cover less than one percent of the ocean floor, yet about a quarter of ocean species depend on them. Reefs give fish food and places to hide. Warming water can cause corals to lose color and weaken. Protecting reefs protects countless animals.
 
 What is the main idea?', '["Coral reefs support many species and need protection.","Reefs cover most of the ocean.","Corals love warm water.","Fish are colorful."]'::jsonb),
-  ('r6-018', 'reading', 6, 'inference', 2, 'Rosa measured a plant each Monday. It was 4 cm in week one, 7 cm in week two, and 10 cm in week three.
+  ('r6-018', 'reading', 6, 'inference', 2, 'Rosa wanted to see how fast a bean plant could grow. She measured it each Monday and wrote the number in her science journal. It was 4 cm in week one, 7 cm in week two, and 10 cm in week three. She kept it on a sunny windowsill and watered it each morning.
 
 If the pattern continues, how tall will it be in week four?', '["11 cm","13 cm","12 cm","14 cm"]'::jsonb),
-  ('r6-019', 'reading', 6, 'vocabulary-in-context', 2, 'The farmer let the field lie fallow for a year, leaving it unplanted so the soil could rest.
+  ('r6-019', 'reading', 6, 'vocabulary-in-context', 2, 'The farmer let the field lie fallow for a year. Instead of planting corn as usual, she left it unplanted so the soil could rest. Wildflowers grew along the edges, and the soil slowly became richer for the next season.
 
 What does fallow mean?', '["newly planted","covered in snow","left unplanted","used for animals"]'::jsonb),
-  ('r6-020', 'reading', 6, 'character', 3, 'Though some call him a hero, the lighthouse keeper simply said, I just lit the lamp every night. He never asked for thanks and quietly kept working for forty years.
+  ('r6-020', 'reading', 6, 'character', 3, 'Though some call him a hero, the lighthouse keeper simply said, I just lit the lamp every night. He never asked for thanks. Ships passed safely along the rocky coast, and few of the sailors ever learned his name. He quietly kept working for forty years.
 
 What does this show about the keeper?', '["He is proud of his fame.","He wanted rewards.","He disliked his work.","He is humble."]'::jsonb)
 on conflict (id) do update set subject = excluded.subject, grade = excluded.grade, skill = excluded.skill,

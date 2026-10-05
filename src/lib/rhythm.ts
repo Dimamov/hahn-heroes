@@ -1,26 +1,9 @@
-// Rhythm Tap rules: songs are lane patterns on a steady beat; each tap is judged against the note's time.
-export interface Song { id: string; name: string; icon: string; bpm: number; pattern: string }
-
-/** One character per half-beat: a lane number (0 to 2) or "." for a rest. */
-export const SONGS: Song[] = [
-  { id: 'warmup', name: 'Warm-up', icon: '🌱', bpm: 72, pattern: '0.1.2.1.0.1.2.1.0.0.1.1.2.2.1.0.' },
-  { id: 'hero', name: 'Hero Beat', icon: '⭐', bpm: 90, pattern: '0.1.2.1.0.2.1.0.1.1.2.2.0.0.1.2.0.1.2.1.0.1.2.2.' },
-  { id: 'nexus', name: 'Nexus Rush', icon: '🚀', bpm: 108, pattern: '0.1.2.0.1.2.0.1.2.1.0.1.2.1.0.1.0.2.1.2.0.1.1.2.0.2.1.0.2.1.0.1.2.' },
-];
-
+// Rhythm Tap rules: each tap is judged against the time of the closest open note in its lane. Songs live in songs.ts.
 export const FALL_SECONDS = 1.6;
 export const HIT_WINDOW = 0.2;
 export const PERFECT_WINDOW = 0.09;
 
 export interface Note { lane: number; time: number; result: 'perfect' | 'good' | 'miss' | null }
-
-/** Turns a song into timed notes. `lead` is seconds before the first note. */
-export function notesFor(song: Song, lead = 2): Note[] {
-  const step = 60 / song.bpm / 2;
-  const out: Note[] = [];
-  [...song.pattern].forEach((c, i) => { if (c !== '.') out.push({ lane: Number(c), time: lead + i * step, result: null }); });
-  return out;
-}
 
 /** Judges a tap in a lane at time `t`: marks the closest open note, or returns null for a stray tap. */
 export function judgeTap(notes: Note[], lane: number, t: number): 'perfect' | 'good' | null {
