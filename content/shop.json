@@ -1,0 +1,308 @@
+[
+ {
+  "id": "o-nexus-hoodie",
+  "kind": "outfit",
+  "slot": "outfit",
+  "name": "Nexus Hoodie",
+  "icon": "🧥",
+  "price": 60,
+  "unlock_xp": 0
+ },
+ {
+  "id": "o-academy-blazer",
+  "kind": "outfit",
+  "slot": "outfit",
+  "name": "Academy Blazer",
+  "icon": "🥼",
+  "price": 90,
+  "unlock_xp": 0
+ },
+ {
+  "id": "o-explorer-vest",
+  "kind": "outfit",
+  "slot": "outfit",
+  "name": "Explorer Vest",
+  "icon": "🦺",
+  "price": 120,
+  "unlock_xp": 50
+ },
+ {
+  "id": "o-storm-cloak",
+  "kind": "outfit",
+  "slot": "outfit",
+  "name": "Storm Cloak",
+  "icon": "🧣",
+  "price": 160,
+  "unlock_xp": 100
+ },
+ {
+  "id": "o-cyber-jacket",
+  "kind": "outfit",
+  "slot": "outfit",
+  "name": "Cyber Jacket",
+  "icon": "🎽",
+  "price": 220,
+  "unlock_xp": 200
+ },
+ {
+  "id": "o-keeper-robe",
+  "kind": "outfit",
+  "slot": "outfit",
+  "name": "Keeper Robe",
+  "icon": "👘",
+  "price": 300,
+  "unlock_xp": 300
+ },
+ {
+  "id": "o-flame-coat",
+  "kind": "outfit",
+  "slot": "outfit",
+  "name": "Flame Coat",
+  "icon": "🔥",
+  "price": 360,
+  "unlock_xp": 400
+ },
+ {
+  "id": "o-star-armor",
+  "kind": "outfit",
+  "slot": "outfit",
+  "name": "Star Armor",
+  "icon": "🛡️",
+  "price": 480,
+  "unlock_xp": 600
+ },
+ {
+  "id": "a-cap",
+  "kind": "accessory",
+  "slot": "hat",
+  "name": "Hero Cap",
+  "icon": "🧢",
+  "price": 30,
+  "unlock_xp": 0
+ },
+ {
+  "id": "a-wizard-hat",
+  "kind": "accessory",
+  "slot": "hat",
+  "name": "Wizard Hat",
+  "icon": "🎩",
+  "price": 80,
+  "unlock_xp": 50
+ },
+ {
+  "id": "a-crown",
+  "kind": "accessory",
+  "slot": "hat",
+  "name": "Little Crown",
+  "icon": "👑",
+  "price": 250,
+  "unlock_xp": 300
+ },
+ {
+  "id": "a-headphones",
+  "kind": "accessory",
+  "slot": "hat",
+  "name": "Beat Headphones",
+  "icon": "🎧",
+  "price": 70,
+  "unlock_xp": 0
+ },
+ {
+  "id": "a-shades",
+  "kind": "accessory",
+  "slot": "face",
+  "name": "Cool Shades",
+  "icon": "🕶️",
+  "price": 40,
+  "unlock_xp": 0
+ },
+ {
+  "id": "a-goggles",
+  "kind": "accessory",
+  "slot": "face",
+  "name": "Lab Goggles",
+  "icon": "🥽",
+  "price": 70,
+  "unlock_xp": 100
+ },
+ {
+  "id": "a-star-mask",
+  "kind": "accessory",
+  "slot": "face",
+  "name": "Star Mask",
+  "icon": "🎭",
+  "price": 110,
+  "unlock_xp": 200
+ },
+ {
+  "id": "a-cape",
+  "kind": "accessory",
+  "slot": "back",
+  "name": "Hero Cape",
+  "icon": "🦸",
+  "price": 90,
+  "unlock_xp": 0
+ },
+ {
+  "id": "a-wings",
+  "kind": "accessory",
+  "slot": "back",
+  "name": "Light Wings",
+  "icon": "🪽",
+  "price": 300,
+  "unlock_xp": 400
+ },
+ {
+  "id": "a-backpack",
+  "kind": "accessory",
+  "slot": "back",
+  "name": "Quest Pack",
+  "icon": "🎒",
+  "price": 50,
+  "unlock_xp": 0
+ },
+ {
+  "id": "d-beanbag",
+  "kind": "decor",
+  "slot": null,
+  "name": "Bean Bag",
+  "icon": "🛋️",
+  "price": 40,
+  "unlock_xp": 0
+ },
+ {
+  "id": "d-lamp",
+  "kind": "decor",
+  "slot": null,
+  "name": "Glow Lamp",
+  "icon": "💡",
+  "price": 30,
+  "unlock_xp": 0
+ },
+ {
+  "id": "d-plant",
+  "kind": "decor",
+  "slot": null,
+  "name": "Nexus Fern",
+  "icon": "🪴",
+  "price": 35,
+  "unlock_xp": 0
+ },
+ {
+  "id": "d-poster",
+  "kind": "decor",
+  "slot": null,
+  "name": "Hero Poster",
+  "icon": "🖼️",
+  "price": 45,
+  "unlock_xp": 0
+ },
+ {
+  "id": "d-books",
+  "kind": "decor",
+  "slot": null,
+  "name": "Story Shelf",
+  "icon": "📚",
+  "price": 60,
+  "unlock_xp": 0
+ },
+ {
+  "id": "d-globe",
+  "kind": "decor",
+  "slot": null,
+  "name": "Spin Globe",
+  "icon": "🌍",
+  "price": 80,
+  "unlock_xp": 50
+ },
+ {
+  "id": "d-telescope",
+  "kind": "decor",
+  "slot": null,
+  "name": "Star Telescope",
+  "icon": "🔭",
+  "price": 120,
+  "unlock_xp": 100
+ },
+ {
+  "id": "d-crystal",
+  "kind": "decor",
+  "slot": null,
+  "name": "Violet Crystal",
+  "icon": "🔮",
+  "price": 150,
+  "unlock_xp": 150
+ },
+ {
+  "id": "d-rug",
+  "kind": "decor",
+  "slot": null,
+  "name": "Spark Rug",
+  "icon": "🟣",
+  "price": 55,
+  "unlock_xp": 0
+ },
+ {
+  "id": "d-arcade",
+  "kind": "decor",
+  "slot": null,
+  "name": "Mini Arcade",
+  "icon": "🕹️",
+  "price": 200,
+  "unlock_xp": 200
+ },
+ {
+  "id": "d-aquarium",
+  "kind": "decor",
+  "slot": null,
+  "name": "Glow Aquarium",
+  "icon": "🐠",
+  "price": 180,
+  "unlock_xp": 250
+ },
+ {
+  "id": "d-guitar",
+  "kind": "decor",
+  "slot": null,
+  "name": "Air Guitar",
+  "icon": "🎸",
+  "price": 70,
+  "unlock_xp": 0
+ },
+ {
+  "id": "d-trophy",
+  "kind": "decor",
+  "slot": null,
+  "name": "Trophy Case",
+  "icon": "🏆",
+  "price": 260,
+  "unlock_xp": 400
+ },
+ {
+  "id": "d-moon",
+  "kind": "decor",
+  "slot": null,
+  "name": "Moon Window",
+  "icon": "🌙",
+  "price": 140,
+  "unlock_xp": 150
+ },
+ {
+  "id": "d-lantern",
+  "kind": "decor",
+  "slot": null,
+  "name": "Paper Lantern",
+  "icon": "🏮",
+  "price": 50,
+  "unlock_xp": 0
+ },
+ {
+  "id": "d-statue",
+  "kind": "decor",
+  "slot": null,
+  "name": "Hero Statue",
+  "icon": "🗿",
+  "price": 320,
+  "unlock_xp": 500
+ }
+]

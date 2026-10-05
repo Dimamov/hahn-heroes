@@ -152,6 +152,27 @@ describe('demo backend: grown-ups and missions', () => {
     expect(board.heroes.find((h) => h.me)).toBeUndefined();
   });
 
+  it('sells items once, only with enough points, and keeps the wardrobe and room', async () => {
+    const b = make();
+    await b.signUp(input);
+    expect(await b.shopBuy('a-cap')).toEqual({ ok: false, reason: 'not_enough_coins' });
+    for (let d = 0; d < 3; d++) { await b.claimDaily(); clock = new Date(clock.getTime() + DAY_MS); }
+    expect(await b.shopBuy('a-crown')).toEqual({ ok: false, reason: 'locked' });
+    expect(await b.shopBuy('a-cap')).toEqual({ ok: true });
+    expect(await b.shopBuy('a-cap')).toEqual({ ok: false, reason: 'already_owned' });
+    const shop = await b.shopState();
+    expect(shop.coins).toBe(0);
+    expect(shop.items.find((i) => i.id === 'a-cap')).toMatchObject({ owned: true });
+    await expect(b.heroEquip('hat', 'a-wizard-hat')).rejects.toThrow();
+    await expect(b.heroEquip('face', 'a-cap')).rejects.toThrow();
+    await b.heroEquip('hat', 'a-cap');
+    expect((await b.shopState()).equipped.hat).toBe('a-cap');
+    await b.heroEquip('hat', null);
+    expect((await b.shopState()).equipped.hat).toBeNull();
+    await expect(b.dormSave([{ item: 'd-lamp', cell: 0 }])).rejects.toThrow(/own/);
+    await expect(b.dormGet('someone-else')).rejects.toThrow();
+  });
+
   it('links a parent with a one-time code and limits wrong guesses', async () => {
     const b = make();
     await b.signUp(input);
