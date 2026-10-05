@@ -13,6 +13,8 @@ import type { Subject } from './lib/backend.ts';
 import { Announcements, ClassMissions, HomeMissions, MissionsHome, ParentCode, Quiz } from './screens/Missions.tsx';
 import { Squad } from './screens/Squad.tsx';
 import { House } from './screens/House.tsx';
+import { MyHero } from './screens/MyHero.tsx';
+import { MyRoom } from './screens/MyRoom.tsx';
 import { Arcade } from './screens/Arcade.tsx';
 import { PatternPulse } from './games/PatternPulse.tsx';
 import { MemoryFlip } from './games/MemoryFlip.tsx';
@@ -140,6 +142,8 @@ export default function App() {
       {screen === 'arcade' && <Arcade />}
       {screen === 'squad' && <Squad />}
       {screen === 'house' && <House />}
+      {screen === 'hero' && <MyHero />}
+      {screen === 'room' && <MyRoom />}
       {screen === 'game:pattern-pulse' && <PatternPulse />}
       {screen === 'game:memory-flip' && <MemoryFlip />}
       {screen === 'game:word-builder' && <WordBuilder />}
@@ -154,7 +158,7 @@ export default function App() {
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }

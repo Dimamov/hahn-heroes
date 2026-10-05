@@ -190,6 +190,20 @@ export interface LeaderHouse extends HouseIdentity { grade: number; members: num
 export interface LeaderHero { name: string; starter: string; week: number; season: number; rankWeek: number; rankSeason: number; me: boolean }
 export interface Leaderboard { minMembers: number; houses: LeaderHouse[]; heroes: LeaderHero[] }
 
+
+export interface ShopItem { id: string; kind: 'outfit' | 'accessory' | 'decor'; slot: string | null; name: string; icon: string; price: number; unlockXp: number; owned: boolean; locked: boolean }
+export interface ShopState { coins: number; xp: number; items: ShopItem[]; equipped: Record<string, string | null> }
+export type ShopBuyResult = { ok: true } | { ok: false; reason: 'locked' | 'already_owned' | 'not_enough_coins' };
+export interface DormView {
+  mine: boolean;
+  name: string;
+  starter: string;
+  layout: { item: string; cell: number }[];
+  equipped: Record<string, string | null>;
+  /** Decorations this hero owns. Only sent for your own room. */
+  owned: string[] | null;
+}
+
 export interface SquadMember { heroId: string; name: string; starter: string; status: 'member' | 'invited'; isLeader: boolean }
 export interface SquadView {
   squad: { id: string; name: string; leader: boolean; members: SquadMember[] } | null;
@@ -392,6 +406,13 @@ export interface Backend {
   inviteToSquad(friendHeroId: string): Promise<void>;
   respondSquadInvite(squadId: string, accept: boolean): Promise<void>;
   leaveSquad(): Promise<void>;
+  shopState(): Promise<ShopState>;
+  shopBuy(itemId: string): Promise<ShopBuyResult>;
+  /** Wear an owned item in its slot, or pass null to take the slot off. */
+  heroEquip(slot: string, itemId: string | null): Promise<void>;
+  /** Your own dorm room, or a friend's when you pass their hero id. */
+  dormGet(friendHeroId?: string): Promise<DormView>;
+  dormSave(layout: { item: string; cell: number }[]): Promise<void>;
   houseState(): Promise<HouseState>;
   houseVote(optionId: number): Promise<void>;
   leaderboard(): Promise<Leaderboard>;

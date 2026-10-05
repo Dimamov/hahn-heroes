@@ -11,6 +11,7 @@ import {
   LOCKOUT_MINUTES, MAX_FAILED_TRIES, generateCode, generateHeroCode, heroDisplayName, isGrade, isStarterHero,
   isValidPicture, normalizeHeroCode,
 } from '../../supabase/functions/_shared/kid-auth.ts';
+import { SHOP_ITEMS, itemById } from './shop-catalog.ts';
 import bank from '../../content/questions.json';
 import {
   AdultAuthError, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
@@ -274,6 +275,9 @@ interface Db {
   ledger: LedgerRow[];
   friendships?: { id: string; a: string; b: string; status: 'pending' | 'accepted' | 'declined' | 'removed' }[];
   squads?: { id: string; leader: string; name: string; disbanded: boolean; members: { childId: string; status: 'invited' | 'member' | 'declined' | 'left' }[] }[];
+  owned?: { heroId: string; itemId: string }[];
+  equipped?: { heroId: string; slot: string; itemId: string | null }[];
+  rooms?: { heroId: string; layout: { item: string; cell: number }[] }[];
   houses?: { classId: string; name: string; color: string; power: string; motto: string }[];
   houseOptions?: { classId: string; options: (HouseIdentity & { id: number })[]; open: boolean; votes: Record<string, number> }[];
   room?: DemoRoom | null;
@@ -879,6 +883,70 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (!squad) return;
       if (squad.leader === me) squad.disbanded = true;
       else squad.members.find((m) => m.childId === me)!.status = 'left';
+      commit();
+    },
+    async shopState() {
+      const hero = meHero();
+      const bal = await this.balances();
+      const owned = new Set((db.owned ??= []).filter((o) => o.heroId === hero.id).map((o) => o.itemId));
+      return {
+        coins: bal.coins, xp: bal.xp,
+        items: SHOP_ITEMS.map((i) => ({ id: i.id, kind: i.kind, slot: i.slot, name: i.name, icon: i.icon, price: i.price, unlockXp: i.unlock_xp, owned: owned.has(i.id), locked: i.unlock_xp > bal.xp }))
+          .sort((a, b) => a.unlockXp - b.unlockXp || a.price - b.price || a.id.localeCompare(b.id)),
+        equipped: Object.fromEntries((db.equipped ??= []).filter((e) => e.heroId === hero.id).map((e) => [e.slot, e.itemId])),
+      };
+    },
+    async shopBuy(itemId) {
+      const hero = meHero();
+      const item = itemById(itemId);
+      if (!item) throw new Error('no such item');
+      if ((db.owned ??= []).some((o) => o.heroId === hero.id && o.itemId === itemId)) return { ok: false, reason: 'already_owned' };
+      const bal = await this.balances();
+      if (item.unlock_xp > bal.xp) return { ok: false, reason: 'locked' };
+      if (bal.coins < item.price) return { ok: false, reason: 'not_enough_coins' };
+      db.ledger.push({ heroId: hero.id, currency: 'coins', amount: -item.price, source: 'purchase', key: `shop:${itemId}`, week: schoolWeek(now()) });
+      db.owned.push({ heroId: hero.id, itemId });
+      commit();
+      return { ok: true };
+    },
+    async heroEquip(slot, itemId) {
+      const hero = meHero();
+      if (!['outfit', 'hat', 'face', 'back'].includes(slot)) throw new Error('no such slot');
+      if (itemId !== null) {
+        const item = itemById(itemId);
+        if (!item || item.slot !== slot) throw new Error('that does not go there');
+        if (!(db.owned ??= []).some((o) => o.heroId === hero.id && o.itemId === itemId)) throw new Error('you do not own that yet');
+      }
+      const row = (db.equipped ??= []).find((e) => e.heroId === hero.id && e.slot === slot);
+      if (row) row.itemId = itemId; else db.equipped.push({ heroId: hero.id, slot, itemId });
+      commit();
+    },
+    async dormGet(friendHeroId) {
+      const me = meHero();
+      const owner = friendHeroId ? heroById(friendHeroId) : me;
+      if (!owner) throw new Error('only friends can visit');
+      if (owner.id !== me.id && !(db.friendships ??= []).some((f) => f.status === 'accepted' && ((f.a === me.id && f.b === owner.id) || (f.b === me.id && f.a === owner.id)))) {
+        throw new Error('only friends can visit');
+      }
+      return {
+        mine: owner.id === me.id, name: owner.displayName, starter: owner.starter,
+        layout: [...((db.rooms ??= []).find((r) => r.heroId === owner.id)?.layout ?? [])].sort((a, b) => a.cell - b.cell),
+        equipped: Object.fromEntries((db.equipped ??= []).filter((e) => e.heroId === owner.id && e.itemId).map((e) => [e.slot, e.itemId])),
+        owned: owner.id === me.id ? (db.owned ??= []).filter((o) => o.heroId === me.id && itemById(o.itemId)?.kind === 'decor').map((o) => o.itemId) : null,
+      };
+    },
+    async dormSave(layout) {
+      const hero = meHero();
+      const cells = new Set<number>(), items = new Set<string>();
+      if (layout.length > 24) throw new Error('room layout is not valid');
+      for (const e of layout) {
+        if (!Number.isInteger(e.cell) || e.cell < 0 || e.cell > 23 || cells.has(e.cell) || items.has(e.item)) throw new Error('room layout is not valid');
+        if (itemById(e.item)?.kind !== 'decor' || !(db.owned ??= []).some((o) => o.heroId === hero.id && o.itemId === e.item)) throw new Error('you do not own that decoration');
+        cells.add(e.cell); items.add(e.item);
+      }
+      const row = (db.rooms ??= []).find((r) => r.heroId === hero.id);
+      const next = layout.map((e) => ({ item: e.item, cell: e.cell }));
+      if (row) row.layout = next; else db.rooms.push({ heroId: hero.id, layout: next });
       commit();
     },
     async houseState() {

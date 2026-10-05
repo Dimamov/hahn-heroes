@@ -298,6 +298,23 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async leaveSquad() {
       await rpc('squad_leave');
     },
+    async shopState() {
+      const d = await rpc('shop_state');
+      return { coins: d.coins, xp: d.xp, equipped: d.equipped, items: d.items.map((i: any) => ({ ...i, unlockXp: i.unlock_xp })) };
+    },
+    async shopBuy(itemId) {
+      const d = await rpc('shop_buy', { p_item: itemId });
+      return d.ok ? { ok: true } : { ok: false, reason: d.reason };
+    },
+    async heroEquip(slot, itemId) {
+      await rpc('hero_equip', { p_slot: slot, p_item: itemId });
+    },
+    async dormGet(friendHeroId) {
+      return rpc('dorm_get', { p_friend: friendHeroId ?? null });
+    },
+    async dormSave(layout) {
+      await rpc('dorm_save', { p_layout: layout });
+    },
     async houseState() {
       const d = await rpc('house_state');
       return { state: d.state, weekPoints: d.week_points, cap: d.cap, house: d.house, className: d.class_name, members: d.members, options: d.options, myVote: d.my_vote };
