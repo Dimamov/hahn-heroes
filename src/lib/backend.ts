@@ -8,6 +8,7 @@ import type { MadeCode, RedeemResult } from './codes.ts';
 import type { TreasureState } from './treasure.ts';
 import type { RaceState } from './race.ts';
 import type { KindRow, KindState } from './kindness.ts';
+import type { HintResult } from './hints.ts';
 import type { GoofyState } from './goofy.ts';
 import type { GalleryLook, Look, LookState } from './look.ts';
 import type { AdvAnswerResult, AdvDone, AdvProgress } from './adventures.ts';
@@ -593,6 +594,8 @@ export interface Backend {
   /** Teachers (their students) and the Sensei (everyone): nominations waiting for a decision. */
   kindReview(): Promise<KindRow[]>;
   kindDecide(id: number, approve: boolean): Promise<{ awarded: number }>;
+  /** A short hint for a practice question: from the AI helper when it is on, otherwise a built-in nudge. Never the answer. */
+  hintFor(questionId: string, subject: string): Promise<HintResult>;
   /** Goofy challenge: accept a mystery silly task once a day, then say you did it for a small reward. */
   goofyState(): Promise<GoofyState>;
   goofyAccept(): Promise<GoofyState>;
