@@ -11,6 +11,7 @@ export const GAMES = [
   { id: 'spot-difference', label: 'Spot the Difference', icon: '🔍', reward: true },
   { id: 'whack-shadow', label: 'Whack-a-Shadow', icon: '👻', reward: true },
   { id: 'chrono-rift', label: 'Chrono-Rift', icon: '🌀', reward: true },
+  { id: 'nexus-dash', label: 'Nexus Dash', icon: '🏃', reward: true },
   { id: 'bubble-pop', label: 'Bubble Pop', icon: '🫧', reward: true },
   { id: 'block-blast', label: 'Block Blast', icon: '🧱', reward: true },
   { id: 'hero-defense', label: 'Hero Defense', icon: '🛡️', reward: true },

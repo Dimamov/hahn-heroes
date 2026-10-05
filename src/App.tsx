@@ -30,6 +30,7 @@ import { Goofy } from './screens/Goofy.tsx';
 import { Kindness } from './screens/Kindness.tsx';
 import { WhackShadow } from './games/WhackShadow.tsx';
 import { ChronoRift } from './games/ChronoRift.tsx';
+import { NexusDash } from './games/NexusDash.tsx';
 import { Voice } from './screens/Voice.tsx';
 import { BubblePop } from './games/BubblePop.tsx';
 import { BlockBlast } from './games/BlockBlast.tsx';
@@ -240,6 +241,7 @@ export default function App() {
       {screen === 'game:escape-nexus' && <EscapeNexus />}
       {screen === 'game:whack-shadow' && <WhackShadow />}
       {screen === 'game:chrono-rift' && <ChronoRift />}
+      {screen === 'game:nexus-dash' && <NexusDash />}
       {screen === 'game:bubble-pop' && <BubblePop />}
       {screen === 'game:block-blast' && <BlockBlast />}
       {screen === 'game:hero-defense' && <HeroDefense />}
