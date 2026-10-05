@@ -917,6 +917,7 @@ describe('demo backend: grown-ups and missions', () => {
       if (!v.players.find((p) => p.me)!.speaking) { await expect(b.shadowClue('hello')).rejects.toThrow('not your turn'); return; }
       await expect(b.shadowClue('two words')).rejects.toThrow('one word');
       await expect(b.shadowClue('sh1t')).rejects.toThrow();
+      await expect(b.shadowClue('💩')).rejects.toThrow('one word');
     });
   });
 

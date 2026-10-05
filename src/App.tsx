@@ -231,6 +231,7 @@ export default function App() {
       {screen === 'game:bubble-pop' && <BubblePop />}
       {screen === 'game:block-blast' && <BlockBlast />}
       {screen === 'game:hero-defense' && <HeroDefense />}
+      {screen === 'game:shadow-spy' && <ShadowSignal emoji />}
       {screen === 'game:fun-box' && <FunBox />}
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}

@@ -838,3 +838,12 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .td-foe b { display: block; height: 4px; margin: 0 auto; border-radius: 2px; background: #f87171; }
 .td-bar { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
 @media (max-height: 480px) and (orientation: landscape) { .td-board { height: 44vh; } .td-bar .chip { padding: 4px 8px; } }
+
+.spy-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.spy-emoji { padding: 0; min-width: 0; aspect-ratio: 1; border-radius: 12px; background: var(--panel-2); border: 2px solid var(--violet); font-size: clamp(18px, 6vw, 32px); }
+@media (max-height: 480px) and (orientation: landscape) {
+  .spy-grid { grid-template-columns: repeat(12, 1fr); gap: 4px; }
+  .spy-emoji { font-size: 16px; border-radius: 8px; aspect-ratio: auto; height: 30px; }
+  .players.sslist { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .players.sslist .card.member { flex-wrap: wrap; }
+}
