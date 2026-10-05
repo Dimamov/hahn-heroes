@@ -160,6 +160,36 @@ export interface SenseiTraffic {
 export interface Friend { id: string; heroId: string; name: string; grade: number; starter: string }
 export interface FriendRequest { id: string; name: string; grade: number; starter: string }
 export interface Friends { friends: Friend[]; incoming: FriendRequest[]; outgoing: { id: string; name: string }[] }
+
+export const HOUSE_POWERS = [
+  { id: 'flame', icon: '🔥', label: 'Flame' }, { id: 'storm', icon: '⚡', label: 'Storm' }, { id: 'tide', icon: '🌊', label: 'Tide' },
+  { id: 'frost', icon: '❄️', label: 'Frost' }, { id: 'earth', icon: '🌿', label: 'Earth' }, { id: 'light', icon: '✨', label: 'Light' },
+  { id: 'star', icon: '⭐', label: 'Star' }, { id: 'wind', icon: '🌪️', label: 'Wind' },
+] as const;
+export const HOUSE_COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'];
+export interface HouseIdentity { name: string; color: string; power: string; motto: string }
+export interface HouseOption extends HouseIdentity { id: number }
+export interface HouseState {
+  state: 'no_class' | 'none' | 'voting' | 'active';
+  weekPoints: number;
+  cap: number;
+  house?: HouseIdentity & { id: string };
+  className?: string;
+  members?: number;
+  options?: HouseOption[];
+  myVote?: number | null;
+}
+export interface HouseTeacherView {
+  state: 'none' | 'voting' | 'active';
+  members?: number;
+  voted?: number;
+  house?: HouseIdentity;
+  options?: (HouseOption & { votes: number })[];
+}
+export interface LeaderHouse extends HouseIdentity { grade: number; members: number; week: number; season: number; rankWeek: number; rankSeason: number; mine: boolean }
+export interface LeaderHero { name: string; starter: string; week: number; season: number; rankWeek: number; rankSeason: number; me: boolean }
+export interface Leaderboard { minMembers: number; houses: LeaderHouse[]; heroes: LeaderHero[] }
+
 export interface SquadMember { heroId: string; name: string; starter: string; status: 'member' | 'invited'; isLeader: boolean }
 export interface SquadView {
   squad: { id: string; name: string; leader: boolean; members: SquadMember[] } | null;
@@ -362,6 +392,13 @@ export interface Backend {
   inviteToSquad(friendHeroId: string): Promise<void>;
   respondSquadInvite(squadId: string, accept: boolean): Promise<void>;
   leaveSquad(): Promise<void>;
+  houseState(): Promise<HouseState>;
+  houseVote(optionId: number): Promise<void>;
+  leaderboard(): Promise<Leaderboard>;
+  houseTeacherView(classId: string): Promise<HouseTeacherView>;
+  /** Teacher: put two or three House identities up for a class vote. */
+  houseProposeOptions(classId: string, options: HouseIdentity[]): Promise<void>;
+  houseCloseVote(classId: string): Promise<void>;
   /** The code of the room this hero is in right now, so a reconnect can rejoin it. */
   currentRoom(): Promise<string | null>;
   createRoom(game: string): Promise<string>;

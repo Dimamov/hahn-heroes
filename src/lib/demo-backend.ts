@@ -15,7 +15,7 @@ import bank from '../../content/questions.json';
 import {
   AdultAuthError, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
   type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
-  type ClassResult, type Hero, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
+  type ClassResult, type Hero, type HouseIdentity, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
   type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress,
 } from './backend.ts';
 
@@ -226,6 +226,18 @@ function demoNexusTick(r: DemoRoom, now: number) {
   else if (now > n.startedAt + (n.base + n.penalty) * 1000) { n.outcome = 'lost'; r.state = 'done'; }
 }
 
+const HOUSE_CAP = 80;
+const DEMO_RIVALS = [
+  { name: 'Ember Owls', color: '#f97316', power: 'flame', motto: 'Bright minds burn brighter', grade: 6, members: 22, week: 41.5, season: 188 },
+  { name: 'Tide Titans', color: '#06b6d4', power: 'tide', motto: 'Steady waves win', grade: 5, members: 24, week: 33, season: 142.5 },
+  { name: 'Frost Foxes', color: '#8b5cf6', power: 'frost', motto: 'Cool heads, quick feet', grade: 5, members: 21, week: 18, season: 96 },
+];
+const DEMO_PEERS = [
+  { name: 'Nova', starter: 'b01', week: 70, season: 410, me: false },
+  { name: 'Kai', starter: 'b02', week: 55, season: 275, me: false },
+  { name: 'Mika', starter: 'b03', week: 40, season: 190, me: false },
+];
+
 interface DemoRoom {
   code: string;
   game: string;
@@ -262,6 +274,8 @@ interface Db {
   ledger: LedgerRow[];
   friendships?: { id: string; a: string; b: string; status: 'pending' | 'accepted' | 'declined' | 'removed' }[];
   squads?: { id: string; leader: string; name: string; disbanded: boolean; members: { childId: string; status: 'invited' | 'member' | 'declined' | 'left' }[] }[];
+  houses?: { classId: string; name: string; color: string; power: string; motto: string }[];
+  houseOptions?: { classId: string; options: (HouseIdentity & { id: number })[]; open: boolean; votes: Record<string, number> }[];
   room?: DemoRoom | null;
   drawingReports?: { artist: string; reporter: string; word: string; at: string }[];
   chat?: { messages: { id: number; childId: string; name: string; body: string; at: number }[]; status: Record<string, { strikes: number; banned: boolean; requested: boolean }> };
@@ -367,6 +381,11 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     const t = meAdult('teacher');
     return db.classes.find((c) => c.id === classId && c.teacherId === t.id);
   };
+  /** Two points per correct practice answer, like house_weekly() in the database. */
+  const correctPoints = (heroId: string, week?: string) =>
+    db.history.filter((h) => h.childId === heroId && h.correct && (!week || schoolWeek(new Date(h.servedAt)) === week)).length * 2;
+  const heroWeekPoints = (heroId: string) => correctPoints(heroId, schoolWeek(now()));
+  const heroSeasonPoints = (heroId: string) => correctPoints(heroId);
   const tooManyTries = (actor: string, kind: 'link' | 'class') =>
     db.codeAttempts.filter((x) => x.actor === actor && x.kind === kind && at() - x.at < HOUR).length >= 10;
 
@@ -860,6 +879,81 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (!squad) return;
       if (squad.leader === me) squad.disbanded = true;
       else squad.members.find((m) => m.childId === me)!.status = 'left';
+      commit();
+    },
+    async houseState() {
+      const hero = meHero();
+      const weekPoints = Math.min(heroWeekPoints(hero.id), HOUSE_CAP);
+      const link = db.members.find((m) => m.childId === hero.id);
+      if (!link) return { state: 'no_class', weekPoints, cap: HOUSE_CAP };
+      const house = (db.houses ??= []).find((h) => h.classId === link.classId);
+      if (house) {
+        return { state: 'active', weekPoints, cap: HOUSE_CAP, house: { ...house, id: house.classId },
+          className: db.classes.find((c) => c.id === link.classId)?.name, members: db.members.filter((m) => m.classId === link.classId).length };
+      }
+      const vote = (db.houseOptions ??= []).find((v) => v.classId === link.classId && v.open);
+      if (vote) return { state: 'voting', weekPoints, cap: HOUSE_CAP, options: vote.options, myVote: vote.votes[hero.id] ?? null };
+      return { state: 'none', weekPoints, cap: HOUSE_CAP };
+    },
+    async houseVote(optionId) {
+      const hero = meHero();
+      const link = db.members.find((m) => m.childId === hero.id);
+      const vote = link && (db.houseOptions ??= []).find((v) => v.classId === link.classId && v.open);
+      if (!vote || !vote.options.some((o) => o.id === optionId)) throw new Error('that vote is not open');
+      vote.votes[hero.id] = optionId;
+      commit();
+    },
+    async leaderboard() {
+      const hero = meHero();
+      const link = db.members.find((m) => m.childId === hero.id);
+      const mine = (db.houses ??= []).find((h) => h.classId === link?.classId);
+      const myWeek = Math.min(heroWeekPoints(hero.id), HOUSE_CAP);
+      const mySeason = Math.min(heroSeasonPoints(hero.id), HOUSE_CAP * 8);
+      const houses = [
+        ...DEMO_RIVALS.map((r) => ({ ...r, mine: false })),
+        ...(mine ? [{ name: mine.name, color: mine.color, power: mine.power, motto: mine.motto, grade: hero.grade, members: db.members.filter((m) => m.classId === mine.classId).length, week: myWeek, season: mySeason, mine: true }] : []),
+      ];
+      const rk = (list: typeof houses, key: 'week' | 'season') => list.map((h) => 1 + list.filter((o) => o[key] > h[key]).length);
+      const rw = rk(houses, 'week'), rs = rk(houses, 'season');
+      const peers = [...DEMO_PEERS, { name: hero.displayName, starter: hero.starter, week: myWeek, season: mySeason, me: true }];
+      const prk = (key: 'week' | 'season') => peers.map((h) => 1 + peers.filter((o) => o[key] > h[key]).length);
+      const pw = prk('week'), ps = prk('season');
+      return {
+        minMembers: 1,
+        houses: houses.map((h, i) => ({ ...h, rankWeek: rw[i], rankSeason: rs[i] })).sort((a, b) => a.rankSeason - b.rankSeason),
+        heroes: peers.map((h, i) => ({ ...h, rankWeek: pw[i], rankSeason: ps[i] })).filter((h) => h.season > 0).sort((a, b) => a.rankSeason - b.rankSeason),
+      };
+    },
+    async houseTeacherView(classId) {
+      if (!teaches(classId)) throw new Error('not your class');
+      const members = db.members.filter((m) => m.classId === classId).length;
+      const house = (db.houses ??= []).find((h) => h.classId === classId);
+      if (house) return { state: 'active', house };
+      const vote = (db.houseOptions ??= []).find((v) => v.classId === classId && v.open);
+      if (vote) {
+        const ballots = Object.values(vote.votes);
+        return { state: 'voting', members, voted: ballots.length, options: vote.options.map((o) => ({ ...o, votes: ballots.filter((b) => b === o.id).length })) };
+      }
+      return { state: 'none', members };
+    },
+    async houseProposeOptions(classId, options) {
+      if (!teaches(classId)) throw new Error('not your class');
+      if (options.length < 2 || options.length > 3) throw new Error('propose 2 or 3 Houses');
+      if (new Set(options.map((o) => o.name.trim().toLowerCase())).size !== options.length) throw new Error('each House needs its own name');
+      for (const o of options) if (!/^[A-Za-z][A-Za-z '-]{1,23}$/.test(o.name.trim())) throw new Error('house names are 2 to 24 letters');
+      if ((db.houses ??= []).some((h) => h.classId === classId)) throw new Error('this class already has a House');
+      db.houseOptions = (db.houseOptions ?? []).filter((v) => v.classId !== classId);
+      db.houseOptions.push({ classId, open: true, votes: {}, options: options.map((o, i) => ({ ...o, name: o.name.trim(), motto: o.motto.trim(), id: i + 1 })) });
+      commit();
+    },
+    async houseCloseVote(classId) {
+      if (!teaches(classId)) throw new Error('not your class');
+      const vote = (db.houseOptions ??= []).find((v) => v.classId === classId && v.open);
+      const ballots = vote ? Object.values(vote.votes) : [];
+      if (!vote || !ballots.length) throw new Error('wait for at least one vote');
+      const win = [...vote.options].sort((a, b) => ballots.filter((x) => x === b.id).length - ballots.filter((x) => x === a.id).length || a.id - b.id)[0];
+      (db.houses ??= []).push({ classId, name: win.name, color: win.color, power: win.power, motto: win.motto });
+      vote.open = false;
       commit();
     },
     async currentRoom() {

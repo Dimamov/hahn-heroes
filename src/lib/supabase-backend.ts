@@ -298,6 +298,27 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async leaveSquad() {
       await rpc('squad_leave');
     },
+    async houseState() {
+      const d = await rpc('house_state');
+      return { state: d.state, weekPoints: d.week_points, cap: d.cap, house: d.house, className: d.class_name, members: d.members, options: d.options, myVote: d.my_vote };
+    },
+    async houseVote(optionId) {
+      await rpc('house_vote', { p_option: optionId });
+    },
+    async leaderboard() {
+      const d = await rpc('leaderboard');
+      const rank = (x: any) => ({ ...x, rankWeek: x.rank_week, rankSeason: x.rank_season });
+      return { minMembers: d.min_members, houses: d.houses.map(rank), heroes: d.heroes.map(rank) };
+    },
+    async houseTeacherView(classId) {
+      return rpc('house_teacher_view', { p_class: classId });
+    },
+    async houseProposeOptions(classId, options) {
+      await rpc('house_propose', { p_class: classId, p_options: options });
+    },
+    async houseCloseVote(classId) {
+      await rpc('house_close_vote', { p_class: classId });
+    },
     async currentRoom() {
       return (await rpc('my_room')) ?? null;
     },

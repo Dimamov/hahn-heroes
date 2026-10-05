@@ -114,6 +114,44 @@ describe('demo backend: grown-ups and missions', () => {
     return { b, hero, cls };
   }
 
+  it('runs a class House vote, then shows the House on the leaderboard', async () => {
+    const { b, hero, cls } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8]);
+    expect((await b.houseState()).state).toBe('no_class');
+    expect(await b.joinClass(cls.joinCode!)).toMatchObject({ ok: true });
+    expect((await b.houseState()).state).toBe('none');
+    await b.signOut();
+
+    await b.adultSignIn('tess@example.com', 'secret1');
+    const ideas = [
+      { name: 'Ember Owls', color: '#f97316', power: 'flame', motto: 'Burn bright' },
+      { name: 'Tide Titans', color: '#06b6d4', power: 'tide', motto: '' },
+    ];
+    await expect(b.houseProposeOptions(cls.id, [ideas[0], ideas[0]])).rejects.toThrow();
+    await expect(b.houseCloseVote(cls.id)).rejects.toThrow();
+    await b.houseProposeOptions(cls.id, ideas);
+    await expect(b.houseCloseVote(cls.id)).rejects.toThrow(/one vote/);
+    await b.signOut();
+
+    await b.signIn(hero.heroCode, [0, 4, 8]);
+    const voting = await b.houseState();
+    expect(voting.state).toBe('voting');
+    await b.houseVote(voting.options![1].id);
+    expect((await b.houseState()).myVote).toBe(voting.options![1].id);
+    await b.signOut();
+
+    await b.adultSignIn('tess@example.com', 'secret1');
+    expect(await b.houseTeacherView(cls.id)).toMatchObject({ state: 'voting', voted: 1 });
+    await b.houseCloseVote(cls.id);
+    await b.signOut();
+
+    await b.signIn(hero.heroCode, [0, 4, 8]);
+    expect(await b.houseState()).toMatchObject({ state: 'active', house: { name: 'Tide Titans' } });
+    const board = await b.leaderboard();
+    expect(board.houses.some((h) => h.mine && h.name === 'Tide Titans')).toBe(true);
+    expect(board.heroes.find((h) => h.me)).toBeUndefined();
+  });
+
   it('links a parent with a one-time code and limits wrong guesses', async () => {
     const b = make();
     await b.signUp(input);
