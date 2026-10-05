@@ -430,6 +430,8 @@ export interface ChatMessage { id: number; name: string; me: boolean; body: stri
 export type ChatResult = { ok: true } | { ok: false; reason: 'warning' | 'banned' | 'slow' | 'private' | 'no_class' };
 export interface ChatChild { banned: boolean; requested: boolean }
 export interface ChatLogLine { name: string; child: boolean; body: string; at: string }
+export interface EmailLink { tokenHash: string; type: 'recovery' | 'signup' | 'email' }
+export interface EmailHelpRequest { id: number; email: string; at: string }
 export interface ChatRequest { childId: string; name: string; grade: number; requested: boolean }
 export interface ArcadeStatus { coins: number; games: string[]; claimed: string[] }
 export interface PendingTeacher {
@@ -545,8 +547,17 @@ export interface Backend {
   adultSignIn(email: string, password: string): Promise<Adult>;
   /** Emails a password-reset link. Always resolves, so it never reveals who has an account. */
   adultRequestReset(email: string): Promise<void>;
+  /** Sends the confirmation email again. Resolves false when the email service says to wait. */
+  adultResendConfirmation(email: string): Promise<boolean>;
+  /** "Didn't get it?": tells the Sensei this address never got its email. Saves only the address and the time. */
+  emailHelpRequest(email: string): Promise<boolean>;
+  senseiEmailRequests(): Promise<EmailHelpRequest[]>;
+  senseiEmailRequestDone(id: number): Promise<void>;
   /** True when the app was opened from a password-reset link and needs a new password. */
   resetPending(): boolean;
+  /** An email link (sign-up confirmation or password reset) the app was opened from, if any. The token is only used when the person taps Continue, so mail scanners can't use it up. */
+  pendingEmailLink(): EmailLink | null;
+  completeEmailLink(link: EmailLink): Promise<{ kind: 'recovery' } | { kind: 'adult'; adult: Adult }>;
   adultSetPassword(password: string): Promise<void>;
   claimLink(code: string): Promise<LinkResult>;
   children(): Promise<ChildSummary[]>;

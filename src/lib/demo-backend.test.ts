@@ -1097,6 +1097,20 @@ describe('demo backend: grown-ups and missions', () => {
     });
   });
 
+  describe('email help', () => {
+    it('saves the address, caps repeats, and the Sensei closes every request from it', async () => {
+      const b = make();
+      expect(await b.emailHelpRequest('nope')).toBe(false);
+      for (let i = 0; i < 5; i++) expect(await b.emailHelpRequest(' Mom@Example.com ')).toBe(true);
+      await b.emailHelpRequest('dad@example.com');
+      await b.adultSignIn('sensei@demo.test', 'sensei');
+      const open = await b.senseiEmailRequests();
+      expect(open.map((r) => r.email)).toEqual(['dad@example.com', 'mom@example.com', 'mom@example.com', 'mom@example.com']);
+      await b.senseiEmailRequestDone(open[1].id);
+      expect((await b.senseiEmailRequests()).map((r) => r.email)).toEqual(['dad@example.com']);
+    });
+  });
+
   describe('story', () => {
     it('saves progress, pays choices and checkpoints once, and gives the card at the end', async () => {
       const b = make();

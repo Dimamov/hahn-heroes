@@ -259,8 +259,36 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async adultRequestReset(email) {
       await sb.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/` }).catch(() => undefined);
     },
+    async adultResendConfirmation(email) {
+      const { error } = await sb.auth.resend({ type: 'signup', email: email.trim(), options: { emailRedirectTo: `${window.location.origin}/` } });
+      return !error;
+    },
+    async emailHelpRequest(email) {
+      const r = await rpc('email_help_request', { p_email: email });
+      return !!r?.ok;
+    },
+    async senseiEmailRequests() {
+      return ((await rpc('sensei_email_requests')) as any[]).map((r) => ({ id: r.id, email: r.email, at: r.at }));
+    },
+    async senseiEmailRequestDone(id) {
+      await rpc('sensei_email_request_done', { p_id: id });
+    },
     resetPending() {
       return window.location.hash.includes('type=recovery');
+    },
+    pendingEmailLink() {
+      const q = new URLSearchParams(window.location.search);
+      const tokenHash = q.get('token_hash');
+      const type = q.get('type');
+      if (!tokenHash || (type !== 'recovery' && type !== 'signup' && type !== 'email')) return null;
+      return { tokenHash, type };
+    },
+    async completeEmailLink(link) {
+      const { error } = await sb.auth.verifyOtp({ token_hash: link.tokenHash, type: link.type });
+      if (error) throw new AdultAuthError('wrong');
+      window.history.replaceState(null, '', window.location.pathname);
+      if (link.type === 'recovery') return { kind: 'recovery' };
+      return { kind: 'adult', adult: await ensureAdultProfile() };
     },
     async adultSetPassword(password) {
       const { error } = await sb.auth.updateUser({ password });
