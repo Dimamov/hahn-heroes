@@ -25,6 +25,7 @@ export const DESTINATIONS: Destination[] = [
   { id: 'treasure', label: 'Treasure Map', icon: '🗺️', tint: '#f59e0b', blurb: 'Follow the clues around the app and win a card.', milestone: 'Events' },
   { id: 'base', label: 'Squad Hideout', icon: '🏕️', tint: '#60a5fa', blurb: 'Decorate a shared hideout with your squad.', milestone: 'Collections' },
   { id: 'studio', label: 'Avatar Studio', icon: '🎨', tint: '#f472b6', blurb: 'Mix hair, makeup, outfits and auras. Pin your look for likes.', milestone: 'Collections' },
+  { id: 'goofy', label: 'Goofy Challenge', icon: '🤪', tint: '#f97316', blurb: 'A mystery silly challenge every day.', milestone: 'Rewards' },
   { id: 'kindness', label: 'Kindness', icon: '💛', tint: '#facc15', blurb: 'Thank a squad mate for being kind.', milestone: 'Events' },
   { id: 'race', label: 'Class Race', icon: '🏁', tint: '#38bdf8', blurb: 'Which class earns the most points this month?', milestone: 'Events' },
   { id: 'quest', label: 'Daily Quest', icon: '🎯', tint: '#f59e0b', blurb: 'Three tasks a day and a streak that grows.', milestone: 'Rewards' },

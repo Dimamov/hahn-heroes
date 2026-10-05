@@ -14,6 +14,7 @@ import { LearnHome, Practice } from './screens/Learn.tsx';
 import type { Subject } from './lib/backend.ts';
 import { Adventures } from './screens/Adventures.tsx';
 import { Quest } from './screens/Quest.tsx';
+import { Privacy } from './screens/Privacy.tsx';
 import { Showcase } from './screens/Showcase.tsx';
 import { Guide } from './screens/Guide.tsx';
 import { MyWeek } from './screens/MyWeek.tsx';
@@ -25,8 +26,13 @@ import { HUNTS } from './lib/treasure.ts';
 import type { TreasureState } from './lib/treasure.ts';
 import { SquadBase } from './screens/SquadBase.tsx';
 import { Studio } from './screens/Studio.tsx';
+import { Goofy } from './screens/Goofy.tsx';
 import { Kindness } from './screens/Kindness.tsx';
 import { WhackShadow } from './games/WhackShadow.tsx';
+import { Voice } from './screens/Voice.tsx';
+import { BubblePop } from './games/BubblePop.tsx';
+import { BlockBlast } from './games/BlockBlast.tsx';
+import { HeroDefense } from './games/HeroDefense.tsx';
 import { Race } from './screens/Race.tsx';
 import { Badges } from './screens/Badges.tsx';
 import { Codes } from './screens/Codes.tsx';
@@ -96,6 +102,7 @@ export default function App() {
   const [missionDot, setMissionDot] = useState(false);
   const [arcadeDot, setArcadeDot] = useState(false);
   const [questDot, setQuestDot] = useState(false);
+  const [privacy, setPrivacy] = useState(false);
 
   const [secret, setSecret] = useState<SecretState | null>(null);
   const [treasure, setTreasure] = useState<TreasureState | null>(null);
@@ -163,15 +170,17 @@ export default function App() {
 
   if (!ready) return <main className="screen center"><div className="spinner" aria-label="Loading" /></main>;
 
+  if (privacy) return <Privacy onBack={() => setPrivacy(false)} />;
+
   if (resetting) return <NewPassword backend={backend} onDone={() => { setResetting(false); backend.restore().then((who) => { if (who?.kind === 'adult') setAdult(who.adult); }).catch(() => undefined); }} />;
 
-  if (adult) return <AdultApp backend={backend} adult={adult} onAdult={setAdult} onSignOut={signOut} />;
+  if (adult) return <AdultApp backend={backend} adult={adult} onAdult={setAdult} onSignOut={signOut} onPrivacy={() => setPrivacy(true)} />;
 
   if (!hero) {
     if (screen === 'new') return <Onboarding backend={backend} onDone={enterHero} onBack={() => setScreen('welcome')} />;
     if (screen === 'signin') return <SignIn backend={backend} onDone={enterHero} onBack={() => setScreen('welcome')} />;
     if (screen === 'adult') return <AdultAuth backend={backend} onDone={setAdult} onBack={() => setScreen('welcome')} />;
-    return <Welcome demo={backend.mode === 'demo'} onNew={() => setScreen('new')} onSignIn={() => setScreen('signin')} onAdult={() => setScreen('adult')} />;
+    return <Welcome demo={backend.mode === 'demo'} onNew={() => setScreen('new')} onSignIn={() => setScreen('signin')} onAdult={() => setScreen('adult')} onPrivacy={() => setPrivacy(true)} />;
   }
 
   const session: Session = { backend, hero, balances, dailyAvailable, unread, missionDot, arcadeDot, questDot, refresh, signOut, go: setScreen };
@@ -197,6 +206,7 @@ export default function App() {
       {screen === 'adventures' && <Adventures />}
       {screen === 'quest' && <Quest />}
       {screen === 'showcase' && <Showcase />}
+      {screen === 'privacy' && <Privacy onBack={() => setScreen('profile')} />}
       {screen === 'guide' && <Guide />}
       {screen === 'myweek' && <MyWeek />}
       {screen === 'raid' && <Raid />}
@@ -206,7 +216,9 @@ export default function App() {
       {screen === 'codes' && <Codes />}
       {screen === 'badges' && <Badges />}
       {screen === 'race' && <Race />}
+      {screen === 'voice' && <Voice />}
       {screen === 'kindness' && <Kindness />}
+      {screen === 'goofy' && <Goofy />}
       {screen === 'studio' && <Studio />}
       {screen === 'base' && <SquadBase />}
       {screen === 'treasure' && <Treasure />}
@@ -226,12 +238,16 @@ export default function App() {
       {screen === 'game:squad-drawing' && <SquadDrawing />}
       {screen === 'game:escape-nexus' && <EscapeNexus />}
       {screen === 'game:whack-shadow' && <WhackShadow />}
+      {screen === 'game:bubble-pop' && <BubblePop />}
+      {screen === 'game:block-blast' && <BlockBlast />}
+      {screen === 'game:hero-defense' && <HeroDefense />}
+      {screen === 'game:shadow-spy' && <ShadowSignal emoji />}
       {screen === 'game:fun-box' && <FunBox />}
       {screen === 'donotpress' && <DoNotPress />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
       {screen === 'notifications' && <Notifications />}
-      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'notifications', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'badges', 'treasure', 'base', 'studio', 'race', 'kindness', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'badges', 'treasure', 'base', 'studio', 'race', 'kindness', 'privacy', 'voice', 'goofy', 'notifications', 'notifications', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }

@@ -1,3 +1,5 @@
+import { fallbackHint } from './hints.ts';
+import { GOOFY } from './goofy.ts';
 import { createClient } from '@supabase/supabase-js';
 import {
   AdultAuthError, SignInError, emptyBalances,
@@ -509,6 +511,25 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       const d = await rpc('kind_decide', { p_id: id, p_approve: approve });
       return { awarded: d.awarded };
     },
+    async hintFor(questionId, subject) {
+      try {
+        const { data, error } = await sb.functions.invoke('hint-ai', { body: { id: questionId } });
+        if (!error && data?.hint) return { hint: String(data.hint), ai: true, left: typeof data.left === 'number' ? data.left : null };
+      } catch { /* fall through to the built-in hint */ }
+      return { hint: fallbackHint(subject, questionId), ai: false, left: null };
+    },
+    async goofyState() {
+      const d = await rpc('goofy_state');
+      return { status: d.status, prompt: d.prompt, doneToday: d.done_today };
+    },
+    async goofyAccept() {
+      const d = await rpc('goofy_accept', { p_count: GOOFY.length });
+      return { status: d.status, prompt: d.prompt, doneToday: d.done_today };
+    },
+    async goofyFinish(done) {
+      const d = await rpc('goofy_finish', { p_done: done });
+      return { awarded: d.awarded };
+    },
     async raceState(back = 0) {
       const d = await rpc('class_race', { p_back: back });
       return { month: d.month, minMembers: d.min_members, classes: d.classes };
@@ -643,6 +664,9 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     },
     async storyComplete(episode) {
       return rpc('story_complete', { p_episode: episode });
+    },
+    async senseiDeleteHero(heroCode) {
+      return rpc('sensei_delete_hero', { p_hero_code: heroCode });
     },
     async senseiGiveCard(heroCode, cardId) {
       return rpc('sensei_give_card', { p_hero_code: heroCode, p_card: cardId });

@@ -8,6 +8,8 @@ import type { MadeCode, RedeemResult } from './codes.ts';
 import type { TreasureState } from './treasure.ts';
 import type { RaceState } from './race.ts';
 import type { KindRow, KindState } from './kindness.ts';
+import type { HintResult } from './hints.ts';
+import type { GoofyState } from './goofy.ts';
 import type { GalleryLook, Look, LookState } from './look.ts';
 import type { AdvAnswerResult, AdvDone, AdvProgress } from './adventures.ts';
 import type { StoryAnswerResult, StoryChoiceResult, StoryDone, StoryProgress } from './story.ts';
@@ -566,6 +568,7 @@ export interface Backend {
   tradeConfirm(tradeId: string, ver: number, ack: boolean): Promise<{ ok: boolean; done?: boolean; reason?: string }>;
   tradeCancel(tradeId: string): Promise<void>;
   /** Sensei only: hand any card to the hero with this code. Resolves with the hero's name. */
+  senseiDeleteHero(heroCode: string): Promise<string>;
   senseiGiveCard(heroCode: string, cardId: string): Promise<string>;
   skillState(): Promise<SkillState>;
   skillLearn(skillId: string): Promise<{ ok: true } | { ok: false; reason: 'locked' | 'already_learned' | 'not_enough_points' }>;
@@ -601,6 +604,12 @@ export interface Backend {
   /** Teachers (their students) and the Sensei (everyone): nominations waiting for a decision. */
   kindReview(): Promise<KindRow[]>;
   kindDecide(id: number, approve: boolean): Promise<{ awarded: number }>;
+  /** A short hint for a practice question: from the AI helper when it is on, otherwise a built-in nudge. Never the answer. */
+  hintFor(questionId: string, subject: string): Promise<HintResult>;
+  /** Goofy challenge: accept a mystery silly task once a day, then say you did it for a small reward. */
+  goofyState(): Promise<GoofyState>;
+  goofyAccept(): Promise<GoofyState>;
+  goofyFinish(done: boolean): Promise<{ awarded: number }>;
   /** Class vs class race: this month (0) or last month (1), class names only. */
   raceState(back?: number): Promise<RaceState>;
   /** Avatar studio: mix hair, makeup, aura, an owned outfit and accessory; pin it for friends to like. */

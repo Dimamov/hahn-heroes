@@ -11,7 +11,7 @@ type View = { name: 'list' } | { name: 'link' } | { name: 'child'; child: ChildS
 
 const LINK_ERRORS = { invalid_code: "That code isn't right, or it was already used. Ask your child for a new one.", too_many_tries: 'Too many tries. Please wait an hour and try again.' };
 
-export function ParentHome({ backend, adult, onSignOut }: { backend: Backend; adult: Adult; onSignOut: () => void }) {
+export function ParentHome({ backend, adult, onSignOut, onPrivacy }: { backend: Backend; adult: Adult; onSignOut: () => void; onPrivacy?: () => void }) {
   const [view, setView] = useState<View>(new URLSearchParams(window.location.search).has('link') ? { name: 'link' } : { name: 'list' });
   const [children, setChildren] = useState<ChildSummary[] | null>(null);
   const reload = () => backend.children().then(setChildren).catch(() => setChildren([]));
@@ -26,7 +26,7 @@ export function ParentHome({ backend, adult, onSignOut }: { backend: Backend; ad
 
   return (
     <main className="screen">
-      <ScreenBar title={`Hi ${adult.displayName.split(' ')[0]}`} onBack={onSignOut} right={<button className="btn link" onClick={onSignOut}>Sign out</button>} />
+      <ScreenBar title={`Hi ${adult.displayName.split(' ')[0]}`} onBack={onSignOut} right={<><button className="btn link" onClick={onPrivacy}>Privacy</button><button className="btn link" onClick={onSignOut}>Sign out</button></>} />
       {children === null ? <div className="spinner" /> : (
         <PagedList
           items={children}

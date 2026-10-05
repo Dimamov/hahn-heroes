@@ -37,7 +37,7 @@ export function DoNotPress() {
     youtube().then((YT) => {
       if (gone || !mount.current || player.current) return;
       player.current = new YT.Player(mount.current, {
-        videoId: VIDEO, width: '100%', height: '100%',
+        host: 'https://www.youtube-nocookie.com', videoId: VIDEO, width: '100%', height: '100%',
         playerVars: { playsinline: 1, rel: 0, fs: 1, controls: 1 },
         events: { onStateChange: (e: { data: number }) => { if (e.data === 1) setNeedTap(false); } },
       });
