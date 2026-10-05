@@ -152,6 +152,23 @@ describe('demo backend: grown-ups and missions', () => {
     expect(board.heroes.find((h) => h.me)).toBeUndefined();
   });
 
+  it('lets a teacher send a quiz without a reading passage', async () => {
+    const { b, hero, cls } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await b.joinClass(cls.joinCode!);
+    await b.signOut();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    await b.createClassMission(cls.id, {
+      title: 'Fractions quiz', passage: '', maxCoins: 50,
+      questions: [1, 2, 3].map((n) => ({ prompt: `Question ${n}?`, choices: ['a', 'b'] })), answers: [0, 0, 0], explanations: ['x', 'x', 'x'],
+    });
+    await b.signOut();
+    await b.signIn(hero.heroCode, [0, 4, 8]);
+    const [m] = await b.classMissions();
+    expect(m.title).toBe('Fractions quiz');
+    expect(m.passage).toBe('');
+  });
+
   it('runs the weekly House challenge: Sensei sets it, the House reaches it, a helper collects once', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8]);

@@ -119,11 +119,11 @@ function NewClassMissionScreen({ backend, cls, onBack }: { backend: Backend; cls
       <main className="screen">
         <ScreenBar title="New mission" onBack={onBack} />
         <label className="field plain"><span>Title</span><input value={title} maxLength={60} onChange={(e) => setTitle(e.target.value)} placeholder="The Water Cycle" /></label>
-        <label className="field plain grow-field"><span>Reading passage (paste it here)</span>
+        <label className="field plain grow-field"><span>Reading passage (optional: leave empty for a quiz only)</span>
           <textarea value={passage} maxLength={3000} onChange={(e) => setPassage(e.target.value)} /></label>
         <div className="chips">{[25, 50, 100, 200].map((c) => <button key={c} className={`chip${coins === c ? ' chosen' : ''}`} onClick={() => setCoins(c)}>💎 {c}</button>)}</div>
         <p className="note">Top reward for a perfect score. Students need 80% to pass.</p>
-        <button className="btn primary" disabled={!title.trim() || !passage.trim()} onClick={() => setStep(1)}>Next: questions</button>
+        <button className="btn primary" disabled={!title.trim()} onClick={() => setStep(1)}>Next: questions</button>
       </main>
     );
   }
