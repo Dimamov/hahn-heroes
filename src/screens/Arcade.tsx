@@ -22,6 +22,7 @@ export const GAMES = [
   { id: 'squad-drawing', label: 'Squad Drawing', icon: '🎨', reward: false },
   { id: 'escape-nexus', label: 'Escape the Nexus', icon: '🔐', reward: false },
   { id: 'word-rush', label: 'Word Rush', icon: '⏱️', reward: false },
+  { id: 'jam', label: 'Jam Session', icon: '🎛️', reward: false },
   { id: 'rhythm-tap', label: 'Rhythm Tap', icon: '🥁', reward: false },
   { id: 'arena', label: 'Battle Arena', icon: '🥋', reward: false },
   { id: 'fun-box', label: 'Fun Box', icon: '🎁', reward: false },
@@ -29,7 +30,7 @@ export const GAMES = [
 
 const TAGLINES: Record<string, string> = {
   'trivia-clash': 'Private rooms', odin: 'Private rooms', 'squad-drawing': 'Private rooms', 'escape-nexus': 'Private rooms',
-  'shadow-signal': 'Rooms or one device', 'shadow-spy': 'Rooms, emoji clues', 'word-rush': 'Pass the device', arena: 'Friendly spar',
+  'shadow-signal': 'Rooms or one device', 'shadow-spy': 'Rooms, emoji clues', 'word-rush': 'Pass the device', jam: 'Solo or with your squad', arena: 'Friendly spar',
 };
 
 /** Solo games and squad games, six to a page so the list never scrolls. */

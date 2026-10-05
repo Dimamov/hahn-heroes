@@ -327,6 +327,13 @@ describe('demo backend: grown-ups and missions', () => {
     await expect(b.basePlace(0, 'd-lamp')).rejects.toThrow('join a squad');
   });
 
+  it('keeps jam sessions inside the squad', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    expect(await b.jamFeed()).toEqual({ squad: null, mates: [] });
+    await expect(b.jamHit([1])).rejects.toThrow('join a squad');
+  });
+
   it('saves looks from fixed lists and owned items, and likes stay inside the circle', async () => {
     const { b, hero } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);

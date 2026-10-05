@@ -274,6 +274,7 @@ export interface DormView {
   owned: string[] | null;
 }
 
+export interface JamFeed { squad: string | null; mates: { id: string; name: string; seq: number; pads: number[]; live: boolean }[] }
 export interface BaseView { squad: string | null; items: { cell: number; item: string; by: string; mine: boolean }[]; owned: string[]; limit: number }
 
 export interface NexlingState {
@@ -629,6 +630,9 @@ export interface Backend {
   baseGet(): Promise<BaseView>;
   basePlace(cell: number, item: string): Promise<void>;
   baseRemove(cell: number): Promise<void>;
+  /** Jam Session: send my latest pad hits to the squad, and read what squad mates have played. */
+  jamHit(pads: number[]): Promise<void>;
+  jamFeed(): Promise<JamFeed>;
   /** The weekly treasure hunt: four clues, each a pin hidden on one screen; the full map pays a card. */
   treasureState(): Promise<TreasureState>;
   treasureFind(place: string): Promise<{ ok: boolean; done?: boolean }>;

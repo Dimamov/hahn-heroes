@@ -552,6 +552,12 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async basePlace(cell, item) {
       await rpc('base_place', { p_cell: cell, p_item: item });
     },
+    async jamHit(pads) {
+      await rpc('jam_hit', { p_pads: pads });
+    },
+    async jamFeed() {
+      return (await rpc('jam_feed')) as never;
+    },
     async baseRemove(cell) {
       await rpc('base_remove', { p_cell: cell });
     },
