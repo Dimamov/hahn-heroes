@@ -20,7 +20,7 @@ import {
   AdultAuthError, HOUSE_COLORS, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
   type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
   type ClassResult, type Hero, type HouseIdentity, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
-  type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress,
+  type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress, type TriviaState,
 } from './backend.ts';
 
 interface BankQuestion {
@@ -273,6 +273,7 @@ interface Db {
   announcements: Announcement[];
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
+  trivia?: { date: string; heroId: string; going: boolean }[];
   history: HistoryRow[];
   stats: { childId: string; subject: Subject; skill: string; attempts: number; correct: number }[];
   ledger: LedgerRow[];
@@ -375,6 +376,22 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
 
   const strip = ({ picture: _p, failures: _f, ...hero }: Account): Hero => hero;
   const toAdult = ({ email: _e, password: _w, ...adult }: DemoAdult): Adult => adult;
+  const nextTriviaDate = (): string => {
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const [y, m, d] = schoolDate(now()).split('-').map(Number);
+    const base = new Date(Date.UTC(y, m - 1, d));
+    base.setUTCDate(base.getUTCDate() + ((days.indexOf(db.triviaNight.weekday) - base.getUTCDay() + 7) % 7));
+    return base.toISOString().slice(0, 10);
+  };
+  const triviaFor = (hero: Account): TriviaState => {
+    const date = nextTriviaDate();
+    const rows = (db.trivia ?? []).filter((r) => r.date === date);
+    return {
+      date, time: db.triviaNight.time, today: date === schoolDate(now()),
+      going: rows.find((r) => r.heroId === hero.id)?.going ?? null,
+      goingCount: rows.filter((r) => r.going && Object.values(db.accounts).find((a) => a.id === r.heroId)?.grade === hero.grade).length,
+    };
+  };
   const meHero = (): Account => {
     const acct = Object.values(db.accounts).find((a) => a.id === db.current);
     if (!acct) throw new Error('not signed in as a hero');
@@ -1742,6 +1759,39 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (!title.trim() || !body.trim()) throw new Error('write a title and a message');
       db.announcements.push({ id: db.announcements.length + 1, title: title.trim().slice(0, 80), body: body.trim().slice(0, 500), createdAt: now().toISOString() });
       commit();
+    },
+    async triviaState() {
+      return triviaFor(meHero());
+    },
+    async triviaRsvp(going) {
+      const hero = meHero();
+      const date = nextTriviaDate();
+      const rows = (db.trivia ??= []);
+      const row = rows.find((r) => r.date === date && r.heroId === hero.id);
+      if (row) row.going = going; else rows.push({ date, heroId: hero.id, going });
+      commit();
+      return triviaFor(hero);
+    },
+    async senseiTriviaRoster() {
+      meAdult('sensei');
+      const date = nextTriviaDate();
+      const grades = [5, 6].map((grade) => {
+        const names = (db.trivia ?? []).filter((r) => r.date === date && r.going)
+          .map((r) => Object.values(db.accounts).find((a) => a.id === r.heroId)).filter((a) => a?.grade === grade)
+          .map((a) => a!.displayName).sort();
+        return { grade, going: names.length, names };
+      }).filter((g) => g.going > 0);
+      return { date, time: db.triviaNight.time, grades };
+    },
+    async senseiTriviaPrize(coins) {
+      meAdult('sensei');
+      if (!Number.isInteger(coins) || coins < 1 || coins > 100) throw new Error('pick 1 to 100 points');
+      const date = schoolDate(now());
+      let n = 0;
+      for (const r of (db.trivia ?? []).filter((x) => x.date === date && x.going)) {
+        if (!award(r.heroId, 'coins', coins, 'event', `trivia:${date}`).duplicate) n++;
+      }
+      return n;
     },
     async setTriviaNight(weekday, time) {
       meAdult('sensei');

@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import {
   AdultAuthError, SignInError, emptyBalances,
   type Adult, type Backend, type ClassMission, type ClassResult, type Hero, type HomeMission, type Identity,
-  type NewClassMission, type QuizQuestion, type SignUpInput, type SubjectProgress,
+  type NewClassMission, type QuizQuestion, type SignUpInput, type SubjectProgress, type TriviaState,
 } from './backend.ts';
 import type { Currency } from '../../supabase/functions/_shared/rewards.ts';
 
@@ -16,6 +16,7 @@ const classResult = (r: any): ClassResult => ({
   review: r.review?.map((x: any) => ({ correct: x.correct, rightChoice: x.right_choice, explanation: x.explanation })),
 });
 
+const triviaOf = (d: any): TriviaState => ({ date: d.date, time: d.time, today: d.today, going: d.going, goingCount: Number(d.going_count) });
 const surgeOf = (d: any) => ({ active: d.active, secondsLeft: d.seconds_left, streak: d.streak, need: d.need, mult: Number(d.mult), started: d.started });
 
 export function createSupabaseBackend(url: string, publishableKey: string): Backend {
@@ -331,6 +332,18 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     },
     async tradeCancel(tradeId) {
       await rpc('trade_cancel', { p_trade: tradeId });
+    },
+    async triviaState() {
+      return triviaOf(await rpc('trivia_state'));
+    },
+    async triviaRsvp(going) {
+      return triviaOf(await rpc('trivia_rsvp', { p_going: going }));
+    },
+    async senseiTriviaRoster() {
+      return rpc('sensei_trivia_roster');
+    },
+    async senseiTriviaPrize(coins) {
+      return rpc('sensei_trivia_prize', { p_coins: coins });
     },
     async senseiGiveCard(heroCode, cardId) {
       return rpc('sensei_give_card', { p_hero_code: heroCode, p_card: cardId });

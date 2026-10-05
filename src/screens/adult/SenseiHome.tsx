@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ItemGrid } from '../../components/ItemGrid.tsx';
 import { CardFace } from '../../components/CardFace.tsx';
 import { CARDS } from '../../lib/cards.ts';
-import type { Adult, Backend, ChatRequest, DrawingReport, PendingTeacher, SenseiOverview, SenseiTraffic } from '../../lib/backend.ts';
+import type { Adult, Backend, ChatRequest, DrawingReport, PendingTeacher, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
@@ -124,13 +124,28 @@ function Trivia({ backend, current, onBack }: { backend: Backend; current?: { we
   const [day, setDay] = useState(current?.weekday ?? 'thursday');
   const [time, setTime] = useState(current?.time ?? '18:30');
   const [error, setError] = useState('');
+  const [roster, setRoster] = useState<TriviaRoster | null>(null);
+  const [prize, setPrize] = useState(10);
+  useEffect(() => { backend.senseiTriviaRoster().then(setRoster).catch(() => undefined); }, [backend]);
   const save = async () => { try { await backend.setTriviaNight(day, time); onBack(); } catch { setError("Couldn't save that time."); } };
+  const give = async () => {
+    try { const n = await backend.senseiTriviaPrize(prize); setError(n ? `Prize sent to ${n} hero${n === 1 ? '' : 'es'}! 🎉` : 'Everyone who is coming already has tonight\'s prize.'); } catch { setError("Couldn't send the prize."); }
+  };
   return (
     <main className="screen">
       <ScreenBar title="Trivia Night" onBack={onBack} />
       <p className="hint">Pick the day heroes meet for Trivia Night.</p>
       <div className="chips">{DAYS.map((d) => <button key={d} className={`chip${day === d ? ' chosen' : ''}`} onClick={() => setDay(d)}>{cap(d)}</button>)}</div>
       <label className="field plain"><span>Start time</span><input type="time" value={time} onChange={(e) => setTime(e.target.value)} /></label>
+      {roster && (
+        <div className="card">
+          <b>Coming on {roster.date}</b>
+          {roster.grades.length === 0 ? <small className="muted">No RSVPs yet.</small>
+            : roster.grades.map((g) => <small key={g.grade}>Grade {g.grade}: {g.going} ({g.names.slice(0, 6).join(', ')}{g.names.length > 6 ? '…' : ''})</small>)}
+          <label className="field plain"><span>Prize points each (tonight only)</span><input type="number" min={1} max={100} value={prize} onChange={(e) => setPrize(Number(e.target.value))} /></label>
+          <button className="btn" onClick={give}>Give the prize to everyone who came</button>
+        </div>
+      )}
       <p className="error" role="alert">{error}</p>
       <div className="grow" />
       <button className="btn primary" disabled={!time} onClick={save}>Save</button>
