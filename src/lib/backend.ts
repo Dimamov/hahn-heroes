@@ -416,6 +416,20 @@ export interface AnswerResult {
 export interface WeekSummary { weekStart: string; daysActive: number; answered: number; correct: number; subjects: { subject: Subject; answered: number; correct: number }[]; points: number; missions: number }
 export interface ClassReportStudent { id: string; name: string; daysActive: number; answered: number; correct: number; points: number; missions: number }
 export interface ClassReport { weekStart: string; className: string; students: ClassReportStudent[] }
+export interface RaidState {
+  boss: { id: string; name: string; icon: string; blurb: string };
+  maxHp: number;
+  damage: number;
+  defeated: boolean;
+  strikers: number;
+  struckToday: boolean;
+  /** How hard this hero's strike would hit today. */
+  power: number;
+  myDamage: number;
+  canClaim: boolean;
+  claimed: boolean;
+  reward: { coins: number; xp: number };
+}
 export interface SubjectProgress {
   subject: Subject;
   answered: number;
@@ -533,6 +547,10 @@ export interface Backend {
   dormSave(layout: { item: string; cell: number }[]): Promise<void>;
   houseState(): Promise<HouseState>;
   houseChallenge(): Promise<HouseChallenge>;
+  /** The school boss raid: one boss a week, one strike a day, a reward once it falls. */
+  raidState(): Promise<RaidState>;
+  raidStrike(): Promise<{ ok: boolean; damage?: number; defeated?: boolean; reason?: 'defeated' | 'already_struck' }>;
+  raidClaim(): Promise<{ awarded: number; duplicate: boolean }>;
   houseChallengeClaim(): Promise<{ awarded: number; duplicate: boolean }>;
   houseVote(optionId: number): Promise<void>;
   leaderboard(): Promise<Leaderboard>;

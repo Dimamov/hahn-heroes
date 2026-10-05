@@ -429,6 +429,21 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
       return { state: d.state, theme: d.theme, goal: d.goal, coins: d.coins, progress: d.progress === undefined ? undefined : Number(d.progress), reached: d.reached,
                myPoints: d.my_points, needMine: d.need_mine, claimed: d.claimed };
     },
+    async raidState() {
+      const d = await rpc('raid_state');
+      return {
+        boss: d.boss, maxHp: d.max_hp, damage: d.damage, defeated: d.defeated, strikers: d.strikers, struckToday: d.struck_today,
+        power: d.power, myDamage: Number(d.my_damage), canClaim: d.can_claim, claimed: d.claimed, reward: d.reward,
+      };
+    },
+    async raidStrike() {
+      return rpc('raid_strike');
+    },
+    async raidClaim() {
+      const d = await rpc('raid_claim');
+      if (!d.ok) throw new Error(d.reason);
+      return { awarded: d.awarded ?? 0, duplicate: !!d.duplicate };
+    },
     async houseChallengeClaim() {
       return rpc('house_challenge_claim');
     },
