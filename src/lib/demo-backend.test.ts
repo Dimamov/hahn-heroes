@@ -21,7 +21,7 @@ describe('demo backend', () => {
     const a = make();
     const hero = await a.signUp(input);
     expect(hero.displayName).toBe('Brave Comet');
-    expect((await make().restore())?.heroCode).toBe(hero.heroCode);
+    expect(await make().restore()).toMatchObject({ kind: 'hero', hero: { heroCode: hero.heroCode } });
 
     await a.signOut();
     expect(await make().restore()).toBeNull();
@@ -76,5 +76,147 @@ describe('demo backend', () => {
     const second = make();
     await second.signUp({ ...input, picture: [1, 2, 3] });
     expect((await second.balances()).coins).toBe(0);
+  });
+});
+
+describe('demo backend: grown-ups and missions', () => {
+  let storage: ReturnType<typeof memoryStorage>;
+  let clock: Date;
+  const make = () => createDemoBackend(storage, () => clock);
+  beforeEach(() => {
+    storage = memoryStorage();
+    clock = new Date('2026-10-06T15:00:00Z');
+  });
+
+  /** A hero, a linked parent, and an approved teacher with a grade 5 class. */
+  async function setup() {
+    const b = make();
+    const hero = await b.signUp(input);
+    const { code } = await b.linkCode();
+    await b.signOut();
+    await b.adultSignUp('pat@example.com', 'secret1', 'parent', 'Pat Parent');
+    expect(await b.claimLink(code)).toEqual({ ok: true, childName: 'Brave Comet' });
+    await b.signOut();
+    await b.adultSignUp('tess@example.com', 'secret1', 'teacher', 'Tess Teacher');
+    await b.signOut();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    const [pending] = await b.pendingTeachers();
+    await b.approveTeacher(pending.id, true);
+    await b.signOut();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    const cls = await b.createClass('Room 12', 5);
+    await b.signOut();
+    return { b, hero, cls };
+  }
+
+  it('links a parent with a one-time code and limits wrong guesses', async () => {
+    const b = make();
+    await b.signUp(input);
+    const { code } = await b.linkCode();
+    expect((await b.linkCode()).code).toBe(code);
+    await b.signOut();
+    await b.adultSignUp('pat@example.com', 'secret1', 'parent', 'Pat Parent');
+    for (let i = 0; i < 10; i++) expect(await b.claimLink(`WRONG${i}`)).toEqual({ ok: false, error: 'invalid_code' });
+    expect(await b.claimLink(code)).toEqual({ ok: false, error: 'too_many_tries' });
+    clock = new Date(clock.getTime() + 61 * 60_000);
+    expect((await b.claimLink(code)).ok).toBe(true);
+    expect(await b.claimLink(code)).toEqual({ ok: false, error: 'invalid_code' });
+  });
+
+  it('pays a home mission once, after the parent approves, up to the weekly cap', async () => {
+    const { b, hero } = await setup();
+    await b.adultSignIn('pat@example.com', 'secret1');
+    await b.createHomeMission(hero.id, 'Dishes', '', 100);
+    let [mission] = await b.childMissions(hero.id);
+    await expect(b.reviewHomeMission(mission.id, true)).rejects.toThrow('not waiting');
+
+    await b.signOut();
+    await b.signIn(hero.heroCode, [0, 4, 8]);
+    await expect(b.reviewHomeMission(mission.id, true)).rejects.toThrow();   // a child can't approve
+    await b.submitHomeMission(mission.id);
+    await b.signOut();
+
+    await b.adultSignIn('pat@example.com', 'secret1');
+    expect((await b.children())[0].waiting).toBe(1);
+    expect(await b.reviewHomeMission(mission.id, true)).toMatchObject({ status: 'approved', awarded: 100 });
+    await expect(b.reviewHomeMission(mission.id, true)).rejects.toThrow('not waiting');
+
+    // Five more missions of 100: only 400 more fit under the 500 cap.
+    let awarded = 0;
+    for (let i = 0; i < 5; i++) {
+      await b.createHomeMission(hero.id, `Chore ${i}`, '', 100);
+      [mission] = (await b.childMissions(hero.id)).filter((m) => m.status === 'assigned');
+      await b.signOut(); await b.signIn(hero.heroCode, [0, 4, 8]); await b.submitHomeMission(mission.id); await b.signOut();
+      await b.adultSignIn('pat@example.com', 'secret1');
+      awarded += (await b.reviewHomeMission(mission.id, true)).awarded;
+    }
+    expect(awarded).toBe(400);
+    expect(await b.childProgress(hero.id)).toMatchObject({ homeWeek: 500, homeCap: 500, coins: 500 });
+  });
+
+  it('does not let a parent touch someone else\'s child', async () => {
+    const { b } = await setup();
+    const other = make();
+    const h2 = await other.signUp({ ...input, picture: [1, 2, 3] });
+    await other.signOut();
+    await other.adultSignIn('pat@example.com', 'secret1');
+    await expect(other.createHomeMission(h2.id, 'Hack', '', 10)).rejects.toThrow('not your child');
+    await expect(b.children()).rejects.toThrow();
+  });
+
+  it('keeps teachers out until the Sensei approves them', async () => {
+    const b = make();
+    const t = await b.adultSignUp('tess@example.com', 'secret1', 'teacher', 'Tess Teacher');
+    expect(t).toMatchObject({ role: 'teacher', approved: false });
+    await expect(b.createClass('Room 1', 5)).rejects.toThrow();
+  });
+
+  it('grades class missions on the server: one try, 80% to pass, coins follow the score', async () => {
+    const { b, hero, cls } = await setup();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    const questions = Array.from({ length: 5 }, (_, i) => ({ prompt: `Q${i}`, choices: ['a', 'b', 'c'] }));
+    await expect(b.createClassMission(cls.id, { title: 'Short', passage: '', questions: questions.slice(0, 2), answers: [0, 0], explanations: ['', ''], maxCoins: 40 })).rejects.toThrow('3 to 10');
+    await b.createClassMission(cls.id, { title: 'Reading', passage: 'The fox ran home.', questions, answers: [0, 1, 2, 0, 1], explanations: ['a', 'b', 'c', 'd', 'e'], maxCoins: 40 });
+    await b.signOut();
+
+    await b.signIn(hero.heroCode, [0, 4, 8]);
+    expect(await b.joinClass('NOPE12')).toEqual({ ok: false, error: 'invalid_code' });
+    expect(await b.joinClass(cls.joinCode!.toLowerCase())).toEqual({ ok: true, name: 'Room 12' });
+    const [mission] = await b.classMissions();
+    expect(JSON.stringify(mission)).not.toContain('"answers"');          // no answer key reaches the student
+
+    const first = await b.submitClassMission(mission.id, [0, 1, 2, 0, 0]);    // 4 of 5 = 80%
+    expect(first).toMatchObject({ scorePct: 80, passed: true, coins: 24 });
+    expect(first.review![4]).toMatchObject({ correct: false, rightChoice: 1, explanation: 'e' });
+    expect(await b.submitClassMission(mission.id, [0, 1, 2, 0, 1])).toMatchObject({ alreadyDone: true, coins: 24 });
+    expect((await b.balances()).coins).toBe(24);
+
+    // A reset allows a retake but pays nothing more.
+    await b.signOut();
+    await b.adultSignIn('tess@example.com', 'secret1');
+    expect((await b.classResults(cls.id))[0].submissions).toHaveLength(1);
+    await b.resetSubmission(mission.id, hero.id);
+    await b.signOut();
+    await b.signIn(hero.heroCode, [0, 4, 8]);
+    expect(await b.submitClassMission(mission.id, [0, 1, 2, 0, 1])).toMatchObject({ scorePct: 100, coins: 0 });
+    expect((await b.balances()).coins).toBe(24);
+  });
+
+  it('only lets a hero join a class of their own grade', async () => {
+    const { b, cls } = await setup();
+    await b.signUp({ ...input, grade: 6, picture: [1, 2, 3] });
+    expect(await b.joinClass(cls.joinCode!)).toEqual({ ok: false, error: 'wrong_grade' });
+  });
+
+  it('shows an unread dot for announcements until they are read', async () => {
+    const { b, hero } = await setup();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    await b.postAnnouncement('Trivia Night', 'Thursday at 6:30');
+    expect((await b.senseiOverview()).triviaNight).toEqual({ weekday: 'thursday', time: '18:30' });
+    await b.signOut();
+    await b.signIn(hero.heroCode, [0, 4, 8]);
+    expect((await b.announcements()).unread).toBe(1);
+    await b.markAnnouncementsRead();
+    expect((await b.announcements()).unread).toBe(0);
   });
 });

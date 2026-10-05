@@ -5,7 +5,7 @@ import { HeroArt } from '../components/HeroArt.tsx';
 import { DESTINATIONS } from '../lib/destinations.ts';
 
 export function Home() {
-  const { hero, balances, dailyAvailable, backend, refresh, go } = useSession();
+  const { hero, balances, dailyAvailable, unread, missionDot, backend, refresh, go } = useSession();
   const [popped, setPopped] = useState<number | null>(null);
 
   const claim = async () => {
@@ -25,6 +25,9 @@ export function Home() {
           <HeroArt id={hero.starter} className="chip-hero" />
           <span><b>{hero.displayName}</b><small>Grade {hero.grade}</small></span>
         </button>
+        <button className="bell" onClick={() => go('announcements')} aria-label={unread ? `${unread} new announcements` : 'Announcements'}>
+          📣{unread > 0 && <i className="red-dot" />}
+        </button>
         <div className="coins" aria-label={`${balances.coins} Nexus points`}>💎 {balances.coins}</div>
       </header>
 
@@ -40,6 +43,7 @@ export function Home() {
             <div className="tiles" key={p}>
               {list.map((d) => (
                 <button key={d.id} className="tile" style={{ ['--tint' as string]: d.tint }} onClick={() => go(d.id)}>
+                  {d.id === 'missions' && missionDot && <i className="red-dot" aria-label="Missions waiting" />}
                   <span className="tile-icon" aria-hidden>{d.icon}</span>
                   <span className="tile-label">{d.label}</span>
                 </button>

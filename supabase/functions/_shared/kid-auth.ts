@@ -70,17 +70,20 @@ export function formatHeroCode(code: string): string {
   return `${code.slice(0, 4)}-${code.slice(4)}`;
 }
 
-export function generateHeroCode(random: (bytes: Uint8Array) => Uint8Array = (b) => crypto.getRandomValues(b)): string {
+/** A random code from the friendly alphabet: hero codes (8), parent link codes (8), class codes (6). */
+export function generateCode(length: number, random: (bytes: Uint8Array) => Uint8Array = (b) => crypto.getRandomValues(b)): string {
   // Rejection sampling keeps every letter equally likely.
   const limit = 256 - (256 % HERO_CODE_ALPHABET.length);
   let code = '';
-  while (code.length < HERO_CODE_LENGTH) {
+  while (code.length < length) {
     for (const byte of random(new Uint8Array(16))) {
-      if (byte < limit && code.length < HERO_CODE_LENGTH) code += HERO_CODE_ALPHABET[byte % HERO_CODE_ALPHABET.length];
+      if (byte < limit && code.length < length) code += HERO_CODE_ALPHABET[byte % HERO_CODE_ALPHABET.length];
     }
   }
   return code;
 }
+
+export const generateHeroCode = (random?: (bytes: Uint8Array) => Uint8Array): string => generateCode(HERO_CODE_LENGTH, random);
 
 /** Kids have no email; their auth account uses a reserved address that can never receive mail. */
 export function kidAuthEmail(code: string): string {
