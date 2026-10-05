@@ -231,6 +231,21 @@ describe('demo backend: grown-ups and missions', () => {
     expect((await b.senseiSecret()).finders).toBe(1);
   });
 
+  it('makes stickers from fixed choices, charges 10, limits three a day and gives only inside a squad', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    const design = { hero: 'ana', bg: 'violet', frame: 'star', deco: '⭐', word: 'Hero!' };
+    await expect(b.stickerMake(design)).rejects.toThrow('not enough');
+    for (let d = 0; d < 3; d++) { await b.claimDaily(); clock = new Date(clock.getTime() + DAY_MS); }
+    await expect(b.stickerMake({ ...design, word: 'anything I like' })).rejects.toThrow('lists');
+    const before = (await b.balances()).coins;
+    expect(await b.stickerMake(design)).toEqual({ ok: true });
+    expect((await b.balances()).coins).toBe(before - 10);
+    expect((await b.stickerList()).stickers).toHaveLength(1);
+    const [s] = (await b.stickerList()).stickers;
+    await expect(b.stickerGive(s.id, 'someone-else')).rejects.toThrow('squad');
+  });
+
   it('lets a teacher send a quiz without a reading passage', async () => {
     const { b, hero, cls } = await setup();
     await b.signIn(hero.heroCode, [0, 4, 8, 2]);

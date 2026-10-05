@@ -466,6 +466,18 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiSecretSet(place, hint, card) {
       await rpc('sensei_secret_set', { p_place: place, p_hint: hint, p_card: card });
     },
+    async stickerList() {
+      const d = await rpc('sticker_list');
+      return { stickers: d.stickers, madeToday: Number(d.made_today) };
+    },
+    async stickerMake(design) {
+      const d = await rpc('sticker_make', { p_hero: design.hero, p_bg: design.bg, p_frame: design.frame, p_deco: design.deco, p_word: design.word });
+      return { ok: !!d.ok, reason: d.reason };
+    },
+    async stickerGive(stickerId, toHero) {
+      const d = await rpc('sticker_give', { p_sticker: stickerId, p_to: toHero });
+      return { ok: !!d.ok, reason: d.reason };
+    },
     async houseChallengeClaim() {
       return rpc('house_challenge_claim');
     },

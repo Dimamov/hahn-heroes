@@ -1,6 +1,7 @@
 import type { DrawStroke } from './drawing-rules.ts';
 import type { Currency } from '../../supabase/functions/_shared/rewards.ts';
 import type { ShowcaseState } from './showcase.ts';
+import type { StickerBook, StickerDesign } from './stickers.ts';
 import type { AdvAnswerResult, AdvDone, AdvProgress } from './adventures.ts';
 import type { StoryAnswerResult, StoryChoiceResult, StoryDone, StoryProgress } from './story.ts';
 
@@ -571,6 +572,10 @@ export interface Backend {
   secretClaim(): Promise<{ ok: boolean }>;
   senseiSecret(): Promise<SenseiSecret>;
   senseiSecretSet(place: string, hint: string, card: string): Promise<void>;
+  /** Stickers: made from fixed choices, given to squad mates. */
+  stickerList(): Promise<StickerBook>;
+  stickerMake(design: StickerDesign): Promise<{ ok: boolean; reason?: 'daily_limit' | 'full' }>;
+  stickerGive(stickerId: number, toHero: string): Promise<{ ok: boolean; reason?: 'full' }>;
   houseChallengeClaim(): Promise<{ awarded: number; duplicate: boolean }>;
   houseVote(optionId: number): Promise<void>;
   leaderboard(): Promise<Leaderboard>;

@@ -18,6 +18,8 @@ import { SKILLS, dailyBonus, growthMultipliers, surgeRules } from './skills.ts';
 import { NEXLING_STAGES, nexlingType } from './nexlings.ts';
 import bank from '../../content/questions.json';
 import { RAID_BOSSES, RAID_RULES } from './raid.ts';
+import { HEROES } from './heroes.ts';
+import { STICKER_BGS, STICKER_COST, STICKER_DAILY, STICKER_DECOS, STICKER_FRAMES, STICKER_MAX, STICKER_WORDS } from './stickers.ts';
 import { EMOTES, type EmoteId, type Pose } from './showcase.ts';
 import {
   AdultAuthError, HOUSE_COLORS, SECRET_PLACES, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
@@ -280,6 +282,7 @@ interface Db {
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
   trivia?: { date: string; heroId: string; going: boolean }[];
+  stickers?: { id: number; maker: string; owner: string; hero: string; bg: string; frame: string; deco: string; word: string; day: string }[];
   secret?: { week: string; place: string; hint: string; card: string; finds: string[]; winner: { squadId: string; by: string } | null; claims: string[] };
   raid?: { week: string; boss: string; maxHp: number; strikes: { heroId: string; day: string; damage: number }[] };
   showcase?: { heroId: string; title: string; pose: Pose; emote?: string }[];
@@ -1596,6 +1599,40 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (!cardById(card)) throw new Error('no such card');
       w.place = place; w.card = card; w.hint = hint.trim().slice(0, 120) || secretHint(place);
       commit();
+    },
+    async stickerList() {
+      const me = meHero().id;
+      const all = (db.stickers ??= []);
+      return {
+        stickers: all.filter((x) => x.owner === me).sort((a, b) => b.id - a.id).map(({ id, hero, bg, frame, deco, word }) => ({ id, hero, bg, frame, deco, word })),
+        madeToday: all.filter((x) => x.maker === me && x.day === schoolDate(now())).length,
+      };
+    },
+    async stickerMake(design) {
+      const me = meHero().id;
+      const all = (db.stickers ??= []);
+      if (!HEROES.some((h) => h.id === design.hero) || !STICKER_BGS.some((b) => b.id === design.bg) || !(STICKER_FRAMES as readonly string[]).includes(design.frame)
+        || !(STICKER_DECOS as readonly string[]).includes(design.deco) || !(STICKER_WORDS as readonly string[]).includes(design.word)) throw new Error('pick from the lists');
+      if (all.filter((x) => x.maker === me && x.day === schoolDate(now())).length >= STICKER_DAILY) return { ok: false, reason: 'daily_limit' as const };
+      if (all.filter((x) => x.owner === me).length >= STICKER_MAX) return { ok: false, reason: 'full' as const };
+      const bal = await this.balances();
+      if (bal.coins < STICKER_COST) throw new Error('not enough points');
+      const id = Math.max(0, ...all.map((x) => x.id)) + 1;
+      db.ledger.push({ heroId: me, currency: 'coins', amount: -STICKER_COST, source: 'purchase', key: `sticker:${id}`, week: schoolWeek(now()) });
+      all.push({ id, maker: me, owner: me, ...design, day: schoolDate(now()) });
+      commit();
+      return { ok: true };
+    },
+    async stickerGive(stickerId, toHero) {
+      const me = meHero().id;
+      const all = (db.stickers ??= []);
+      if (toHero === me || mySquadId(me) === undefined || mySquadId(me) !== mySquadId(toHero)) throw new Error('you can only give stickers to your squad');
+      if (all.filter((x) => x.owner === toHero).length >= STICKER_MAX) return { ok: false, reason: 'full' as const };
+      const s = all.find((x) => x.id === stickerId && x.owner === me);
+      if (!s) throw new Error('that is not your sticker');
+      s.owner = toHero;
+      commit();
+      return { ok: true };
     },
     async houseChallengeClaim() {
       const hero = meHero();
