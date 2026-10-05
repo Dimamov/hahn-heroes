@@ -241,9 +241,9 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .passage { flex: 1 1 auto; min-height: 0; display: flex; background: var(--panel); border-radius: 18px; padding: 10px; }
 .passage .pager { flex: 1; }
 .passage-text { margin: 0; font-size: 1.1rem; line-height: 1.5; padding: 4px 6px; }
-.question { text-align: center; line-height: 1.25; font-size: 1.3rem; }
+.question { text-align: center; line-height: 1.25; font-size: clamp(1.3rem, 3.2vh, 1.8rem); }
 .choices { display: flex; flex-direction: column; gap: 10px; }
-.choice { min-height: 56px; padding: 8px 14px; border-radius: 16px; background: var(--panel-2); font-weight: 800; font-size: 1.05rem; text-align: left; border: 3px solid transparent; }
+.choice { min-height: clamp(56px, 8vh, 76px); padding: 8px 14px; border-radius: 16px; background: var(--panel-2); font-weight: 800; font-size: clamp(1.1rem, 2.7vh, 1.45rem); text-align: left; border: 3px solid transparent; }
 .choice.chosen { border-color: var(--cyan); background: #22d3ee22; }
 .score { text-align: center; }
 .score-big { font: 800 4.5rem 'Baloo 2', 'Nunito', system-ui; line-height: 1; color: var(--muted); }
@@ -298,12 +298,12 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .folder.subject small { font-size: .78rem; line-height: 1.15; }
 .folder.subject em { font-style: normal; color: var(--cyan); font-weight: 800; font-size: .8rem; }
 .passage.short { flex: 0 1 auto; max-height: 40vh; overflow-y: auto; padding: 8px 10px; }
-.passage.short .passage-text { font-size: .95rem; line-height: 1.35; }
+.passage.short .passage-text { font-size: clamp(1.05rem, 2.7vh, 1.4rem); line-height: 1.35; }
 .screen .question { font-size: 1.15rem; margin: 0; }
 .choice.right-choice { border-color: #34d399; background: #34d39933; }
 .choice.wrong-choice { border-color: var(--danger); background: #ff5c7a2a; }
 .choice:disabled { opacity: 1; }
-.feedback { border-radius: 14px; padding: 10px 12px; font-weight: 700; line-height: 1.3; }
+.feedback { border-radius: 14px; padding: 10px 12px; font-weight: 700; line-height: 1.3; font-size: clamp(1rem, 2.3vh, 1.2rem); }
 .feedback.ok { background: #34d39922; } .feedback.no { background: #ff5c7a22; }
 .progress-card.learn { grid-template-columns: repeat(2, 1fr); }
 .skill-row { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; font-size: .9rem; }
@@ -506,3 +506,9 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .skill-row.learned { border-color: #34d399; }
 .skill-row.locked { opacity: .5; }
 .skill-row .item-icon { flex: none; }
+@media (max-height: 480px) and (orientation: landscape) {
+  .question { font-size: 1.2rem; }
+  .choice { min-height: 48px; font-size: 1rem; }
+  .passage.short .passage-text { font-size: .95rem; }
+  .feedback { font-size: .95rem; }
+}
