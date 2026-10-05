@@ -246,7 +246,7 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .paged .pager { flex: 1; }
 .list-page { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; padding: 2px; justify-content: flex-start; overflow: hidden; }
 .empty { margin: auto 0; text-align: center; color: var(--muted); font-weight: 700; padding: 0 12px; }
-.passage { flex: 1 1 auto; min-height: 0; display: flex; background: var(--panel); border-radius: 18px; padding: 10px; }
+.passage { flex: 1 1 auto; min-height: 0; display: flex; background: var(--panel); border-radius: 18px; padding: 10px; overflow-y: auto; }
 .passage .pager { flex: 1; }
 .passage-text { margin: 0; font-size: 1.1rem; line-height: 1.5; padding: 4px 6px; }
 .question { text-align: center; line-height: 1.25; font-size: clamp(1.3rem, 3.2vh, 1.8rem); }
