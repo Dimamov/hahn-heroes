@@ -3,8 +3,9 @@ import type { AiQuiz, AiStatus, Adult, Backend, ClassInfo, ClassMissionResults, 
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 import { TeacherHouse } from './TeacherHouse.tsx';
+import { TeacherCharacter } from './TeacherCharacter.tsx';
 
-type View = { name: 'list' } | { name: 'new-class' } | { name: 'class'; cls: ClassInfo } | { name: 'new-mission'; cls: ClassInfo } | { name: 'house'; cls: ClassInfo };
+type View = { name: 'list' } | { name: 'new-class' } | { name: 'class'; cls: ClassInfo } | { name: 'new-mission'; cls: ClassInfo } | { name: 'house'; cls: ClassInfo } | { name: 'character' };
 
 export function TeacherHome({ backend, adult, onSignOut }: { backend: Backend; adult: Adult; onSignOut: () => void }) {
   const [view, setView] = useState<View>({ name: 'list' });
@@ -13,6 +14,7 @@ export function TeacherHome({ backend, adult, onSignOut }: { backend: Backend; a
   useEffect(() => { reload(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const toList = () => { reload(); setView({ name: 'list' }); };
 
+  if (view.name === 'character') return <TeacherCharacter backend={backend} onBack={toList} />;
   if (view.name === 'new-class') return <NewClass backend={backend} onBack={toList} onDone={(cls) => { reload(); setView({ name: 'class', cls }); }} />;
   if (view.name === 'class') return <ClassScreen backend={backend} cls={view.cls} onBack={toList} onNew={() => setView({ name: 'new-mission', cls: view.cls })} onHouse={() => setView({ name: 'house', cls: view.cls })} />;
   if (view.name === 'house') return <TeacherHouse backend={backend} cls={view.cls} onBack={() => setView({ name: 'class', cls: view.cls })} />;
@@ -30,7 +32,10 @@ export function TeacherHome({ backend, adult, onSignOut }: { backend: Backend; a
             </button>
           )} />
       )}
-      <button className="btn primary" onClick={() => setView({ name: 'new-class' })}>＋ New class</button>
+      <div className="btn-grid">
+        <button className="btn ghost" onClick={() => setView({ name: 'character' })}>🧙 My character</button>
+        <button className="btn primary" onClick={() => setView({ name: 'new-class' })}>＋ New class</button>
+      </div>
     </main>
   );
 }

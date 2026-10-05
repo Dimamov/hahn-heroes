@@ -155,6 +155,27 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiDeleteAnnouncement(id) {
       await rpc('sensei_delete_announcement', { p_id: id });
     },
+    async teacherCharacter() {
+      return await rpc('teacher_character_get');
+    },
+    async teacherCharacterWish(wish) {
+      await rpc('teacher_character_wish', { p_wish: wish });
+    },
+    async teacherCharacterSubmit(photo, wish) {
+      await rpc('teacher_character_submit', { p_photo: photo, p_wish: wish });
+    },
+    async teacherCharacterRespond(approve, note) {
+      await rpc('teacher_character_respond', { p_approve: approve, p_note: note });
+    },
+    async teacherCharacterRemovePhoto() {
+      await rpc('teacher_character_remove_photo');
+    },
+    async senseiCharacterQueue() {
+      return (await rpc('sensei_character_queue')) ?? [];
+    },
+    async senseiCharacterDeliver(teacherId, art, note) {
+      await rpc('sensei_character_deliver', { p_teacher: teacherId, p_art: art, p_note: note });
+    },
     async aiStatus() {
       const { data, error } = await sb.functions.invoke('lesson-ai', { body: { action: 'status' } });
       if (error || !data) return { configured: false, limit: 0, left: 0 };
