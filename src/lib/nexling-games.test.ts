@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RIVALS, hidingSpots, isRaceDay, nextTreat, racePlace, raceProgress, rivalProgress } from './nexling-games.ts';
+import { BEAT_MS, RIVALS, ballPos, beatOffset, danceJudge, fetchHit, hidingSpots, isRaceDay, nextTreat, racePlace, raceProgress, rivalProgress } from './nexling-games.ts';
 
 describe('nexling games', () => {
   it('races only on weekends', () => {
@@ -28,5 +28,20 @@ describe('nexling games', () => {
     expect(racePlace(100, 5)).toBe(1);
     expect(racePlace(0, 5)).toBe(1 + RIVALS.length);
     expect(racePlace(30, 5)).toBe(1 + RIVALS.filter((r) => r.pace * 5 > 30).length);
+  });
+});
+
+describe('pet park', () => {
+  it('judges dance taps by distance from the beat', () => {
+    expect(danceJudge(beatOffset(BEAT_MS * 3 + 50))).toBe('perfect');
+    expect(danceJudge(beatOffset(BEAT_MS * 3 - 200))).toBe('good');
+    expect(danceJudge(beatOffset(BEAT_MS * 3 + 300))).toBe('miss');
+  });
+  it('swings the ball and checks the middle zone', () => {
+    expect(ballPos(0)).toBe(0);
+    expect(ballPos(700)).toBeCloseTo(1);
+    expect(ballPos(1400)).toBeCloseTo(0);
+    expect(fetchHit(0.5)).toBe(true);
+    expect(fetchHit(0.1)).toBe(false);
   });
 });

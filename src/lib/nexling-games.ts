@@ -32,3 +32,21 @@ export const rivalProgress = (pace: number, seconds: number): number => Math.min
 export function racePlace(hero: number, seconds: number): number {
   return 1 + RIVALS.filter((r) => rivalProgress(r.pace, seconds) > hero).length;
 }
+
+/** Pet Park: dance party. Tap on the beat; how far off the beat (in ms) decides the cheer. */
+export const BEAT_MS = 600;
+export function danceJudge(offsetMs: number): 'perfect' | 'good' | 'miss' {
+  const d = Math.abs(offsetMs);
+  return d <= 120 ? 'perfect' : d <= 250 ? 'good' : 'miss';
+}
+/** How far (in ms) a tap at `t` is from the nearest beat, beats being every BEAT_MS from 0. */
+export const beatOffset = (t: number): number => { const m = ((t % BEAT_MS) + BEAT_MS) % BEAT_MS; return Math.min(m, BEAT_MS - m); };
+
+/** Pet Park: fetch. The ball swings back and forth (0 to 1); tap while it is in the glowing middle. */
+export const FETCH_ZONE: readonly [number, number] = [0.4, 0.6];
+export const ballPos = (tMs: number, periodMs = 1400): number => { const x = ((tMs % periodMs) / periodMs) * 2; return x <= 1 ? x : 2 - x; };
+export const fetchHit = (pos: number): boolean => pos >= FETCH_ZONE[0] && pos <= FETCH_ZONE[1];
+
+/** Pet Park: bubble bath. Each scrub counts only when the finger moved far enough. */
+export const SCRUBS_NEEDED = 24;
+export const SILLY_HATS = ['🎩', '👑', '🧢', '🎓', '👒', '🪖', '⛑️', '🤠', '🎅', '🧙'];

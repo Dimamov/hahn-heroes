@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { ScreenBar } from '../components/ScreenBar.tsx';
 import { beep } from '../lib/sound.ts';
+import { ParkActivity, PARK_GAMES, type ParkGame } from './NexlingPark.tsx';
 import { RIVALS, hidingSpots, isRaceDay, nextTreat, racePlace, raceProgress, rivalProgress } from '../lib/nexling-games.ts';
 
-type Game = null | 'feed' | 'hide' | 'race';
+type Game = null | 'feed' | 'hide' | 'race' | ParkGame;
 interface Pet { icon: string; name: string; color: string }
 
 /** Three small games to play with your Nexling. They are just for fun: no points, no pressure. */
@@ -13,6 +14,7 @@ export function NexlingPlay({ pet, onBack }: { pet: Pet; onBack: () => void }) {
   if (game === 'feed') return <Feed pet={pet} onBack={() => setGame(null)} />;
   if (game === 'hide') return <HideSeek pet={pet} onBack={() => setGame(null)} />;
   if (game === 'race') return <Race pet={pet} onBack={() => setGame(null)} />;
+  if (game) return <ParkActivity game={game} pet={pet} onBack={() => setGame(null)} />;
   return (
     <main className="screen">
       <ScreenBar title={`Play with ${pet.name}`} onBack={onBack} />
@@ -22,6 +24,10 @@ export function NexlingPlay({ pet, onBack }: { pet: Pet; onBack: () => void }) {
       <button className="btn primary" onClick={() => setGame('hide')}>🌿 Hide and seek</button>
       <button className="btn primary" disabled={!raceOpen} onClick={() => setGame('race')}>🏁 Weekend race</button>
       {!raceOpen && <p className="note">Race day is Saturday and Sunday.</p>}
+      <p className="hint">🌳 Pet Park: silly little things to do</p>
+      <div className="btn-grid">
+        {PARK_GAMES.map((g) => <button key={g.id} className="btn" onClick={() => setGame(g.id)}>{g.label}</button>)}
+      </div>
       <div className="grow" />
     </main>
   );
