@@ -31,6 +31,8 @@ export function DoNotPress() {
   const mount = useRef<HTMLDivElement>(null);
   const player = useRef<YTPlayer | null>(null);
   const [needTap, setNeedTap] = useState(false);
+  // The tap can only start the video if the player is ready. Until then the button waits (up to 8 seconds, then it works anyway).
+  const [ready, setReady] = useState(false);
   // The player is built as soon as the screen opens, so the button tap itself can start it. Phones only allow sound from a tap.
   useEffect(() => {
     let gone = false;
@@ -39,11 +41,16 @@ export function DoNotPress() {
       player.current = new YT.Player(mount.current, {
         host: 'https://www.youtube-nocookie.com', videoId: VIDEO, width: '100%', height: '100%',
         playerVars: { playsinline: 1, rel: 0, fs: 1, controls: 1 },
-        events: { onStateChange: (e: { data: number }) => { if (e.data === 1) setNeedTap(false); } },
+        events: {
+          onReady: () => { if (!gone) setReady(true); },
+          onStateChange: (e: { data: number }) => { if (e.data === 1) setNeedTap(false); },
+        },
       });
     }).catch(() => undefined);
+    const giveUp = window.setTimeout(() => { if (!gone) setReady(true); }, 8000);
     return () => {
       gone = true;
+      clearTimeout(giveUp);
       clearTimeout(timer.current);
       document.body.classList.remove('doom');
       try { player.current?.destroy(); } catch { /* ignore */ }
@@ -61,7 +68,12 @@ export function DoNotPress() {
   /** When the video is revealed: if it is not actually playing with sound, show the big button. */
   const checkVideo = () => {
     const p = player.current;
-    try { if (!p || p.getPlayerState() !== 1 || p.isMuted()) setNeedTap(true); } catch { setNeedTap(true); }
+    try {
+      if (p && p.getPlayerState() !== 1) p.playVideo(); // the first start may have been swallowed; ask again now that it is on screen
+      window.setTimeout(() => {
+        try { if (!p || p.getPlayerState() !== 1 || p.isMuted()) setNeedTap(true); } catch { setNeedTap(true); }
+      }, 700);
+    } catch { setNeedTap(true); }
   };
 
   const tapToPlay = () => {
@@ -102,7 +114,7 @@ export function DoNotPress() {
     <GameFrame title="Do Not Press" hint={phase === 'idle' ? 'Seriously. Do not press the button.' : undefined} onExit={() => go('home')}>
       <div className="grow" />
       {phase !== 'video' && (
-        <button className={`bigred${phase === 'siren' ? ' alarm' : ''}`} onClick={press} aria-label="Do not press">
+        <button className={`bigred${phase === 'siren' ? ' alarm' : ''}`} onClick={press} disabled={!ready} aria-label="Do not press">
           {phase === 'siren' ? '🚨' : 'DO NOT PRESS'}
         </button>
       )}
