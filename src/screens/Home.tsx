@@ -66,6 +66,7 @@ export function Home() {
       {isQuiet() && <button className="live-banner quiet-banner" onClick={() => go('quiet')}>🤫 Quiet mode is on. Tap to change it</button>}
       {live && <button className="live-banner" onClick={() => go('classlive')}>{live.kind === 'boss' ? '🐲 Your class is fighting a boss! Tap to join' : live.kind === 'mystery' ? '🖼️ Your class mystery is live! Tap to join' : live.kind === 'duel' ? '⚔️ A vocab duel is starting! Tap to join' : '⚡ Your class quiz battle is live! Tap to join'}</button>}
 
+      <div className="top-row">
       <button className="feature-banner" onClick={() => go('arcade')}>
         {arcadeDot && <i className="red-dot" aria-label="Arcade rewards waiting" />}
         <span className="feature-pad" aria-hidden>🎮</span>
@@ -73,6 +74,8 @@ export function Home() {
         <img className="feature-art" src="/assets/ui/nav-arcade.webp" alt="" draggable={false} />
         <span className="art-tile-go" aria-hidden>›</span>
       </button>
+        {tile('explore', 'All areas', 'Squad · House · Cards', <span className="art-emoji">🧭</span>, '#a78bfa', questDot)}
+      </div>
 
       <div className="art-tiles">
         {tile('learn', 'Learn', 'Math · Words · Reading', <span className="art-emoji">🧠</span>, '#34d399')}
@@ -82,14 +85,12 @@ export function Home() {
         {tile('treasure', 'Mystery Solver', '', img('/assets/games/escape-room-02-wide.webp'), '#8b5cff')}
         {tile('game:fun-box', 'Fun Box', '', img('/assets/games/fun-box-open.webp'), '#22d3ee')}
         {tile('donotpress', 'Do Not Press', '', img('/assets/games/do-not-press.webp'), '#ef4444')}
-        {tile('explore', 'All areas', 'Squad · House · Cards', <span className="art-emoji">🧭</span>, '#a78bfa', questDot)}
-      </div>
-
-      <button className="sensei-bar" onClick={() => go('sensei')}>
+        <button className="sensei-bar" onClick={() => go('sensei')}>
         <span className="sensei-face" aria-hidden>🧙</span>
-        <span><b>Contact the Sensei</b><small>Questions? Need help? I&apos;m here.</small></span>
+        <span><b>Contact the Sensei</b><small>I&apos;m here to help</small></span>
         <span className="art-tile-go" aria-hidden>›</span>
       </button>
+      </div>
     </main>
   );
 }
