@@ -931,6 +931,8 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiChatAiFlags() {
       return ((await rpc('sensei_chat_ai_flags')) as any[]).map((f) => ({ key: f.key, name: f.name, body: f.body, reason: f.reason, at: f.at }));
     },
+    async senseiChatOldCount() { return (await rpc('sensei_chat_old_count', { p_days: 30 })) as number; },
+    async senseiChatClearOld() { return (await rpc('sensei_chat_clear_old', { p_days: 30 })) as number; },
     async senseiChatAiDismiss(key) {
       await rpc('sensei_chat_ai_dismiss', { p_key: key });
     },
