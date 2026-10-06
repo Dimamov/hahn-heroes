@@ -6,6 +6,7 @@ import { ReadAloud } from '../components/ReadAloud.tsx';
 import { questionText } from '../lib/speak.ts';
 import { PagedList } from '../components/PagedList.tsx';
 import { Pager } from '../components/Pager.tsx';
+import { WriteQuestion } from '../components/WriteQuestion.tsx';
 import type { Announcement, ClassMission, ClassResult, PracticeAssignment, HomeMission, JoinClassResult, TriviaState } from '../lib/backend.ts';
 import { formatHeroCode, normalizeHeroCode } from '../../supabase/functions/_shared/kid-auth.ts';
 
@@ -148,7 +149,7 @@ export function ClassMissions() {
     );
   }
   return (
-    <main className="screen">
+    <main className="screen live">
       <ScreenBar title={cls.name} onBack={() => go('missions')} />
       {teachers.map((t) => (
         <div className="teacher-card" key={t.name}>
@@ -157,6 +158,7 @@ export function ClassMissions() {
         </div>
       ))}
       <PracticeHelper />
+      <WriteQuestion backend={backend} />
       <PagedList
         items={items}
         perPage={3}

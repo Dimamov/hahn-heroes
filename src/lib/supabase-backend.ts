@@ -953,6 +953,11 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async classLiveStart(code) { await rpc('class_live_start', { p_code: code }); },
     async classLiveSkip(code) { await rpc('class_live_skip', { p_code: code }); },
     async classLiveEnd(code) { await rpc('class_live_end', { p_code: code }); },
+    async studentQSubmit(prompt, choices, answer, explanation) { await rpc('student_q_submit', { p_prompt: prompt, p_choices: choices, p_answer: answer, p_explanation: explanation }); },
+    async studentQMine() { return (await rpc('student_q_mine')) as any[]; },
+    async studentQList(classId) { return (await rpc('student_q_list', { p_class: classId })) as any[]; },
+    async studentQDecide(id, approve) { await rpc('student_q_decide', { p_id: id, p_approve: approve }); },
+    async studentQMakeQuiz(classId, title) { await rpc('student_q_make_quiz', { p_class: classId, p_title: title }); },
     async classPracticeList(classId) {
       return ((await rpc('class_practice_list', { p_class: classId ?? null })) as any[]).map((r) => ({
         id: r.id, subject: r.subject, target: r.target, due: r.due, done: r.done, className: r.class_name, students: r.students,

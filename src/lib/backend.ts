@@ -174,6 +174,7 @@ export interface ClassGoal {
   reward?: number;
 }
 export interface PracticeAssignment { id: string; subject: string; target: number; due: string; done?: number; className?: string; students?: { name: string; done: number }[] }
+export interface StudentQuestion { id: string; prompt: string; status: 'pending' | 'approved' | 'rejected'; choices?: string[]; answer?: number; explanation?: string; by?: string }
 export interface ClassLiveOpen { code: string; kind: 'quiz' | 'boss'; state: 'lobby' | 'playing'; joined: boolean }
 
 export interface TriviaState {
@@ -812,6 +813,12 @@ export interface Backend {
   classLiveStart(code: string): Promise<void>;
   classLiveSkip(code: string): Promise<void>;
   classLiveEnd(code: string): Promise<void>;
+  // Student-made questions
+  studentQSubmit(prompt: string, choices: string[], answer: number, explanation: string): Promise<void>;
+  studentQMine(): Promise<StudentQuestion[]>;
+  studentQList(classId: string): Promise<StudentQuestion[]>;
+  studentQDecide(id: string, approve: boolean): Promise<void>;
+  studentQMakeQuiz(classId: string, title: string): Promise<void>;
   // Homework helper
   classPracticeList(classId?: string): Promise<PracticeAssignment[]>;
   classPracticeAssign(classId: string, subject: string, target: number, due: string): Promise<void>;

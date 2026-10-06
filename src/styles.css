@@ -1169,3 +1169,6 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .practice-list { display: flex; flex-direction: column; gap: 8px; }
 .goal-track { height: 12px; border-radius: 6px; background: #0007; overflow: hidden; }
 .goal-track i { display: block; height: 100%; background: linear-gradient(90deg, var(--magenta), var(--cyan)); transition: width .5s; }
+.live-input { min-height: 52px; border-radius: 14px; border: 2px solid var(--violet); background: var(--panel); color: var(--text); padding: 0 14px; font: 700 1.05rem 'Nunito', system-ui; width: 100%; user-select: text; -webkit-user-select: text; }
+.sq-choices { margin: 0; padding-left: 22px; font-weight: 700; }
+.sq-choices li.right { color: #34d399; }
