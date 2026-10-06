@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ItemGrid } from '../../components/ItemGrid.tsx';
 import { CardFace } from '../../components/CardFace.tsx';
 import { CARDS } from '../../lib/cards.ts';
-import { SECRET_PLACES, type Adult, type Announcement, type Backend, type CharacterRequest, type SenseiSecret, ChatLogLine, ChatRequest, DrawingReport, EmailHelpRequest, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
+import { SECRET_PLACES, type Adult, type Announcement, type Backend, type CharacterRequest, type SenseiSecret, ChatAiFlag, ChatLogLine, ChatRequest, DrawingReport, EmailHelpRequest, PendingTeacher, SenseiChallenge, SenseiEvent, SenseiOverview, SenseiTraffic, TriviaRoster } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { shrinkImage } from '../../lib/image-file.ts';
 import { UsageReportScreen } from './UsageReport.tsx';
@@ -429,11 +429,44 @@ function ChatUnlocks({ backend, onBack }: { backend: Backend; onBack: () => void
   const load = () => backend.senseiChatRequests().then(setList).catch(() => setList([]));
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [log, setLog] = useState<{ name: string; lines: ChatLogLine[] } | null>(null);
+  const [ai, setAi] = useState<{ configured: boolean; waiting: number } | null>(null);
+  const [flags, setFlags] = useState<ChatAiFlag[]>([]);
+  const [aiMsg, setAiMsg] = useState('');
+  const [aiBusy, setAiBusy] = useState(false);
+  const loadAi = () => { backend.senseiChatAiStatus().then(setAi).catch(() => setAi({ configured: false, waiting: 0 })); backend.senseiChatAiFlags().then(setFlags).catch(() => setFlags([])); };
+  useEffect(() => { loadAi(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const runAi = async () => {
+    setAiBusy(true); setAiMsg('');
+    try {
+      const r = await backend.senseiChatAiCheck();
+      setAiMsg(r.checked === 0 ? 'Nothing new to check.' : `Checked ${r.checked} messages, flagged ${r.flagged}.`);
+    } catch (e) {
+      setAiMsg((e as Error).message === 'not_set_up' ? 'The AI is not set up yet. Add the ANTHROPIC_API_KEY secret in Supabase.' : "The AI couldn't check right now. Try again later.");
+    }
+    setAiBusy(false); loadAi();
+  };
   const read = async (r: ChatRequest) => setLog({ name: r.name, lines: await backend.senseiChatLog(r.childId).catch(() => []) });
   const unlock = async (r: ChatRequest) => { await backend.chatUnlock(r.childId).catch(() => {}); load(); };
   return (
     <main className="screen">
       <ScreenBar title="Chat unlocks" onBack={onBack} />
+      <div className="card">
+        <div className="card-top"><b>🤖 AI second check</b><small className="muted">{ai?.configured ? `${ai.waiting} waiting` : ai ? 'Not set up' : ''}</small></div>
+        <small className="muted">Reads saved chat (text only, no names) and flags worrying messages for you. It never blocks or removes anything.</small>
+        {aiMsg && <small role="status">{aiMsg}</small>}
+        <div className="card-bottom"><span /><button className="btn small primary" disabled={aiBusy || (ai !== null && !ai.configured)} onClick={runAi}>{aiBusy ? 'Checking…' : 'Check chat now'}</button></div>
+      </div>
+      {flags.length > 0 && (
+        <PagedList items={flags} perPage={2} empty=""
+          render={(f) => (
+            <div className="card" key={f.key}>
+              <div className="card-top"><b>⚠️ {f.name}</b><small className="muted">{new Date(f.at).toLocaleString()}</small></div>
+              <span>“{f.body}”</span>
+              <small className="muted">{f.reason}</small>
+              <div className="card-bottom"><span /><button className="btn small ghost" onClick={() => backend.senseiChatAiDismiss(f.key).then(loadAi).catch(() => {})}>Reviewed</button></div>
+            </div>
+          )} />
+      )}
       <p className="hint">Heroes whose chat is paused. Parents can ask for an unlock.</p>
       {list === null ? <div className="spinner" /> : (
         <PagedList items={list} perPage={3} empty="Nobody's chat is paused."
