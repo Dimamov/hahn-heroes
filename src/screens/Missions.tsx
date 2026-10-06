@@ -6,7 +6,7 @@ import { ReadAloud } from '../components/ReadAloud.tsx';
 import { questionText } from '../lib/speak.ts';
 import { PagedList } from '../components/PagedList.tsx';
 import { Pager } from '../components/Pager.tsx';
-import type { Announcement, ClassMission, ClassResult, HomeMission, JoinClassResult, TriviaState } from '../lib/backend.ts';
+import type { Announcement, ClassMission, ClassResult, PracticeAssignment, HomeMission, JoinClassResult, TriviaState } from '../lib/backend.ts';
 import { formatHeroCode, normalizeHeroCode } from '../../supabase/functions/_shared/kid-auth.ts';
 
 const STATUS_TEXT: Record<HomeMission['status'], string> = {
@@ -84,6 +84,32 @@ const JOIN_ERRORS: Record<string, string> = {
   too_many_tries: 'Too many tries. Ask your teacher and try again later.',
 };
 
+const SUBJECT_LABEL: Record<string, string> = { mixed: 'Mixed', math: 'Math', vocab: 'Words', reading: 'Reading', science: 'Science' };
+
+/** Practice the teacher assigned: how many questions are done and when it is due. */
+function PracticeHelper() {
+  const { backend, go } = useSession();
+  const [list, setList] = useState<PracticeAssignment[]>([]);
+  useEffect(() => { backend.classPracticeList().then(setList).catch(() => setList([])); }, [backend]);
+  if (list.length === 0) return null;
+  return (
+    <section className="practice-list" aria-label="Practice from your teacher">
+      <b>📚 Practice from your teacher</b>
+      {list.map((a) => {
+        const done = Math.min(a.done ?? 0, a.target);
+        const finished = done >= a.target;
+        return (
+          <button key={a.id} className={`card clickable practice-item${finished ? ' approved' : ''}`} onClick={() => go(a.subject === 'mixed' ? 'learn' : `practice:${a.subject}`)}>
+            <div className="card-top"><b>{a.target} {SUBJECT_LABEL[a.subject] ?? a.subject} questions</b><span className="reward">{finished ? '✅ Done!' : `Due ${new Date(`${a.due}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short' })}`}</span></div>
+            <div className="goal-track"><i style={{ width: `${(done / a.target) * 100}%` }} /></div>
+            <small>{done} of {a.target}</small>
+          </button>
+        );
+      })}
+    </section>
+  );
+}
+
 export function ClassMissions() {
   const { backend, go, refresh } = useSession();
   const [cls, setCls] = useState<{ name: string } | null | undefined>(undefined);
@@ -130,6 +156,7 @@ export function ClassMissions() {
           <small>{t.name}</small>
         </div>
       ))}
+      <PracticeHelper />
       <PagedList
         items={items}
         perPage={3}

@@ -173,6 +173,7 @@ export interface ClassGoal {
   canClaim?: boolean;
   reward?: number;
 }
+export interface PracticeAssignment { id: string; subject: string; target: number; due: string; done?: number; className?: string; students?: { name: string; done: number }[] }
 export interface ClassLiveOpen { code: string; kind: 'quiz' | 'boss'; state: 'lobby' | 'playing'; joined: boolean }
 
 export interface TriviaState {
@@ -811,6 +812,10 @@ export interface Backend {
   classLiveStart(code: string): Promise<void>;
   classLiveSkip(code: string): Promise<void>;
   classLiveEnd(code: string): Promise<void>;
+  // Homework helper
+  classPracticeList(classId?: string): Promise<PracticeAssignment[]>;
+  classPracticeAssign(classId: string, subject: string, target: number, due: string): Promise<void>;
+  classPracticeCancel(id: string): Promise<void>;
   // Class streak goal
   classGoalStatus(classId?: string): Promise<ClassGoal | null>;
   classGoalSet(classId: string, days: number, share: number): Promise<void>;
