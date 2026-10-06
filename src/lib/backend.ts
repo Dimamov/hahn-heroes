@@ -111,7 +111,7 @@ export interface AiStatus { configured: boolean; limit: number; left: number }
 export interface AiQuiz { title: string; questions: { prompt: string; choices: string[]; answer: number; explanation: string }[]; left: number }
 export type AiError = 'not_set_up' | 'too_short' | 'too_long' | 'daily_limit' | 'ai_unavailable' | 'bad_output' | 'teachers_only';
 export type CharacterStatus = 'none' | 'wish' | 'new' | 'review' | 'changes' | 'approved';
-export interface TeacherCharacter { status: CharacterStatus; wish: string; photo: string | null; art: string | null; artNote: string; changeNote: string }
+export interface TeacherCharacter { status: CharacterStatus; wish: string; photo: string | null; art: string | null; artNote: string; changeNote: string; shown: boolean }
 export interface CharacterRequest { teacherId: string; name: string; status: 'new' | 'changes'; wish: string; photo: string | null; changeNote: string }
 export interface NewClassMission {
   title: string;
@@ -584,6 +584,10 @@ export interface Backend {
   teacherCharacterSubmit(photo: string, wish: string): Promise<void>;
   teacherCharacterRespond(approve: boolean, note: string): Promise<void>;
   teacherCharacterRemovePhoto(): Promise<void>;
+  /** The teacher chooses whether their approved character shows to their own class. */
+  teacherCharacterShow(show: boolean): Promise<void>;
+  /** Approved characters the teachers of my class chose to show: name and art only. */
+  myTeacherCharacters(): Promise<{ name: string; art: string }[]>;
   senseiCharacterQueue(): Promise<CharacterRequest[]>;
   senseiCharacterDeliver(teacherId: string, art: string, note: string): Promise<void>;
   classResults(classId: string): Promise<ClassMissionResults[]>;

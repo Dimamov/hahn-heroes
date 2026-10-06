@@ -2792,12 +2792,12 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     },
     async teacherCharacter() {
       const a = meAdult('teacher');
-      return { ...(db.teacherCharacters?.[a.id] ?? { status: 'none', wish: '', photo: null, art: null, artNote: '', changeNote: '' }) } as TeacherCharacter;
+      return { ...(db.teacherCharacters?.[a.id] ?? { status: 'none', wish: '', photo: null, art: null, artNote: '', changeNote: '', shown: false }) } as TeacherCharacter;
     },
     async teacherCharacterWish(wish) {
       const a = meAdult('teacher');
       const all = (db.teacherCharacters ??= {});
-      all[a.id] = { ...(all[a.id] ?? { status: 'wish', photo: null, art: null, artNote: '', changeNote: '' }), wish: wish.trim().slice(0, 600) };
+      all[a.id] = { ...(all[a.id] ?? { status: 'wish', photo: null, art: null, artNote: '', changeNote: '', shown: false }), wish: wish.trim().slice(0, 600) };
       commit();
     },
     async teacherCharacterSubmit(photo, wish) {
@@ -2805,7 +2805,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const all = (db.teacherCharacters ??= {});
       if (!photo.startsWith('data:image/')) throw new Error('that photo does not work, try a smaller one');
       if (all[a.id]?.status === 'review') throw new Error('approve or ask for changes on the character first');
-      all[a.id] = { ...(all[a.id] ?? { art: null, artNote: '' }), status: 'new', wish: wish.trim().slice(0, 600), photo, changeNote: '' } as TeacherCharacter;
+      all[a.id] = { ...(all[a.id] ?? { art: null, artNote: '' }), status: 'new', wish: wish.trim().slice(0, 600), photo, changeNote: '', shown: false } as TeacherCharacter;
       commit();
     },
     async teacherCharacterRespond(approve, note) {
@@ -2822,6 +2822,20 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (!c || !c.photo || c.status === 'new') throw new Error('there is no photo to remove right now');
       c.photo = null;
       commit();
+    },
+    async teacherCharacterShow(show) {
+      const a = meAdult('teacher');
+      const c = db.teacherCharacters?.[a.id];
+      if (!c || c.status !== 'approved' || !c.art) throw new Error('approve your character first');
+      c.shown = show;
+      commit();
+    },
+    async myTeacherCharacters() {
+      const link = db.members.find((m) => m.childId === meHero().id);
+      const cls = link && db.classes.find((x) => x.id === link.classId);
+      const c = cls && db.teacherCharacters?.[cls.teacherId];
+      const t = cls && db.adults.find((x) => x.id === cls.teacherId);
+      return c && t && c.status === 'approved' && c.shown && c.art ? [{ name: t.displayName, art: c.art }] : [];
     },
     async senseiCharacterQueue() {
       meAdult('sensei');

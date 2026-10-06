@@ -3,7 +3,7 @@ import type { Backend, TeacherCharacter as Character } from '../../lib/backend.t
 import { shrinkImage } from '../../lib/image-file.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 
-/** A teacher's own character: send a photo and a wish list, then approve what the Sensei makes. Students never see any of it. */
+/** A teacher's own character: send a photo and a wish list, then approve what the Sensei makes. Students only see the approved art, and only if the teacher chooses to show it. */
 export function TeacherCharacter({ backend, onBack }: { backend: Backend; onBack: () => void }) {
   const [c, setC] = useState<Character | null>(null);
   const [wish, setWish] = useState('');
@@ -13,7 +13,7 @@ export function TeacherCharacter({ backend, onBack }: { backend: Backend; onBack
   const [again, setAgain] = useState(false);
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
-  const load = () => backend.teacherCharacter().then((x) => { setC(x); setWish(x.wish); }).catch(() => setC({ status: 'none', wish: '', photo: null, art: null, artNote: '', changeNote: '' }));
+  const load = () => backend.teacherCharacter().then((x) => { setC(x); setWish(x.wish); }).catch(() => setC({ status: 'none', wish: '', photo: null, art: null, artNote: '', changeNote: '', shown: false }));
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pick = async (f: File | undefined) => {
@@ -55,6 +55,14 @@ export function TeacherCharacter({ backend, onBack }: { backend: Backend; onBack
         </>
       )}
       {c.status === 'approved' && c.art && <img className="char-art" src={c.art} alt="Your approved character" />}
+      {c.status === 'approved' && c.art && (
+        <>
+          <p className="hint">{c.shown ? 'Your class can see your character on their Class Missions page.' : 'Only you and the Sensei can see it right now.'}</p>
+          <button className="btn ghost" onClick={() => run(() => backend.teacherCharacterShow(!c.shown), c.shown ? 'Hidden from your class.' : 'Your class can now see it.')}>
+            {c.shown ? 'Hide from my class' : 'Show my character to my class'}
+          </button>
+        </>
+      )}
       {busy && <p className="note" role="status">Sent! The Sensei is making your character and will send it back here for you to approve.</p>}
       {c.status === 'changes' && <p className="note" role="status">Your change request is with the Sensei: “{c.changeNote}”</p>}
 

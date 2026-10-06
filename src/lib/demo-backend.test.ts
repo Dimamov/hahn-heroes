@@ -1209,6 +1209,7 @@ describe('teacher character requests', () => {
     await b.adultSignIn('tess@example.com', 'secret1');
     const photo = 'data:image/jpeg;base64,AAAA';
     await expect(b.teacherCharacterSubmit('nope', '')).rejects.toThrow();
+    await expect(b.teacherCharacterShow(true)).rejects.toThrow('approve your character first');
     await b.teacherCharacterSubmit(photo, 'A staff');
     expect((await b.teacherCharacter()).status).toBe('new');
     await b.signOut();
@@ -1225,5 +1226,10 @@ describe('teacher character requests', () => {
     const c = await b.teacherCharacter();
     expect(c).toMatchObject({ status: 'approved', photo: null });
     expect(c.art).toBeTruthy();
+    expect(c.shown).toBe(false);
+    await b.teacherCharacterShow(true);
+    expect((await b.teacherCharacter()).shown).toBe(true);
+    await b.teacherCharacterSubmit(photo, 'A new look');
+    expect((await b.teacherCharacter()).shown).toBe(false);
   });
 });

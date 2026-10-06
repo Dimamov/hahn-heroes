@@ -88,12 +88,14 @@ export function ClassMissions() {
   const { backend, go, refresh } = useSession();
   const [cls, setCls] = useState<{ name: string } | null | undefined>(undefined);
   const [items, setItems] = useState<ClassMission[]>([]);
+  const [teachers, setTeachers] = useState<{ name: string; art: string }[]>([]);
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const load = async () => {
     const c = await backend.myClass().catch(() => null);
     setCls(c);
     if (c) setItems(await backend.classMissions().catch(() => []));
+    if (c) setTeachers(await backend.myTeacherCharacters().catch(() => []));
   };
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -122,6 +124,12 @@ export function ClassMissions() {
   return (
     <main className="screen">
       <ScreenBar title={cls.name} onBack={() => go('missions')} />
+      {teachers.map((t) => (
+        <div className="teacher-card" key={t.name}>
+          <img src={t.art} alt={`${t.name}, your teacher`} />
+          <small>{t.name}</small>
+        </div>
+      ))}
       <PagedList
         items={items}
         perPage={3}
