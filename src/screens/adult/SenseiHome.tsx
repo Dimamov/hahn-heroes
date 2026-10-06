@@ -445,6 +445,12 @@ function ChatUnlocks({ backend, onBack }: { backend: Backend; onBack: () => void
     }
     setAiBusy(false); loadAi();
   };
+  const [old, setOld] = useState<number | null>(null);
+  const [oldMsg, setOldMsg] = useState('');
+  useEffect(() => { backend.senseiChatOldCount().then(setOld).catch(() => setOld(0)); }, [backend]);
+  const clearOld = async () => {
+    try { const n = await backend.senseiChatClearOld(); setOldMsg(`Cleared ${n} old message${n === 1 ? '' : 's'}.`); setOld(0); } catch { setOldMsg("Couldn't clear right now. Try again."); }
+  };
   const read = async (r: ChatRequest) => setLog({ name: r.name, lines: await backend.senseiChatLog(r.childId).catch(() => []) });
   const unlock = async (r: ChatRequest) => { await backend.chatUnlock(r.childId).catch(() => {}); load(); };
   return (
@@ -455,6 +461,12 @@ function ChatUnlocks({ backend, onBack }: { backend: Backend; onBack: () => void
         <small className="muted">Reads saved chat (text only, no names) and flags worrying messages for you. It never blocks or removes anything.</small>
         {aiMsg && <small role="status">{aiMsg}</small>}
         <div className="card-bottom"><span /><button className="btn small primary" disabled={aiBusy || (ai !== null && !ai.configured)} onClick={runAi}>{aiBusy ? 'Checking…' : 'Check chat now'}</button></div>
+      </div>
+      <div className="card">
+        <div className="card-top"><b>🧹 Old chat</b><small className="muted">{old === null ? '' : `${old} older than 30 days`}</small></div>
+        <small className="muted">Hides saved chat older than 30 days from kids and from your log. Messages the AI flagged that you have not reviewed are kept.</small>
+        {oldMsg && <small role="status">{oldMsg}</small>}
+        <button className="btn primary" disabled={!old} onClick={clearOld}>Clear old messages</button>
       </div>
       {flags.length > 0 && (
         <PagedList items={flags} perPage={2} empty=""

@@ -2695,6 +2695,8 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     async senseiChatAiCheck() { meAdult('sensei'); throw new Error('not_set_up'); },
     async senseiChatAiFlags() { meAdult('sensei'); return []; },
     async senseiChatAiDismiss() { meAdult('sensei'); },
+    async senseiChatOldCount() { meAdult('sensei'); return 0; },
+    async senseiChatClearOld() { meAdult('sensei'); return 0; },
     async chatUnlock(childId) {
       meAdult('sensei');
       const st = (db.chat ??= { messages: [], status: {} }).status[childId];

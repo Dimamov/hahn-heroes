@@ -755,6 +755,10 @@ export interface Backend {
   senseiChatAiCheck(): Promise<{ checked: number; flagged: number }>;
   senseiChatAiFlags(): Promise<ChatAiFlag[]>;
   senseiChatAiDismiss(key: string): Promise<void>;
+  /** How many saved chat messages are older than 30 days and can be cleared (flagged, unreviewed ones stay). */
+  senseiChatOldCount(): Promise<number>;
+  /** Hides saved chat older than 30 days. Nothing is erased. Returns how many were hidden. */
+  senseiChatClearOld(): Promise<number>;
   /** Demo mode only: adds a practice buddy so a game can start without a second device. */
   addPracticeBuddy?(): Promise<void>;
   senseiOverview(): Promise<SenseiOverview>;
