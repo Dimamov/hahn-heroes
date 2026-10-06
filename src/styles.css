@@ -168,6 +168,7 @@ h2 { font-size: 1.7rem; line-height: 1.1; text-align: center; }
 .home-pages .pager { flex: 1; }
 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 10px; width: 100%; height: 100%; align-content: start; padding: 2px; }
 .tile {
+  position: relative;
   --tint: var(--violet);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 6px; min-height: 0;
   border-radius: 20px; background: linear-gradient(160deg, color-mix(in srgb, var(--tint) 35%, #17143f), #17143f);
@@ -755,7 +756,7 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .item-grid:has(.contest-card), .item-grid:has(.comic-card) { grid-template-columns: 1fr; grid-auto-rows: auto; }
 .dorm.mini { position: relative; width: min(100%, 44vh); }
 .dorm.mini .dorm-cell { font-size: clamp(1rem, 5vw, 1.8rem); }
-.mini-hero { position: absolute; left: 50%; bottom: 4%; height: 70%; width: auto; transform: translateX(-50%); object-fit: contain; pointer-events: none; opacity: .95; }
+.dorm.mini .mini-hero { position: absolute; left: 50%; bottom: 4%; height: 70%; width: auto; transform: translateX(-50%); object-fit: contain; pointer-events: none; opacity: .95; }
 .contest-card .btn { width: min(100%, 320px); }
 @media (max-height: 480px) and (orientation: landscape) { .contest-card { flex-direction: row; justify-content: center; gap: 12px; } .contest-card > b { display: none; } .dorm.mini { width: 36vh; flex: none; } .contest-card .btn { width: auto; min-width: 140px; } }
 
@@ -966,3 +967,13 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .thumb { background: none; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 12px; padding: 4px 8px; font-size: 18px; opacity: 0.55; }
 .thumb.on { opacity: 1; background: rgba(251, 191, 36, 0.25); border-color: #fbbf24; }
 .bar-right { display: flex; gap: 6px; align-items: center; }
+.daily .red-dot { top: 6px; right: 8px; }
+
+/* Landscape phones: Arcade tiles put the icon beside the text so three rows fit without overlap */
+@media (max-height: 480px) and (orientation: landscape) {
+  .subjects.games .folder.subject { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "i b" "i e"; column-gap: 10px; align-content: center; justify-items: start; text-align: left; padding: 4px 14px; }
+  .subjects.games .folder.subject .folder-icon { grid-area: i; font-size: 1.8rem; align-self: center; }
+  .subjects.games .folder.subject b { grid-area: b; font-size: 1.05rem; align-self: end; }
+  .subjects.games .folder.subject em { grid-area: e; font-size: .78rem; align-self: start; }
+}
+.tile .red-dot { top: 4px; right: 6px; }
