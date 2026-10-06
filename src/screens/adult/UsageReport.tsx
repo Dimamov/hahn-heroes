@@ -11,7 +11,7 @@ const TABS: { id: Tab; label: string }[] = [{ id: 'overview', label: 'Overview' 
 const VERDICT: Record<Verdict, string> = { keep: '✅ Keep', watch: '👀 Watch', hide: '🗑 Consider hiding', unknown: '⏳ Too early' };
 const niceDay = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 const monthName = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-const stats = (r: UsageRow) => `${r.opens} plays · ${r.players} kids · ${r.avgMinutes} min each${r.players ? ` · ${pctOf(r.cameBack, r.players)}% came back` : ''}`;
+const stats = (r: UsageRow) => `${r.opens} plays · ${r.players} kids · ${r.avgMinutes} min each${r.players ? ` · ${pctOf(r.cameBack, r.players)}% came back` : ''} · 👍 ${r.thumbs}`;
 
 /** The Sensei's monthly report: counts only, no names. Least played games first so weak ones can be hidden. */
 export function UsageReportScreen({ backend, onBack }: { backend: Backend; onBack: () => void }) {
@@ -50,6 +50,12 @@ export function UsageReportScreen({ backend, onBack }: { backend: Backend; onBac
                 <div><b>{games.reduce((t, g) => t + g.opens, 0)}</b><small>Game plays</small></div>
                 <div><b>{games.filter((g) => g.opens === 0).length}</b><small>Games nobody played</small></div>
                 <div><b>{peakHours(r) || 'No data'}</b><small>Busiest times</small></div>
+              </div>
+              <div className="card">
+                <b>How often kids come back</b>
+                <small>{r.streaks.daily} kids came 7 or more days · {r.streaks.many} came 4 to 6 days</small>
+                <small>{r.streaks.few} came 2 or 3 days · {r.streaks.one} came once</small>
+                <small>{r.run3} kids came 3 days in a row at least once</small>
               </div>
               <div className="card">
                 <b>Kids active each week</b>

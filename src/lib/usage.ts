@@ -3,7 +3,7 @@ import type { UsageReport } from './backend.ts';
 export type Verdict = 'keep' | 'watch' | 'hide' | 'unknown';
 export interface UsageRow {
   id: string; label: string; icon: string; opens: number; players: number; cameBack: number;
-  avgMinutes: number; prevOpens: number; hidden: boolean; verdict: Verdict; why: string;
+  avgMinutes: number; prevOpens: number; thumbs: number; hidden: boolean; verdict: Verdict; why: string;
 }
 
 /** Names for the parts of the app that are not games. */
@@ -40,7 +40,7 @@ export function gameRows(r: UsageReport, games: readonly { id: string; label: st
     return {
       id: g.id, label: g.label, icon: g.icon, opens, players, cameBack,
       avgMinutes: opens ? Math.round(((s?.minutes ?? 0) / opens) * 10) / 10 : 0,
-      prevOpens: s?.prevOpens ?? 0, hidden: r.hidden.includes(g.id), ...verdictFor(opens, players, cameBack, r.activeKids),
+      prevOpens: s?.prevOpens ?? 0, thumbs: r.thumbs[g.id] ?? 0, hidden: r.hidden.includes(g.id), ...verdictFor(opens, players, cameBack, r.activeKids),
     };
   }).sort((a, b) => a.opens - b.opens || a.label.localeCompare(b.label));
 }
@@ -51,7 +51,7 @@ export function featureRows(r: UsageReport): UsageRow[] {
     const [label, icon] = FEATURE_LABELS[s.screen] ?? [s.screen.replace(/[-_:]/g, ' '), '🔹'];
     return {
       id: s.screen, label, icon, opens: s.opens, players: s.players, cameBack: s.cameBack,
-      avgMinutes: s.opens ? Math.round((s.minutes / s.opens) * 10) / 10 : 0, prevOpens: s.prevOpens, hidden: false, verdict: 'unknown' as Verdict, why: '',
+      avgMinutes: s.opens ? Math.round((s.minutes / s.opens) * 10) / 10 : 0, prevOpens: s.prevOpens, thumbs: 0, hidden: false, verdict: 'unknown' as Verdict, why: '',
     };
   }).sort((a, b) => b.opens - a.opens);
 }

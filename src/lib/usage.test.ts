@@ -3,7 +3,7 @@ import type { UsageReport } from './backend.ts';
 import { featureRows, gameRows, hourLabel, peakHours, verdictFor } from './usage.ts';
 
 const base = (over: Partial<UsageReport> = {}): UsageReport => ({
-  month: '2026-10-01', since: '2026-10-01', heroesTotal: 40, activeKids: 20, hidden: [], screens: [], weeks: [], hours: [], subjects: [], ...over,
+  month: '2026-10-01', since: '2026-10-01', heroesTotal: 40, activeKids: 20, hidden: [], screens: [], weeks: [], hours: [], subjects: [], thumbs: {}, streaks: { one: 0, few: 0, many: 0, daily: 0 }, run3: 0, ...over,
 });
 const GAMES = [{ id: 'a', label: 'Alpha', icon: '🅰️' }, { id: 'b', label: 'Beta', icon: '🅱️' }, { id: 'c', label: 'Gamma', icon: '🌀' }];
 

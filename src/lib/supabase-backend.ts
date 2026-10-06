@@ -937,7 +937,14 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
         month: d.month, since: d.since, heroesTotal: d.heroes_total, activeKids: d.active_kids, hidden: d.hidden ?? [],
         screens: d.screens.map((x: any) => ({ screen: x.screen, opens: x.opens, players: x.players, cameBack: x.came_back, minutes: x.minutes, prevOpens: x.prev_opens })),
         weeks: d.weeks, hours: d.hours, subjects: d.subjects,
+        thumbs: d.thumbs ?? {}, streaks: d.streaks ?? { one: 0, few: 0, many: 0, daily: 0 }, run3: d.run3 ?? 0,
       };
+    },
+    async gameThumbs() {
+      return ((await rpc('my_game_thumbs')) as string[] | null) ?? [];
+    },
+    async gameThumb(game, up) {
+      await rpc('game_thumb_set', { p_game: game, p_up: up });
     },
     async hiddenGames() {
       return ((await rpc('hidden_games')) as string[] | null) ?? [];

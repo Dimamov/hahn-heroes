@@ -331,6 +331,7 @@ interface Db {
   room?: DemoRoom | null;
   drawingReports?: { artist: string; reporter: string; word: string; at: string }[];
   friendChat?: { id: number; from: string; to: string; name: string; body: string; at: number }[];
+  thumbs?: Record<string, string[]>;
   emailHelp?: { id: number; email: string; at: number; done: boolean }[];
   chat?: { messages: { id: number; childId: string; name: string; body: string; at: number }[]; status: Record<string, { strikes: number; banned: boolean; requested: boolean }> };
   hiddenGames?: string[];
@@ -2724,9 +2725,18 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     },
     async senseiUsageReport() {
       meAdult('sensei');
-      return { month: schoolDate(now()).slice(0, 7) + '-01', since: null, heroesTotal: Object.keys(db.accounts).length, activeKids: 0, hidden: db.hiddenGames ?? [], screens: [], weeks: [], hours: [], subjects: [] };
+      return { month: schoolDate(now()).slice(0, 7) + '-01', since: null, heroesTotal: Object.keys(db.accounts).length, activeKids: 0, hidden: db.hiddenGames ?? [], screens: [], weeks: [], hours: [], subjects: [], thumbs: {}, streaks: { one: 0, few: 0, many: 0, daily: 0 }, run3: 0 };
     },
     async hiddenGames() { return db.hiddenGames ?? []; },
+    async gameThumbs() { return (db.thumbs ?? {})[meHero().id] ?? []; },
+    async gameThumb(game, up) {
+      const me = meHero().id;
+      const all = (db.thumbs ??= {});
+      const list = new Set(all[me] ?? []);
+      if (up) list.add(game); else list.delete(game);
+      all[me] = [...list];
+      commit();
+    },
     async senseiHideGame(id, hidden) {
       meAdult('sensei');
       const list = new Set(db.hiddenGames ?? []);
