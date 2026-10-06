@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GameFrame, WinPanel } from './GameFrame.tsx';
 import { beep } from '../lib/sound.ts';
+import { burst, centerOf, flashEdge, popup, shake } from '../lib/fx.ts';
 import { COLS, KINDS, LIVES, PATH, ROWS, WAVES, foePos, isGrass, newState, placeHero, startWave, step, type Kind } from '../lib/tower.ts';
 
 const pct = (v: number, n: number) => `${((v + 0.5) / n) * 100}%`;
@@ -11,6 +12,18 @@ export function HeroDefense() {
   const [s, setS] = useState(newState);
   const [kind, setKind] = useState<Kind>('spark');
   const [round, setRound] = useState(0);
+  const board = useRef<HTMLDivElement>(null);
+  const prev = useRef({ lives: LIVES, foes: 0, wave: 0 });
+  // Juice: react to lives lost, shadows beaten and waves cleared.
+  useEffect(() => {
+    const p = prev.current, r = board.current?.getBoundingClientRect();
+    if (r) {
+      if (s.lives < p.lives) { shake(board.current, 6); flashEdge(); popup(r.left + r.width / 2, r.bottom - 30, '-1 ❤️', '#ff5c7a', true); }
+      if (s.foes.length < p.foes && s.lives >= p.lives && s.phase === 'wave') burst(r.left + r.width / 2, r.top + r.height / 2, '#c4b5fd', 8, 60);
+      if (s.phase === 'build' && s.wave > p.wave && s.wave > 0) { const c = centerOf(board.current); burst(c.x, c.y, '#fbbf24', 24, 120); popup(c.x, c.y, `WAVE ${s.wave} CLEAR!`, '#fbbf24', true); }
+    }
+    prev.current = { lives: s.lives, foes: s.foes.length, wave: s.wave };
+  }, [s]);
   useEffect(() => {
     if (s.phase !== 'wave') return;
     const id = window.setInterval(() => setS((x) => step(x, 0.1)), 100);
@@ -23,6 +36,7 @@ export function HeroDefense() {
     const n = placeHero(s, r, c, kind);
     if (n === s) { beep(200, 80, 'sawtooth'); return; }
     beep(560, 90, 'triangle'); setS(n);
+    const e = document.querySelector(`.td-cell:nth-child(${r * COLS + c + 1})`); const pos = centerOf(e); burst(pos.x, pos.y, '#22d3ee', 10, 45);
   };
 
   if (s.phase === 'won') return <GameFrame title="Hero Defense"><WinPanel game="hero-defense" message="The shadows are beaten!" onAgain={again} /></GameFrame>;
@@ -40,8 +54,8 @@ export function HeroDefense() {
   }
   return (
     <GameFrame title="Hero Defense" key={round}>
-      <p className="note">❤️ {s.lives}/{LIVES} · ⚡ {s.energy} · Wave {Math.max(1, s.wave)}/{WAVES}</p>
-      <div className="td-board">
+      <p className="note pill">❤️ {s.lives}/{LIVES} · ⚡ {s.energy} · Wave {Math.max(1, s.wave)}/{WAVES}</p>
+      <div className="td-board" ref={board}>
         {Array.from({ length: ROWS * COLS }, (_, k) => {
           const r = Math.floor(k / COLS), c = k % COLS;
           const hero = s.heroes.find((h) => h.r === r && h.c === c);

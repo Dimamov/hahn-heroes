@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
 import { GameFrame } from './GameFrame.tsx';
+import { burst, centerOf, shake } from '../lib/fx.ts';
+import { beep } from '../lib/sound.ts';
 import box from '../../content/funbox.json';
 
 type Kind = 'joke' | 'riddle' | 'fortune' | 'fact' | 'cheer' | 'teaser' | 'tongue' | 'would';
@@ -18,7 +20,8 @@ export function FunBox() {
   const deck = useRef<Item[]>(shuffled());
   const [item, setItem] = useState<Item | null>(null);
   const [shown, setShown] = useState(false);
-  const draw = () => {
+  const draw = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const c = centerOf(e.currentTarget); burst(c.x, c.y, '#fbbf24', 18, 100); shake(e.currentTarget, 5); beep(620, 120, 'triangle');
     if (!deck.current.length) deck.current = shuffled();
     setItem(deck.current.pop()!);
     setShown(false);

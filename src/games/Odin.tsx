@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from '../App.tsx';
-import { GameFrame } from './GameFrame.tsx';
+import { GameFrame, GameHero } from './GameFrame.tsx';
 import { ChatButton } from './ChatBox.tsx';
 import { PlayerList } from './TriviaClash.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
@@ -75,6 +75,7 @@ export function Odin() {
   if (!code || !room) {
     return (
       <GameFrame title="ODIN" hint="Match the colour or number, use action cards, and be first to run out of cards. You can only play with your own grade.">
+        <GameHero icon="🃏" />
         <div className="grow" />
         <button className="btn primary" onClick={() => act(async () => setCode(await backend.createRoom('odin')))}>🏠 Host a room</button>
         <p className="hint">or join a friend's room</p>
