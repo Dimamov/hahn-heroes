@@ -918,6 +918,22 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiChatLog(childId) {
       return ((await rpc('sensei_chat_log', { p_child: childId })) as any[]).map((l) => ({ name: l.name, child: l.child, body: l.body, at: l.at }));
     },
+    async senseiChatAiStatus() {
+      const { data, error } = await sb.functions.invoke('chat-review', { body: { action: 'status' } });
+      if (error || !data) return { configured: false, waiting: 0 };
+      return { configured: !!data.configured, waiting: data.waiting ?? 0 };
+    },
+    async senseiChatAiCheck() {
+      const { data, error } = await sb.functions.invoke('chat-review', { body: {} });
+      if (error || !data || data.error) throw new Error(data?.error ?? 'ai_unavailable');
+      return { checked: data.checked, flagged: data.flagged };
+    },
+    async senseiChatAiFlags() {
+      return ((await rpc('sensei_chat_ai_flags')) as any[]).map((f) => ({ key: f.key, name: f.name, body: f.body, reason: f.reason, at: f.at }));
+    },
+    async senseiChatAiDismiss(key) {
+      await rpc('sensei_chat_ai_dismiss', { p_key: key });
+    },
     async chatUnlock(childId) {
       await rpc('chat_unlock', { p_child: childId });
     },

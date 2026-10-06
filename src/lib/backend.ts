@@ -437,6 +437,7 @@ export interface ChatChild { banned: boolean; requested: boolean }
 export interface ChatLogLine { name: string; child: boolean; body: string; at: string }
 export interface EmailLink { tokenHash: string; type: 'recovery' | 'signup' | 'email' }
 export interface EmailHelpRequest { id: number; email: string; at: string }
+export interface ChatAiFlag { key: string; name: string; body: string; reason: string; at: string }
 export interface ChatRequest { childId: string; name: string; grade: number; requested: boolean }
 export interface ArcadeStatus { coins: number; games: string[]; claimed: string[] }
 export interface PendingTeacher {
@@ -749,6 +750,11 @@ export interface Backend {
   senseiChatRequests(): Promise<ChatRequest[]>;
   chatUnlock(childId: string): Promise<void>;
   senseiChatLog(childId: string): Promise<ChatLogLine[]>;
+  /** AI second check of saved chat: only flags worrying messages for the Sensei, never blocks anything. */
+  senseiChatAiStatus(): Promise<{ configured: boolean; waiting: number }>;
+  senseiChatAiCheck(): Promise<{ checked: number; flagged: number }>;
+  senseiChatAiFlags(): Promise<ChatAiFlag[]>;
+  senseiChatAiDismiss(key: string): Promise<void>;
   /** Demo mode only: adds a practice buddy so a game can start without a second device. */
   addPracticeBuddy?(): Promise<void>;
   senseiOverview(): Promise<SenseiOverview>;

@@ -2691,6 +2691,10 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
         return { childId: id, name: h?.displayName ?? 'Hero', grade: h?.grade ?? 5, requested: st.requested };
       });
     },
+    async senseiChatAiStatus() { meAdult('sensei'); return { configured: false, waiting: 0 }; },
+    async senseiChatAiCheck() { meAdult('sensei'); throw new Error('not_set_up'); },
+    async senseiChatAiFlags() { meAdult('sensei'); return []; },
+    async senseiChatAiDismiss() { meAdult('sensei'); },
     async chatUnlock(childId) {
       meAdult('sensei');
       const st = (db.chat ??= { messages: [], status: {} }).status[childId];
