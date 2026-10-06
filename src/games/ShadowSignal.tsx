@@ -189,8 +189,8 @@ function ShadowOnline({ onExit, emoji = false }: { onExit: () => void; emoji?: b
 
 function RoleCard({ category, shadow, word }: { category: string; shadow: boolean; word: string | null }) {
   return shadow
-    ? <div className="rolecard shadow"><b>🕵️ You are the Shadow!</b><span>Category: <u>{category}</u>. Blend in without knowing the word.</span></div>
-    : <div className="rolecard"><b>🔒 Secret word: {word}</b><span>Category: {category}. Hint at it without giving it away.</span></div>;
+    ? <div className="rolecard shadow"><img className="role-art" src="/assets/games/role-shadow.webp" alt="" draggable={false} /><b>🕵️ You are the Shadow!</b><span>Category: <u>{category}</u>. Blend in without knowing the word.</span></div>
+    : <div className="rolecard"><img className="role-art" src="/assets/games/role-agent.webp" alt="" draggable={false} /><b>🔒 Secret word: {word}</b><span>Category: {category}. Hint at it without giving it away.</span></div>;
 }
 
 type Stage =

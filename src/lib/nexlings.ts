@@ -14,3 +14,11 @@ export const STAGE_NAMES = ['Hatchling', 'Youngling', 'Guardian', 'Protector'];
 export const nexlingType = (id: string) => NEXLING_TYPES.find((t) => t.id === id);
 /** Growth is measured in coins earned since adopting, with a 1.5x bonus on the type's own source. */
 export const NEXLING_BONUS = 1.5;
+
+/** Which finished artwork belongs to each Nexling type (the seven families in the art folder). */
+const ART_NO: Record<string, string> = { glimmerling: '01', emberling: '02', tideling: '03', mossling: '04', sparkling: '05', zephling: '06', frostling: '07' };
+export const nexlingArt = (type: string, stage = 1, egg = false): string | null => {
+  const n = ART_NO[type];
+  if (!n) return null;
+  return egg ? `/assets/nexlings/nexling-egg-${n}.webp` : `/assets/nexlings/nexling-${n}-stage${Math.min(4, Math.max(1, stage))}.webp`;
+};
