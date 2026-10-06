@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { GameFrame, WinPanel } from './GameFrame.tsx';
 import { useSession } from '../App.tsx';
 import { beep } from '../lib/sound.ts';
+import { burst, flashEdge, popup, shake } from '../lib/fx.ts';
 import {
   DASH_WIN, GROUND, H, HERO_W, HERO_X, RUNNERS, TRAILS, W, heroHeight, jump, newState, onGround, score, slide, step, unlocked,
   type DashState, type RunnerId, type TrailId,
@@ -43,8 +44,10 @@ export function NexusDash() {
       last = now;
       const wasShield = s.shield, coins = s.coins;
       step(s, dt);
-      if (s.coins > coins) beep(880, 50, 'triangle');
-      if (wasShield && !s.shield && !s.over) beep(300, 120, 'triangle');
+      const rect = c.getBoundingClientRect();
+      const hx = rect.left + (HERO_X / W) * rect.width, hy = rect.top + (s.bottom / H) * rect.height - 10;
+      if (s.coins > coins) { beep(880, 50, 'triangle'); burst(hx, hy, '#fbbf24', 5, 36); }
+      if (wasShield && !s.shield && !s.over) { beep(300, 120, 'triangle'); burst(hx, hy, '#22d3ee', 14, 70); popup(hx, hy - 20, 'SHIELD!', '#22d3ee', true); shake(c, 4); }
       // trail: a new spark each frame, older ones drift back and fade
       const hh = heroHeight(s);
       sparks.current.push({ x: HERO_X, y: s.bottom - hh / 2, age: 0, seed: Math.random() });
@@ -57,7 +60,7 @@ export function NexusDash() {
         const now2 = [...RUNNERS, ...TRAILS].filter((u) => u.need > before && u.need <= best).map((u) => u.name);
         if (best > before) { const next = { ...saved, best }; setSaved(next); save(key, next); }
         setFinal({ score: sc, newBest: sc > before && before > 0, unlockedNow: now2 });
-        beep(180, 300, 'sawtooth');
+        beep(180, 300, 'sawtooth'); shake(c, 8); flashEdge(); burst(hx, hy, '#ff5c7a', 16, 90);
         setPhase('over');
         return;
       }
