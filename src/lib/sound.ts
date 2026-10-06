@@ -11,7 +11,13 @@ const audio = (): AudioContext | null => {
   } catch { return null; }
 };
 
+let quiet = false;
+/** Quiet mode: no sounds and no flashy effects, for when the room needs to settle. */
+export const isQuiet = () => quiet;
+export const setQuiet = (on: boolean) => { quiet = on; };
+
 export function beep(freq: number, ms = 250, type: OscillatorType = 'sine', volume = 0.15) {
+  if (quiet) return;
   const c = audio();
   if (!c) return;
   const osc = c.createOscillator();
@@ -27,6 +33,7 @@ export function beep(freq: number, ms = 250, type: OscillatorType = 'sine', volu
 
 /** A rising and falling siren. Returns how long it lasts so the caller can block repeats. */
 export function siren(seconds = 3): number {
+  if (quiet) return 0;
   const c = audio();
   if (!c) return 0;
   const osc = c.createOscillator();
