@@ -1315,3 +1315,9 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .top-row .art-tile .art-tile-text small { display: none; }
 .top-row .art-tile .art-tile-art { opacity: .55; }
 @media (max-height: 700px) and (min-width: 700px) { .daily-pill { top: auto; bottom: 8px; left: 12px; right: auto; margin: 0; } }
+/* tall phones: no height cap on tiles, logo above the hero group */
+.home2 > .art-tiles { max-height: none; }
+.home-hero { justify-content: flex-start; }
+.home-logo { margin-top: 2vh; }
+.home-squad { height: 50%; }
+html, body { background: #0b0a24; }
