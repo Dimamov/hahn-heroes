@@ -1091,3 +1091,14 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .rift-card.bad { animation: hurtFlash .4s; }
 @media (prefers-reduced-motion: reduce) { .funbox { animation: none; } }
 .blk-mini i[style] { box-shadow: inset 0 2px 0 #fff6, inset 0 -2px 0 #0005; }
+/* ChatGPT art (batch 01) */
+.game-hero.art { background: none; border: 0; box-shadow: none; width: min(60vw, 28vh); }
+.game-hero.art img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 22px #8b5cffcc); }
+.nx-seal { width: 30px; height: 30px; flex: none; opacity: .55; filter: grayscale(.6); }
+.nx-seal.open { opacity: 1; filter: drop-shadow(0 0 8px #4ade80); }
+.funbox { width: min(56vw, 30vh); aspect-ratio: 1; padding: 0; }
+.funbox img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.bigred { position: relative; padding: 0; background: none; border: 0; box-shadow: none; border-radius: 0; }
+.bigred img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; filter: drop-shadow(0 8px 0 #0006) drop-shadow(0 0 22px #ff3b3b88); }
+.bigred:active { transform: translateY(6px) scale(.97); box-shadow: none; }
+.bigred .siren-emoji { position: absolute; inset: 0; display: grid; place-items: center; font-size: 4rem; }

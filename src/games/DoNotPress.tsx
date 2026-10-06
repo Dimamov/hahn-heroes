@@ -115,7 +115,7 @@ export function DoNotPress() {
       <div className="grow" />
       {phase !== 'video' && (
         <button className={`bigred${phase === 'siren' ? ' alarm' : ''}`} onClick={press} disabled={!ready} aria-label="Do not press">
-          {phase === 'siren' ? '🚨' : 'DO NOT PRESS'}
+          <img src="/assets/games/do-not-press.webp" alt="" draggable={false} />{phase === 'siren' && <span className="siren-emoji">🚨</span>}
         </button>
       )}
       {phase === 'siren' && <p className="hint">Uh oh...</p>}

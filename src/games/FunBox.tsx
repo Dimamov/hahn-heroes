@@ -29,7 +29,7 @@ export function FunBox() {
   return (
     <GameFrame title="Fun Box" hint="Tap the box for a joke, riddle, brain teaser, tongue twister or fun fact.">
       <div className="grow" />
-      <button className="funbox" onClick={draw} aria-label="Open the Fun Box">{item ? '🎁' : '📦'}</button>
+      <button className="funbox" onClick={draw} aria-label="Open the Fun Box"><img src={`/assets/games/fun-box-${item ? 'open' : 'closed'}.webp`} alt="" draggable={false} /></button>
       {item && (
         <div className="card fun-card" role="status" key={item.t}>
           <small className="muted">{LABEL[item.k]}</small>
