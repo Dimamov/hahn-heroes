@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Backend, ClassInfo, ClassLiveState, ClassMissionResults } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
+import { ClassGoalCard } from '../../components/ClassGoalCard.tsx';
 import { Board, BossBar, TimerBar, letter } from '../../components/LiveParts.tsx';
 
 const SUBJECTS: [string, string][] = [['mixed', 'Mixed'], ['math', 'Math'], ['vocab', 'Words'], ['reading', 'Reading'], ['science', 'Science']];
@@ -63,6 +64,7 @@ export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: Cla
           )}
           <p className="error" role="alert">{error}</p>
           <button className="btn primary big" disabled={busy} onClick={create}>Make the game</button>
+          <ClassGoalCard backend={backend} classId={cls.id} />
         </div>
       </main>
     );

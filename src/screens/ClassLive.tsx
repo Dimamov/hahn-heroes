@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from '../App.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
+import { ClassGoalCard } from '../components/ClassGoalCard.tsx';
 import { Board, BossBar, TimerBar, letter } from '../components/LiveParts.tsx';
 import type { ClassLiveOpen, ClassLiveState } from '../lib/backend.ts';
 import { beep } from '../lib/sound.ts';
@@ -88,6 +89,7 @@ export function ClassLive() {
           <input className="live-code" value={typed} maxLength={4} autoCapitalize="characters" aria-label="Class code" onChange={(e) => setTyped(e.target.value.toUpperCase())} />
           <p className="error" role="alert">{error}</p>
           <button className="btn" disabled={typed.length < 4} onClick={() => join(typed)}>Join</button>
+          <ClassGoalCard backend={backend} onClaimed={() => void refresh()} />
         </div>
       </main>
     );
