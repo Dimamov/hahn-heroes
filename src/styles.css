@@ -1286,3 +1286,12 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .tiles.fit .tile { max-height: none; }
 @media (max-height: 700px) { .grade { aspect-ratio: auto; height: 24vh; } .grade span { font-size: 2.6rem; } }
 @media (max-height: 700px) and (min-width: 700px) { .profile-info { overflow: visible; } .profile-hero { max-height: 34vh; } }
+/* UI check fixes */
+.daily-pill { left: 0; right: 0; transform: none; margin: 0 auto; width: max-content; max-width: calc(100% - 24px); font-size: 1rem; }
+.level-chip i.xp-track { height: 9px; background: #ffffff33; border: 1px solid #ffffff55; }
+.level-chip i.xp-track i { min-width: 6px; }
+.explore-folder { justify-content: flex-start; padding-top: 30%; gap: 8px; }
+.explore-folder small { font-size: clamp(.85rem, 1.9vh, 1rem); }
+.art-tiles small, .tile small { font-size: max(.8rem, 12px); }
+.feature-banner .red-dot, .tile .red-dot, .art-tiles .red-dot { top: 8px; right: 10px; }
+@media (max-height: 700px) and (min-width: 700px) { .daily-pill { bottom: auto; top: 8px; } }
