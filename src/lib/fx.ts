@@ -1,7 +1,8 @@
 // Game juice: particle bursts, floating score popups, screen shake and a confetti rain.
 // Everything is a short-lived DOM element animated with the Web Animations API, capped so phones stay smooth,
 // and skipped entirely when the player asks for reduced motion.
-const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+import { isQuiet } from './sound.ts';
+const reduced = () => isQuiet() || (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 let layer: HTMLElement | null = null;
 const root = (): HTMLElement => {

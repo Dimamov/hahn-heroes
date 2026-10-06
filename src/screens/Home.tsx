@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ClassLiveOpen } from '../lib/backend.ts';
+import { isQuiet } from '../lib/sound.ts';
 import { useSession } from '../App.tsx';
 import { Pager } from '../components/Pager.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
@@ -47,6 +48,7 @@ export function Home() {
         {dailyAvailable && <i className="red-dot" aria-label="Reward waiting" />}
         {dailyAvailable ? '🎁 Collect your daily Nexus points' : '✅ Daily check-in collected'}
       </button>
+      {isQuiet() && <button className="live-banner quiet-banner" onClick={() => go('quiet')}>🤫 Quiet mode is on. Tap to change it</button>}
       {live && <button className="live-banner" onClick={() => go('classlive')}>{live.kind === 'boss' ? '🐲 Your class is fighting a boss! Tap to join' : '⚡ Your class quiz battle is live! Tap to join'}</button>}
       {popped !== null && <div className="pop" role="status">+{popped} 💎</div>}
       <WeekRecap />
