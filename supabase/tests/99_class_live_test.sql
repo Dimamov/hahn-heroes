@@ -28,7 +28,7 @@ begin
 
   perform as_user(3);
   perform expect_error(format($q$select class_live_create(%L, 'quiz', 'mixed', 2)$q$, c), '3 to 20');
-  perform expect_error(format($q$select class_live_create(%L, 'party', 'mixed', 3)$q$, c), 'quiz or boss');
+  perform expect_error(format($q$select class_live_create(%L, 'party', 'mixed', 3)$q$, c), 'quiz, boss or mystery');
   code := class_live_create(c, 'quiz', 'math', 3);
   assert length(code) = 4, 'four letter code';
   perform expect_error(format($q$select class_live_start(%L)$q$, code), 'at least one student');
@@ -110,6 +110,26 @@ begin
   r := class_live_state(code);
   assert r->>'state' = 'done' and (r->'boss'->>'hp')::int = 0, 'boss defeated';
   perform as_user(167); assert (class_live_state(code)->>'my_reward')::int = 30, 'winners get the boss prize';
+
+  -- mystery reveal: every right answer uncovers a piece; the class finishes the picture together
+  perform as_user(3);
+  code := class_live_create(c, 'mystery', 'math', 3);
+  perform as_user(167); perform class_live_join(code);
+  perform as_user(168); perform class_live_join(code);
+  perform as_user(3);
+  perform class_live_start(code);
+  r := class_live_state(code);
+  assert r->>'kind' = 'mystery' and (r->'boss'->>'max')::int = 4 and (r->'boss'->>'hp')::int = 4, 'two players, three questions: four right answers needed';
+  for i in 1..3 loop
+    perform as_user(167); perform class_live_answer(1);
+    perform as_user(168); perform class_live_answer(1);
+    perform as_user(3);
+    perform class_live_skip(code);
+    exit when (class_live_state(code)->>'state') = 'done';
+  end loop;
+  r := class_live_state(code);
+  assert r->>'state' = 'done' and (r->'boss'->>'hp')::int = 0 and r->>'idx' = '1', 'picture finished after two questions';
+  perform as_user(167); assert (class_live_state(code)->>'my_reward')::int = 30, 'the class wins together';
 
   -- leaving and ending
   perform as_user(3);
