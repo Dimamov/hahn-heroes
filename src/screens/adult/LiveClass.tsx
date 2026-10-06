@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Backend, ClassInfo, ClassLiveKind, ClassLiveState, ClassMissionResults } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { ClassGoalCard } from '../../components/ClassGoalCard.tsx';
-import { Board, BossBar, MysteryPicture, TimerBar, letter } from '../../components/LiveParts.tsx';
+import { Board, BossBar, Bracket, MysteryPicture, TimerBar, letter } from '../../components/LiveParts.tsx';
 
 const SUBJECTS: [string, string][] = [['mixed', 'Mixed'], ['math', 'Math'], ['vocab', 'Words'], ['reading', 'Reading'], ['science', 'Science']];
 
@@ -34,7 +34,7 @@ export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: Cla
     try { await fn(); } catch { setError("That didn't work. Please try again."); }
     setBusy(false);
   };
-  const create = () => run(async () => { setCode(await backend.classLiveCreate(cls.id, kind, subject, count, mission || undefined)); });
+  const create = () => run(async () => { setCode(await backend.classLiveCreate(cls.id, kind, kind === 'duel' ? 'vocab' : subject, kind === 'duel' ? 3 : count, kind === 'duel' ? undefined : mission || undefined)); });
   const end = () => run(async () => { if (code) await backend.classLiveEnd(code); setCode(null); setSt(null); });
 
   if (!code || !st) {
@@ -47,9 +47,10 @@ export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: Cla
             <button className={kind === 'quiz' ? 'chosen' : ''} onClick={() => setKind('quiz')}>⚡ Quiz battle</button>
             <button className={kind === 'boss' ? 'chosen' : ''} onClick={() => setKind('boss')}>🐲 Boss battle</button>
             <button className={kind === 'mystery' ? 'chosen' : ''} onClick={() => setKind('mystery')}>🖼️ Mystery</button>
+            <button className={kind === 'duel' ? 'chosen' : ''} onClick={() => setKind('duel')}>⚔️ Vocab duel</button>
           </div>
-          <p className="hint">{kind === 'quiz' ? 'Everyone races on the same questions. Faster right answers score more.' : kind === 'boss' ? 'The whole class fights one boss together. Every right answer hurts it.' : 'Every right answer uncovers a piece of a hidden picture. The class finishes it together.'}</p>
-          <h4>Subject</h4>
+          <p className="hint">{kind === 'quiz' ? 'Everyone races on the same questions. Faster right answers score more.' : kind === 'boss' ? 'The whole class fights one boss together. Every right answer hurts it.' : kind === 'mystery' ? 'Every right answer uncovers a piece of a hidden picture. The class finishes it together.' : 'A knockout bracket. Students are paired and race on word questions. Winners move on until one champion is left.'}</p>
+          {kind !== 'duel' && <><h4>Subject</h4>
           <div className="chips">{SUBJECTS.map(([k, l]) => <button key={k} className={`chip${subject === k && !mission ? ' chosen' : ''}`} onClick={() => { setSubject(k); setMission(''); }}>{l}</button>)}</div>
           {missions.length > 0 && (
             <>
@@ -62,7 +63,7 @@ export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: Cla
               <h4>Questions</h4>
               <div className="chips">{[8, 12, 16].map((n) => <button key={n} className={`chip${count === n ? ' chosen' : ''}`} onClick={() => setCount(n)}>{n}</button>)}</div>
             </>
-          )}
+          )}</>}
           <p className="error" role="alert">{error}</p>
           <button className="btn primary big" disabled={busy} onClick={create}>Make the game</button>
           <ClassGoalCard backend={backend} classId={cls.id} />
@@ -75,7 +76,7 @@ export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: Cla
   if (st.state === 'lobby') {
     return (
       <main className="screen live wide">
-        <ScreenBar title={st.kind === 'boss' ? 'Boss battle' : st.kind === 'mystery' ? 'Mystery reveal' : 'Quiz battle'} onBack={end} />
+        <ScreenBar title={st.kind === 'boss' ? 'Boss battle' : st.kind === 'mystery' ? 'Mystery reveal' : st.kind === 'duel' ? 'Vocab duel' : 'Quiz battle'} onBack={end} />
         <div className="live-join">
           <p className="hint">On your Chromebook, open HAHN Heroes and tap the live class button, or type this code:</p>
           <div className="live-code-big" aria-label="Game code">{st.code}</div>
@@ -84,7 +85,7 @@ export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: Cla
           <p className="error" role="alert">{error}</p>
           <div className="btn-grid">
             <button className="btn ghost" disabled={busy} onClick={end}>Cancel</button>
-            <button className="btn primary big" disabled={busy || st.players.length === 0} onClick={() => run(() => backend.classLiveStart(st.code))}>Start!</button>
+            <button className="btn primary big" disabled={busy || st.players.length < (st.kind === 'duel' ? 2 : 1)} onClick={() => run(() => backend.classLiveStart(st.code))}>Start!</button>
           </div>
         </div>
       </main>
@@ -98,8 +99,8 @@ export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: Cla
         <ScreenBar title="Live class" onBack={onBack} />
         <div className="live-join">
           <div className="soon-icon win-burst" aria-hidden>🏆</div>
-          <h3>{st.kind === 'mystery' ? (won ? 'The class uncovered the whole picture!' : 'The picture stayed a mystery') : boss ? (won ? `The class beat ${boss.name}!` : `${boss.name} got away this time`) : 'Quiz battle over!'}</h3>
-          <Board players={st.players} limit={10} big />
+          <h3>{st.kind === 'duel' ? 'The duel is over!' : st.kind === 'mystery' ? (won ? 'The class uncovered the whole picture!' : 'The picture stayed a mystery') : boss ? (won ? `The class beat ${boss.name}!` : `${boss.name} got away this time`) : 'Quiz battle over!'}</h3>
+          {st.kind === 'duel' && st.duel ? <Bracket duel={st.duel} /> : <Board players={st.players} limit={10} big />}
           <button className="btn primary" onClick={() => { setCode(null); setSt(null); }}>Run another</button>
         </div>
       </main>
@@ -133,7 +134,7 @@ export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: Cla
             <button className="btn ghost" disabled={busy} onClick={end}>End game</button>
           </div>
         </section>
-        <aside className="live-side"><Board players={st.players} limit={8} big /></aside>
+        <aside className="live-side">{st.kind === 'duel' && st.duel ? <Bracket duel={st.duel} /> : <Board players={st.players} limit={8} big />}</aside>
       </div>
     </main>
   );

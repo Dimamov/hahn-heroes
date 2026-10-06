@@ -49,7 +49,7 @@ try {
   execFileSync(process.execPath, [join(root, 'scripts/seed-questions.mjs')]);
   psql(join(root, 'supabase/seed/questions.sql'));
   const counts = run('psql', ['-h', dir, '-p', port, '-U', 'postgres', '-d', 'postgres', '-t', '-A', '-c',
-    "select count(*) from questions where id !~ '^(mt5|vc6|cl5)-' and active and id in (select question_id from question_keys)"]);
+    "select count(*) from questions where id !~ '^(mt5|vc6|cl5|cd5)-' and active and id in (select question_id from question_keys)"]);
   if (Number(counts.trim()) !== 160) throw new Error(`expected 160 seeded questions, got ${counts}`);
   console.log('ok question bank seeds');
 } catch (err) {
