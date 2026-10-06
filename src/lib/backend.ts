@@ -131,6 +131,34 @@ export type JoinClassResult =
   | { ok: true; name: string }
   | { ok: false; error: 'invalid_code' | 'wrong_grade' | 'already_in_class' | 'too_many_tries' };
 
+export interface ClassLivePlayer { name: string; starter: string; score: number; correct: number; me: boolean; answered: boolean }
+/** One view of a live class game, for the teacher's big screen and for students. */
+export interface ClassLiveState {
+  code: string;
+  role: 'teacher' | 'student';
+  kind: 'quiz' | 'boss';
+  state: 'lobby' | 'playing' | 'done' | 'closed';
+  phase: 'question' | 'reveal';
+  idx: number;
+  total: number;
+  className: string;
+  boss: { name: string; icon: string; hp: number; max: number } | null;
+  players: ClassLivePlayer[];
+  seconds?: number;
+  secondsLeft?: number;
+  question?: QuizQuestion;
+  myChoice?: number | null;
+  answered?: number;
+  rightChoice?: number;
+  explanation?: string;
+  myPoints?: number;
+  myDamage?: number;
+  classDamage?: number;
+  choiceCounts?: Record<string, number>;
+  myReward?: number;
+}
+export interface ClassLiveOpen { code: string; kind: 'quiz' | 'boss'; state: 'lobby' | 'playing'; joined: boolean }
+
 export interface TriviaState {
   date: string; // YYYY-MM-DD, school time
   time: string; // HH:MM
@@ -757,6 +785,16 @@ export interface Backend {
   senseiChatAiDismiss(key: string): Promise<void>;
   /** How many saved chat messages are older than 30 days and can be cleared (flagged, unreviewed ones stay). */
   senseiChatOldCount(): Promise<number>;
+  // Classroom mode (live quiz battle and class boss battle)
+  classLiveOpen(): Promise<ClassLiveOpen | null>;
+  classLiveJoin(code: string): Promise<string>;
+  classLiveLeave(): Promise<void>;
+  classLiveAnswer(choice: number): Promise<void>;
+  classLiveState(code: string): Promise<ClassLiveState>;
+  classLiveCreate(classId: string, kind: 'quiz' | 'boss', subject: string, count: number, missionId?: string): Promise<string>;
+  classLiveStart(code: string): Promise<void>;
+  classLiveSkip(code: string): Promise<void>;
+  classLiveEnd(code: string): Promise<void>;
   /** Hides saved chat older than 30 days. Nothing is erased. Returns how many were hidden. */
   senseiChatClearOld(): Promise<number>;
   /** Demo mode only: adds a practice buddy so a game can start without a second device. */

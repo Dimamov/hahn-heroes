@@ -1125,3 +1125,39 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .tile-art { width: min(15vw, 8.5vh); aspect-ratio: 1; object-fit: contain; filter: drop-shadow(0 0 8px var(--tint, #8b5cff)); pointer-events: none; }
 @media (max-height: 480px) and (orientation: landscape) { .tile-art { width: 10vh; } }
 @media (max-height: 480px) and (orientation: landscape) { .folder-art { width: 14vh; } }
+
+/* Live class (Chromebook friendly: wide layout, keyboard answers) */
+.screen.live { overflow-y: auto; }
+.screen.wide { max-width: 1280px; }
+.btn.big { min-height: 72px; font-size: 1.5rem; padding: 0 28px; }
+.live-join, .live-setup { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 8px 0 24px; }
+.live-setup { align-items: stretch; text-align: left; max-width: 760px; margin: 0 auto; width: 100%; }
+.live-setup h4 { margin: 8px 0 0; }
+.live-setup .chips, .live-join .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.live-setup .chips { justify-content: flex-start; }
+.live-code { width: 8ch; min-height: 72px; text-align: center; font: 900 2.6rem 'Baloo 2', 'Nunito', system-ui; letter-spacing: .15em; border-radius: 18px; border: 3px solid var(--violet); background: var(--panel); color: var(--text); text-transform: uppercase; }
+.live-code-big { font: 900 clamp(4rem, 14vw, 9rem) 'Baloo 2', 'Nunito', system-ui; letter-spacing: .2em; padding: 0 .2em; border-radius: 28px; background: var(--panel); border: 4px solid var(--cyan); color: var(--cyan); text-shadow: 0 0 24px #22d3ee88; }
+.live-banner { width: 100%; min-height: 60px; border-radius: 18px; background: linear-gradient(135deg, var(--magenta), var(--violet)); font: 800 1.1rem 'Baloo 2', 'Nunito', system-ui; box-shadow: 0 0 22px #ff3fa488; animation: livepulse 1.6s ease-in-out infinite; }
+@keyframes livepulse { 50% { transform: scale(1.025); } }
+.live-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .live-grid { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; } .live-choices { grid-template-columns: 1fr 1fr; } }
+.live-choices { display: grid; gap: 12px; margin: 14px 0; }
+.live-choice { display: flex; align-items: center; gap: 14px; min-height: 84px; position: relative; overflow: hidden; font-size: clamp(1.15rem, 2.4vw, 1.6rem); }
+.live-choice > span { position: relative; z-index: 1; }
+.live-choice .key { flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--violet); color: #fff; font-size: 1.3rem; position: relative; z-index: 1; }
+.live-count { position: absolute; left: 0; bottom: 0; height: 8px; background: var(--cyan); transition: width .5s; }
+.live-count em { position: absolute; right: -2px; bottom: 10px; font-style: normal; font-weight: 900; color: var(--text); }
+.live-main .big-q { font-size: clamp(1.4rem, 3.2vw, 2.4rem); line-height: 1.25; }
+.live-board { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 520px; }
+.live-board li { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 14px; background: var(--panel-2); font-weight: 800; }
+.live-board li.me { border: 2px solid var(--cyan); }
+.live-board .rank { width: 30px; text-align: center; }
+.live-board .nm { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.live-board .pts { color: var(--cyan); }
+.live-board.big li { padding: 10px 14px; font-size: 1.2rem; }
+.boss-bar { display: flex; align-items: center; gap: 14px; margin: 10px 0; padding: 10px 14px; border-radius: 18px; background: var(--panel); border: 2px solid var(--danger); }
+.boss-face { font-size: 3rem; line-height: 1; }
+.boss-bar.beaten .boss-face { filter: grayscale(1); }
+.boss-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.boss-track { height: 20px; border-radius: 10px; background: #0007; overflow: hidden; }
+.boss-track i { display: block; height: 100%; background: linear-gradient(90deg, #ff5c7a, #fbbf24); transition: width .6s ease-out; }
