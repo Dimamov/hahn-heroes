@@ -30,6 +30,7 @@ export const DESTINATIONS: Destination[] = [
   { id: 'race', label: 'Class Race', icon: '🏁', tint: '#38bdf8', blurb: 'Which class earns the most points this month?', milestone: 'Events' },
   { id: 'quest', label: 'Daily Quest', icon: '🎯', tint: '#f59e0b', blurb: 'Three tasks a day and a streak that grows.', milestone: 'Rewards' },
   { id: 'missions', label: 'Missions', icon: '📋', tint: '#22d3ee', blurb: 'Home missions from your grown-up and class missions from your teacher.', milestone: 'Parents, teachers and the Sensei' },
+  { id: 'classlive', label: 'Live class', icon: '🏫', tint: '#8b5cff', blurb: 'Quiz battles and boss fights with your whole class.', milestone: 'Teachers' },
   { id: 'hero', label: 'My Hero', icon: '🦸', tint: '#a78bfa', blurb: 'Wardrobe, shop and skills for your hero.', milestone: 'Collections' },
   { id: 'room', label: 'My Room', icon: '🛏️', tint: '#34d399', blurb: 'Decorate your dorm room and invite friends to visit.', milestone: 'Collections' },
   { id: 'nexlings', label: 'Nexlings', icon: '🐾', tint: '#fbbf24', blurb: 'Pick a Nexling companion and watch it grow.', milestone: 'Collections' },

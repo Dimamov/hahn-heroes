@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { ClassLiveOpen } from '../lib/backend.ts';
 import { useSession } from '../App.tsx';
 import { Pager } from '../components/Pager.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
@@ -10,6 +11,14 @@ const TILE_ART: Record<string, string> = { arcade: '/assets/ui/nav-arcade.webp',
 export function Home() {
   const { hero, balances, dailyAvailable, unread, missionDot, arcadeDot, questDot, backend, refresh, go } = useSession();
   const [popped, setPopped] = useState<number | null>(null);
+  const [live, setLive] = useState<ClassLiveOpen | null>(null);
+  useEffect(() => {
+    let stop = false;
+    const look = () => backend.classLiveOpen().then((o) => { if (!stop) setLive(o); }).catch(() => undefined);
+    void look();
+    const id = window.setInterval(look, 8000);
+    return () => { stop = true; window.clearInterval(id); };
+  }, [backend]);
 
   const claim = async () => {
     try {
@@ -38,6 +47,7 @@ export function Home() {
         {dailyAvailable && <i className="red-dot" aria-label="Reward waiting" />}
         {dailyAvailable ? '🎁 Collect your daily Nexus points' : '✅ Daily check-in collected'}
       </button>
+      {live && <button className="live-banner" onClick={() => go('classlive')}>{live.kind === 'boss' ? '🐲 Your class is fighting a boss! Tap to join' : '⚡ Your class quiz battle is live! Tap to join'}</button>}
       {popped !== null && <div className="pop" role="status">+{popped} 💎</div>}
       <WeekRecap />
 

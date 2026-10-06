@@ -931,6 +931,28 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiChatAiFlags() {
       return ((await rpc('sensei_chat_ai_flags')) as any[]).map((f) => ({ key: f.key, name: f.name, body: f.body, reason: f.reason, at: f.at }));
     },
+    async classLiveOpen() {
+      const r = (await rpc('class_live_open')) as any;
+      return r ? { code: r.code, kind: r.kind, state: r.state, joined: !!r.joined } : null;
+    },
+    async classLiveJoin(code) { return (await rpc('class_live_join', { p_code: code })) as string; },
+    async classLiveLeave() { await rpc('class_live_leave'); },
+    async classLiveAnswer(choice) { await rpc('class_live_answer', { p_choice: choice }); },
+    async classLiveState(code) {
+      const r = (await rpc('class_live_state', { p_code: code })) as any;
+      return {
+        code: r.code, role: r.role, kind: r.kind, state: r.state, phase: r.phase, idx: r.idx, total: r.total, className: r.class_name,
+        boss: r.boss ?? null, players: r.players ?? [], seconds: r.seconds, secondsLeft: r.seconds_left, question: r.question,
+        myChoice: r.my_choice ?? null, answered: r.answered, rightChoice: r.right_choice, explanation: r.explanation,
+        myPoints: r.my_points, myDamage: r.my_damage, classDamage: r.class_damage, choiceCounts: r.choice_counts, myReward: r.my_reward,
+      };
+    },
+    async classLiveCreate(classId, kind, subject, count, missionId) {
+      return (await rpc('class_live_create', { p_class: classId, p_kind: kind, p_subject: subject, p_count: count, p_mission: missionId ?? null })) as string;
+    },
+    async classLiveStart(code) { await rpc('class_live_start', { p_code: code }); },
+    async classLiveSkip(code) { await rpc('class_live_skip', { p_code: code }); },
+    async classLiveEnd(code) { await rpc('class_live_end', { p_code: code }); },
     async senseiChatOldCount() { return (await rpc('sensei_chat_old_count', { p_days: 30 })) as number; },
     async senseiChatClearOld() { return (await rpc('sensei_chat_clear_old', { p_days: 30 })) as number; },
     async senseiChatAiDismiss(key) {
