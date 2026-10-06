@@ -46,6 +46,7 @@ import type { SecretState } from './lib/backend.ts';
 import { Announcements, ClassMissions, HomeMissions, MissionsHome, ParentCode, Quiz } from './screens/Missions.tsx';
 import { ClassLive } from './screens/ClassLive.tsx';
 import { Quiet } from './screens/Quiet.tsx';
+import { Explore } from './screens/Explore.tsx';
 import { Squad } from './screens/Squad.tsx';
 import { House } from './screens/House.tsx';
 import { MyHero } from './screens/MyHero.tsx';
@@ -206,6 +207,7 @@ export default function App() {
       {screen === 'profile' && <Profile />}
       {screen === 'classlive' && <ClassLive />}
       {screen === 'quiet' && <Quiet />}
+      {screen === 'explore' && <Explore />}
       {screen === 'missions' && <MissionsHome />}
       {screen === 'missions-home' && <HomeMissions />}
       {screen === 'missions-class' && <ClassMissions />}
@@ -267,7 +269,7 @@ export default function App() {
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
       {screen === 'notifications' && <Notifications />}
-      {!['home', 'profile', 'missions', 'classlive', 'quiet', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'badges', 'treasure', 'base', 'studio', 'race', 'kindness', 'privacy', 'voice', 'goofy', 'notifications', 'notifications', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
+      {!['home', 'profile', 'missions', 'classlive', 'quiet', 'explore', 'missions-home', 'missions-class', 'announcements', 'parentcode', 'learn', 'arcade', 'squad', 'house', 'hero', 'room', 'nexlings', 'cards', 'adventures', 'quest', 'showcase', 'guide', 'myweek', 'raid', 'secret', 'stickers', 'comics', 'contest', 'codes', 'badges', 'treasure', 'base', 'studio', 'race', 'kindness', 'privacy', 'voice', 'goofy', 'notifications', 'notifications', 'donotpress'].includes(screen) && !screen.startsWith('game:') && !quizId && !practiceSubject && <Destination id={screen} />}
     </SessionContext.Provider>
   );
 }
