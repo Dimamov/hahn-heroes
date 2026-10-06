@@ -3,7 +3,7 @@ import { GameFrame, WinPanel } from './GameFrame.tsx';
 import { useSession } from '../App.tsx';
 import { beep } from '../lib/sound.ts';
 import {
-  DASH_WIN, GROUND, H, HERO_X, RUNNERS, TRAILS, W, heroHeight, jump, newState, onGround, score, slide, step, unlocked,
+  DASH_WIN, GROUND, H, HERO_W, HERO_X, RUNNERS, TRAILS, W, heroHeight, jump, newState, onGround, score, slide, step, unlocked,
   type DashState, type RunnerId, type TrailId,
 } from '../lib/dash.ts';
 
@@ -49,7 +49,7 @@ export function NexusDash() {
       const hh = heroHeight(s);
       sparks.current.push({ x: HERO_X, y: s.bottom - hh / 2, age: 0, seed: Math.random() });
       sparks.current = sparks.current.filter((p) => (p.age += dt) < 0.5);
-      draw(ctx, s, sparks.current, saved.trail, runner.icon, now / 1000);
+      draw(ctx, s, sparks.current, saved.trail, runner.id, now / 1000);
       if (s.over) {
         const sc = score(s);
         const before = saved.best;
@@ -137,7 +137,7 @@ export function NexusDash() {
   );
 }
 
-function draw(ctx: CanvasRenderingContext2D, s: DashState, sparks: Spark[], trail: TrailId, icon: string, t: number) {
+function draw(ctx: CanvasRenderingContext2D, s: DashState, sparks: Spark[], trail: TrailId, runnerId: RunnerId, t: number) {
   ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
   const g = ctx.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, s.surge > 0 ? '#3b1d6e' : '#1b1650'); g.addColorStop(1, '#0b0a24');
@@ -176,15 +176,13 @@ function draw(ctx: CanvasRenderingContext2D, s: DashState, sparks: Spark[], trai
     else { ctx.font = '7px system-ui'; ctx.textBaseline = 'bottom'; ctx.fillText(p.kind === 'shield' ? '🛡️' : '⚡', p.x - 1, p.bottom + 1); }
   }
 
-  // hero: bobs while running, squashes while sliding
+  // hero: drawn here (not an emoji, whose facing differs by phone) so every runner faces right, the way the track moves
   const hh = heroHeight(s);
-  const bob = onGround(s) && s.slide <= 0 ? Math.abs(Math.sin(t * 14)) * 1.5 : 0;
+  const running = onGround(s) && s.slide <= 0;
   ctx.save();
-  ctx.translate(HERO_X + 3, s.bottom - bob);
-  if (s.slide > 0) ctx.scale(1.3, 0.55);
+  ctx.translate(HERO_X + HERO_W / 2, s.bottom);
   if (s.flash > 0 || s.surge > 0) ctx.globalAlpha = 0.65 + 0.35 * Math.sin(t * 12);
-  ctx.font = '13px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-  ctx.fillText(icon, 0, 1);
+  drawRunner(ctx, runnerId, hh, running, s.slide > 0, t);
   ctx.restore();
   if (s.shield) { ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(HERO_X + 3, s.bottom - hh / 2, 9, 0, 7); ctx.stroke(); }
 
@@ -193,4 +191,40 @@ function draw(ctx: CanvasRenderingContext2D, s: DashState, sparks: Spark[], trai
   ctx.fillText(`${score(s)}`, 4, 3);
   ctx.textAlign = 'right';
   ctx.fillText(`${s.shield ? '🛡️ ' : ''}${s.surge > 0 ? '⚡' + Math.ceil(s.surge) : ''}`, W - 4, 3);
+}
+
+/** A small runner facing right. (0, 0) is the middle of the feet; the body is about `h` tall and 6 wide. */
+function drawRunner(ctx: CanvasRenderingContext2D, id: RunnerId, h: number, running: boolean, sliding: boolean, t: number) {
+  const look = {
+    runner: { body: '#38bdf8', head: '#fcd9b6', accent: '#f43f5e' },
+    fox: { body: '#fb923c', head: '#fdba74', accent: '#fff7ed' },
+    ninja: { body: '#1f2937', head: '#1f2937', accent: '#ef4444' },
+    robot: { body: '#94a3b8', head: '#cbd5e1', accent: '#22d3ee' },
+  }[id];
+  // legs swing while running, tuck while jumping, and the whole body lies flat while sliding
+  const swing = running ? Math.sin(t * 16) * 2 : 0;
+  if (sliding) {
+    ctx.fillStyle = look.body; ctx.fillRect(-4, -h, 9, h);
+    ctx.fillStyle = look.head; ctx.fillRect(2, -h, 4, h - 1);
+    ctx.fillStyle = look.accent; ctx.fillRect(4, -h + 1, 1.2, 1.2);
+    return;
+  }
+  const legTop = -h * 0.35;
+  ctx.strokeStyle = look.body; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-0.6, legTop); ctx.lineTo(-0.6 + swing, running ? -0.3 : -1.5);
+  ctx.moveTo(0.8, legTop); ctx.lineTo(0.8 - swing, running ? -0.3 : -3);
+  ctx.stroke();
+  // body leans a little forward (to the right)
+  ctx.fillStyle = look.body;
+  ctx.beginPath(); ctx.moveTo(-2, legTop); ctx.lineTo(2.4, legTop); ctx.lineTo(2.9, -h * 0.72); ctx.lineTo(-1.6, -h * 0.72); ctx.closePath(); ctx.fill();
+  // head, looking right
+  const hy = -h * 0.72 - 2.4;
+  ctx.fillStyle = look.head; ctx.beginPath(); ctx.arc(1.4, hy, 2.6, 0, 7); ctx.fill();
+  ctx.fillStyle = look.accent;
+  if (id === 'runner') { ctx.fillRect(-1.6, hy - 1.6, 5.8, 1); ctx.fillRect(-3, hy - 1.2, 1.6, 0.8); }
+  if (id === 'fox') { ctx.fillStyle = look.head; ctx.beginPath(); ctx.moveTo(-0.2, hy - 1.5); ctx.lineTo(0.2, hy - 4.6); ctx.lineTo(1.6, hy - 2.2); ctx.fill(); ctx.beginPath(); ctx.moveTo(2, hy - 2); ctx.lineTo(3.3, hy - 4.4); ctx.lineTo(3.8, hy - 1.2); ctx.fill(); ctx.fillStyle = look.body; ctx.fillRect(-4.2, legTop - 1 + swing * 0.3, 2.6, 1.4); ctx.fillStyle = look.accent; ctx.fillRect(-4.2, legTop - 1 + swing * 0.3, 0.8, 1.4); ctx.fillStyle = '#111'; ctx.fillRect(3.4, hy - 0.2, 1, 1); }
+  if (id === 'ninja') { ctx.fillStyle = '#e5e7eb'; ctx.fillRect(1.2, hy - 0.8, 3, 1.2); ctx.fillStyle = look.accent; ctx.fillRect(-3.2, hy - 0.6 + swing * 0.2, 2.2, 0.8); }
+  if (id === 'robot') { ctx.fillRect(2.6, hy - 0.6, 1.6, 1.2); ctx.fillStyle = look.accent; ctx.fillRect(1.2, hy - 4.4, 0.7, 1.8); ctx.beginPath(); ctx.arc(1.55, hy - 4.6, 0.8, 0, 7); ctx.fill(); }
+  if (id === 'runner') { ctx.fillStyle = '#111'; ctx.fillRect(3, hy - 0.2, 0.9, 0.9); }
 }
