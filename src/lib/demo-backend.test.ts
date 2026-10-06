@@ -1097,6 +1097,19 @@ describe('demo backend: grown-ups and missions', () => {
     });
   });
 
+  describe('game thumbs', () => {
+    it('keeps a thumbs-up per hero and lets it be taken back', async () => {
+      const b = make();
+      await b.signUp(input);
+      expect(await b.gameThumbs()).toEqual([]);
+      await b.gameThumb('odin', true);
+      await b.gameThumb('jam', true);
+      expect(await b.gameThumbs()).toEqual(['odin', 'jam']);
+      await b.gameThumb('odin', false);
+      expect(await b.gameThumbs()).toEqual(['jam']);
+    });
+  });
+
   describe('email help', () => {
     it('saves the address, caps repeats, and the Sensei closes every request from it', async () => {
       const b = make();

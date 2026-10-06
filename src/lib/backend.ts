@@ -213,6 +213,11 @@ export interface UsageReport {
   weeks: { week: string; kids: number }[];
   hours: { hour: number; minutes: number }[];
   subjects: { subject: string; answered: number; correct: number }[];
+  /** Thumbs-up per game id, all time. */
+  thumbs: Record<string, number>;
+  /** Kids by how many days they came this month, and how many came three days in a row at least once. */
+  streaks: { one: number; few: number; many: number; daily: number };
+  run3: number;
 }
 
 export interface SenseiTraffic {
@@ -754,6 +759,9 @@ export interface Backend {
   senseiUsageReport(back: number): Promise<UsageReport>;
   /** Games the Sensei has hidden from the Arcade (nothing is deleted). */
   hiddenGames(): Promise<string[]>;
+  /** The games this hero gave a thumbs-up. */
+  gameThumbs(): Promise<string[]>;
+  gameThumb(game: string, up: boolean): Promise<void>;
   senseiHideGame(id: string, hidden: boolean): Promise<void>;
   pendingTeachers(): Promise<PendingTeacher[]>;
   approveTeacher(id: string, approve: boolean): Promise<void>;

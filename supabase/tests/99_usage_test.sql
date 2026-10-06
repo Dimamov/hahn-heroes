@@ -47,7 +47,35 @@ begin
   assert hidden_games() = '[]'::jsonb, 'kids can read which games are hidden';
 end $$;
 
+-- Thumbs-up and streaks: totals only, a thumb can be taken back, and runs of three days are counted.
+do $$
+declare r jsonb; d date;
+begin
+  perform as_admin();
+  d := school_date();
+  delete from screen_use;
+  perform as_user(154);
+  perform game_thumb_set('odin', true);
+  perform expect_error($q$select game_thumb_set('Not A Game', true)$q$, 'not a game');
+  assert my_game_thumbs() = '["odin"]'::jsonb, 'my thumbs';
+  perform as_user(155); perform game_thumb_set('odin', true);
+  perform as_user(156); perform game_thumb_set('odin', true); perform game_thumb_set('odin', false);
+  perform as_user(154); assert my_game_thumbs() = '["odin"]'::jsonb, 'still mine';
+  perform as_user(156); assert my_game_thumbs() = '[]'::jsonb, 'taken back';
+  perform as_admin();
+  insert into screen_use (day, child, screen, opens, pings) values
+    (date_trunc('month', d)::date, u(154), 'learn', 1, 1), (date_trunc('month', d)::date + 1, u(154), 'learn', 1, 1), (date_trunc('month', d)::date + 2, u(154), 'learn', 1, 1),
+    (date_trunc('month', d)::date, u(155), 'learn', 1, 1), (date_trunc('month', d)::date + 3, u(155), 'learn', 1, 1);
+  perform as_user(4);
+  r := sensei_usage_report(0);
+  assert (r->'thumbs'->>'odin')::int = 2, 'two thumbs for odin: ' || r::text;
+  assert (r->>'run3')::int = 1, 'one kid with a three day run';
+  assert (r->'streaks'->>'few')::int >= 2, 'streak buckets';
+  assert r::text not ilike '%Use A%', 'no names';
+end $$;
+
 select as_admin();
+delete from game_thumbs;
 delete from screen_use;
 delete from traffic_pings where user_id in (u(154), u(155), u(156));
 delete from presence where user_id in (u(154), u(155), u(156));

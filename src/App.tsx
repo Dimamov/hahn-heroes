@@ -82,6 +82,7 @@ interface Session {
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
   go: (screen: string) => void;
+  screen: string;
 }
 const SessionContext = createContext<Session | null>(null);
 export const useSession = () => {
@@ -194,7 +195,7 @@ export default function App() {
     return <Welcome demo={backend.mode === 'demo'} onNew={() => setScreen('new')} onSignIn={() => setScreen('signin')} onAdult={() => setScreen('adult')} onPrivacy={() => setPrivacy(true)} />;
   }
 
-  const session: Session = { backend, hero, balances, dailyAvailable, unread, missionDot, arcadeDot, questDot, refresh, signOut, go: setScreen };
+  const session: Session = { backend, hero, balances, dailyAvailable, unread, missionDot, arcadeDot, questDot, refresh, signOut, go: setScreen, screen };
   const quizId = screen.startsWith('quiz:') ? screen.slice(5) : null;
   const practiceSubject = screen.startsWith('practice:') ? (screen.slice(9) as Subject) : null;
   return (
