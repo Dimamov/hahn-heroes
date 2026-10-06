@@ -977,3 +977,4 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
   .subjects.games .folder.subject em { grid-area: e; font-size: .78rem; align-self: start; }
 }
 .tile .red-dot { top: 4px; right: 6px; }
+.opicker .card.recap { max-height: 92vh; overflow-y: auto; }

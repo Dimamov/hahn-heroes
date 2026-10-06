@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSession } from '../App.tsx';
 import { Pager } from '../components/Pager.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
+import { WeekRecap } from '../components/WeekRecap.tsx';
 import { DESTINATIONS } from '../lib/destinations.ts';
 
 export function Home() {
@@ -36,6 +37,7 @@ export function Home() {
         {dailyAvailable ? '🎁 Collect your daily Nexus points' : '✅ Daily check-in collected'}
       </button>
       {popped !== null && <div className="pop" role="status">+{popped} 💎</div>}
+      <WeekRecap />
 
       <div className="home-pages">
         <Pager
