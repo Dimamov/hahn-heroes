@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { useSession } from '../App.tsx';
-import { Pager } from '../components/Pager.tsx';
+import { ScreenBar } from '../components/ScreenBar.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
 import { WeekRecap } from '../components/WeekRecap.tsx';
 import { DESTINATIONS } from '../lib/destinations.ts';
 
 const TILE_ART: Record<string, string> = { arcade: '/assets/ui/nav-arcade.webp', adventures: '/assets/ui/nav-adventures.webp', donotpress: '/assets/games/do-not-press.webp' };
 
+/** The six things kids reach for most. Everything else lives behind one big button. */
+const MAIN = ['learn', 'arcade', 'adventures', 'missions', 'hero', 'nexlings'];
+
 export function Home() {
   const { hero, balances, dailyAvailable, unread, missionDot, arcadeDot, questDot, backend, refresh, go } = useSession();
+  const [more, setMore] = useState(false);
   const [popped, setPopped] = useState<number | null>(null);
 
   const claim = async () => {
@@ -20,7 +24,25 @@ export function Home() {
     } catch { /* the badge stays; the child can tap again */ }
   };
 
-  const pages = Array.from({ length: Math.ceil(DESTINATIONS.length / 9) }, (_, i) => DESTINATIONS.slice(i * 9, i * 9 + 9));
+  const main = MAIN.map((id) => DESTINATIONS.find((d) => d.id === id)!).filter(Boolean);
+  const rest = DESTINATIONS.filter((d) => !MAIN.includes(d.id));
+  const tile = (d: (typeof DESTINATIONS)[number]) => (
+    <button key={d.id} className="tile" style={{ ['--tint' as string]: d.tint }} onClick={() => go(d.id)}>
+      {d.id === 'quest' && questDot && <i className="red-dot" aria-label="Quest rewards waiting" />}
+      {d.id === 'arcade' && arcadeDot && <i className="red-dot" aria-label="Arcade rewards waiting" />}
+      {d.id === 'missions' && missionDot && <i className="red-dot" aria-label="Missions waiting" />}
+      {TILE_ART[d.id] ? <img className="tile-art" src={TILE_ART[d.id]} alt="" draggable={false} /> : <span className="tile-icon" aria-hidden>{d.icon}</span>}
+      <span className="tile-label">{d.label}</span>
+    </button>
+  );
+  if (more) {
+    return (
+      <main className="screen">
+        <ScreenBar title="More to explore" onBack={() => setMore(false)} />
+        <div className="tiles more">{rest.map((d) => tile(d))}</div>
+      </main>
+    );
+  }
   return (
     <main className="screen home" style={{ backgroundImage: 'linear-gradient(180deg, rgba(11,10,36,.55), rgba(11,10,36,.96)), url(/assets/backgrounds/hahn-entrance-tall.webp)' }}>
       <header className="home-top">
@@ -41,23 +63,13 @@ export function Home() {
       {popped !== null && <div className="pop" role="status">+{popped} 💎</div>}
       <WeekRecap />
 
-      <div className="home-pages">
-        <Pager
-          pages={pages.map((list, p) => (
-            <div className="tiles" key={p}>
-              {list.map((d) => (
-                <button key={d.id} className="tile" style={{ ['--tint' as string]: d.tint }} onClick={() => go(d.id)}>
-                  {d.id === 'quest' && questDot && <i className="red-dot" aria-label="Quest rewards waiting" />}
-                  {d.id === 'arcade' && arcadeDot && <i className="red-dot" aria-label="Arcade rewards waiting" />}
-                  {d.id === 'missions' && missionDot && <i className="red-dot" aria-label="Missions waiting" />}
-                  {TILE_ART[d.id] ? <img className="tile-art" src={TILE_ART[d.id]} alt="" draggable={false} /> : <span className="tile-icon" aria-hidden>{d.icon}</span>}
-                  <span className="tile-label">{d.label}</span>
-                </button>
-              ))}
-            </div>
-          ))}
-        />
+      <div className="tiles big">
+        {main.map((d) => tile(d))}
       </div>
+      <button className="more-btn" onClick={() => setMore(true)}>
+        {questDot && <i className="red-dot" aria-label="Quest rewards waiting" />}
+        ✨ More to explore
+      </button>
     </main>
   );
 }
