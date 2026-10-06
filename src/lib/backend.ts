@@ -157,6 +157,22 @@ export interface ClassLiveState {
   choiceCounts?: Record<string, number>;
   myReward?: number;
 }
+export interface ClassGoal {
+  on: boolean;
+  classId: string;
+  className?: string;
+  targetDays?: number;
+  share?: number;
+  members?: number;
+  days?: { date: string; active: number; hit: boolean }[];
+  daysHit?: number;
+  met?: boolean;
+  role?: 'teacher' | 'student';
+  myDays?: number;
+  claimed?: boolean;
+  canClaim?: boolean;
+  reward?: number;
+}
 export interface ClassLiveOpen { code: string; kind: 'quiz' | 'boss'; state: 'lobby' | 'playing'; joined: boolean }
 
 export interface TriviaState {
@@ -795,6 +811,11 @@ export interface Backend {
   classLiveStart(code: string): Promise<void>;
   classLiveSkip(code: string): Promise<void>;
   classLiveEnd(code: string): Promise<void>;
+  // Class streak goal
+  classGoalStatus(classId?: string): Promise<ClassGoal | null>;
+  classGoalSet(classId: string, days: number, share: number): Promise<void>;
+  classGoalOff(classId: string): Promise<void>;
+  classGoalClaim(): Promise<number>;
   /** Hides saved chat older than 30 days. Nothing is erased. Returns how many were hidden. */
   senseiChatClearOld(): Promise<number>;
   /** Demo mode only: adds a practice buddy so a game can start without a second device. */

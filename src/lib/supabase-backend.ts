@@ -953,6 +953,17 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async classLiveStart(code) { await rpc('class_live_start', { p_code: code }); },
     async classLiveSkip(code) { await rpc('class_live_skip', { p_code: code }); },
     async classLiveEnd(code) { await rpc('class_live_end', { p_code: code }); },
+    async classGoalStatus(classId) {
+      const r = (await rpc('class_goal_status', { p_class: classId ?? null })) as any;
+      if (!r) return null;
+      return {
+        on: !!r.on, classId: r.class_id, className: r.class_name, targetDays: r.target_days, share: r.share, members: r.members,
+        days: r.days, daysHit: r.days_hit, met: r.met, role: r.role, myDays: r.my_days, claimed: r.claimed, canClaim: r.can_claim, reward: r.reward,
+      };
+    },
+    async classGoalSet(classId, days, share) { await rpc('class_goal_set', { p_class: classId, p_days: days, p_share: share }); },
+    async classGoalOff(classId) { await rpc('class_goal_off', { p_class: classId }); },
+    async classGoalClaim() { return ((await rpc('class_goal_claim')) as any).coins as number; },
     async senseiChatOldCount() { return (await rpc('sensei_chat_old_count', { p_days: 30 })) as number; },
     async senseiChatClearOld() { return (await rpc('sensei_chat_clear_old', { p_days: 30 })) as number; },
     async senseiChatAiDismiss(key) {
