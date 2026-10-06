@@ -19,6 +19,8 @@ const errText = (e: unknown) => {
   return "That didn't work. Please try again.";
 };
 
+const ICON: Record<string, string> = { S: 'skip', R: 'reverse', D: 'draw-two', W: 'wild', W4: 'wild-draw-four' };
+
 /** One card face. Colour is also spelled out so the game never depends on telling colours apart. */
 function Card({ card, dim, onClick, label }: { card: string; dim?: boolean; onClick?: () => void; label?: string }) {
   const f = cardFace(card);
@@ -26,7 +28,7 @@ function Card({ card, dim, onClick, label }: { card: string; dim?: boolean; onCl
   const inner = (
     <>
       <i>{isWild(card) ? '' : COLOR_NAMES[card[0] as OdinColor][0]}</i>
-      <b>{f.big}</b>
+      {ICON[card === 'W4' ? 'W4' : card === 'W' ? 'W' : card.slice(1)] ? <img className="ocard-icon" src={`/assets/games/odin-icon-${ICON[card === 'W4' ? 'W4' : card === 'W' ? 'W' : card.slice(1)]}.webp`} alt="" draggable={false} /> : <b>{f.big}</b>}
       <em>{f.small}</em>
     </>
   );

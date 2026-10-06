@@ -11,11 +11,12 @@ export interface HeroInfo {
 
 const LABELS: Record<StarterHeroId, string> = {
   ana: 'Ana', isabella: 'Isabella', anayah: 'Anayah', luna: 'Luna', kacee: 'Kacee',
-  g06: 'Hero 6', g07: 'Hero 7', g08: 'Hero 8', g09: 'Hero 9', g10: 'Hero 10',
+  g06: 'Midnight Hair', g07: 'Puffs', g08: 'Braid', g09: 'Ginger Curls', g10: 'Hijab',
   b01: 'Spiky Hair', b02: 'Fade', b03: 'Wavy Hair', b04: 'Swept Hair', b05: 'Freckles',
   b06: 'Neat Hair', b07: 'Twists', b08: 'Curls', b09: 'Long Hair', b10: 'Glasses',
 };
-const WITH_ART: readonly string[] = ['ana', 'isabella', 'anayah', 'luna', 'kacee'];
+// Every starter hero now has finished art; the template placeholder stays as a fallback.
+const WITH_ART: readonly string[] = STARTER_HERO_IDS;
 
 export const HEROES: HeroInfo[] = STARTER_HERO_IDS.map((id) => ({
   id,

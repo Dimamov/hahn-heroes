@@ -5,7 +5,7 @@ import { ParkActivity, PARK_GAMES, type ParkGame } from './NexlingPark.tsx';
 import { RIVALS, hidingSpots, isRaceDay, nextTreat, racePlace, raceProgress, rivalProgress } from '../lib/nexling-games.ts';
 
 type Game = null | 'feed' | 'hide' | 'race' | ParkGame;
-interface Pet { icon: string; name: string; color: string }
+interface Pet { icon: React.ReactNode; name: string; color: string }
 
 /** Three small games to play with your Nexling. They are just for fun: no points, no pressure. */
 export function NexlingPlay({ pet, onBack }: { pet: Pet; onBack: () => void }) {

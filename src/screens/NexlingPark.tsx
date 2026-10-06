@@ -3,7 +3,7 @@ import { ScreenBar } from '../components/ScreenBar.tsx';
 import { beep } from '../lib/sound.ts';
 import { BEAT_MS, SCRUBS_NEEDED, SILLY_HATS, ballPos, beatOffset, danceJudge, fetchHit, FETCH_ZONE } from '../lib/nexling-games.ts';
 
-export interface ParkPet { icon: string; name: string; color: string }
+export interface ParkPet { icon: React.ReactNode; name: string; color: string }
 export type ParkGame = 'bath' | 'hats' | 'dance' | 'fetch';
 
 export const PARK_GAMES: { id: ParkGame; label: string }[] = [

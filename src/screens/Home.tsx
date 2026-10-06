@@ -5,6 +5,8 @@ import { HeroArt } from '../components/HeroArt.tsx';
 import { WeekRecap } from '../components/WeekRecap.tsx';
 import { DESTINATIONS } from '../lib/destinations.ts';
 
+const TILE_ART: Record<string, string> = { arcade: '/assets/ui/nav-arcade.webp', adventures: '/assets/ui/nav-adventures.webp', donotpress: '/assets/games/do-not-press.webp' };
+
 export function Home() {
   const { hero, balances, dailyAvailable, unread, missionDot, arcadeDot, questDot, backend, refresh, go } = useSession();
   const [popped, setPopped] = useState<number | null>(null);
@@ -48,7 +50,7 @@ export function Home() {
                   {d.id === 'quest' && questDot && <i className="red-dot" aria-label="Quest rewards waiting" />}
                   {d.id === 'arcade' && arcadeDot && <i className="red-dot" aria-label="Arcade rewards waiting" />}
                   {d.id === 'missions' && missionDot && <i className="red-dot" aria-label="Missions waiting" />}
-                  <span className="tile-icon" aria-hidden>{d.icon}</span>
+                  {TILE_ART[d.id] ? <img className="tile-art" src={TILE_ART[d.id]} alt="" draggable={false} /> : <span className="tile-icon" aria-hidden>{d.icon}</span>}
                   <span className="tile-label">{d.label}</span>
                 </button>
               ))}

@@ -3,9 +3,12 @@ import { GameFrame, WinPanel } from './GameFrame.tsx';
 import { beep } from '../lib/sound.ts';
 import { burst, centerOf, popup, shake } from '../lib/fx.ts';
 
-// Emoji stand in for the Nexus card art until it arrives.
-const FACES = ['⚡', '🔮', '🐺', '📖', '🏫', '🗝️'];
-const deal = () => [...FACES, ...FACES].map((f, i) => ({ f, id: i })).sort(() => Math.random() - 0.5);
+// Six random faces (Nexlings, eggs and seals) out of the eighteen drawings.
+const ALL = Array.from({ length: 18 }, (_, i) => String(i + 1).padStart(2, '0'));
+const deal = () => {
+  const faces = [...ALL].sort(() => Math.random() - 0.5).slice(0, 6);
+  return [...faces, ...faces].map((f, i) => ({ f, id: i })).sort(() => Math.random() - 0.5);
+};
 
 export function MemoryFlip() {
   const [round, setRound] = useState(0);
@@ -48,8 +51,8 @@ export function MemoryFlip() {
         {cards.map((c, i) => {
           const up = open.includes(i) || done.has(i);
           return (
-            <button key={c.id} ref={(el) => { els.current[i] = el; }} className={`mem-card${up ? ' up' : ''}${done.has(i) ? ' matched' : ''}`} onClick={() => flip(i)} aria-label={up ? c.f : 'Hidden card'}>
-              <span className="mem-inner"><span className="mem-back">✦</span><span className="mem-front">{c.f}</span></span>
+            <button key={c.id} ref={(el) => { els.current[i] = el; }} className={`mem-card${up ? ' up' : ''}${done.has(i) ? ' matched' : ''}`} onClick={() => flip(i)} aria-label={up ? `Card ${Number(c.f)}` : 'Hidden card'}>
+              <span className="mem-inner"><span className="mem-back"><img src="/assets/games/memory-back.webp" alt="" draggable={false} /></span><span className="mem-front"><img src={`/assets/games/memory-face-${c.f}.webp`} alt="" draggable={false} /></span></span>
             </button>
           );
         })}

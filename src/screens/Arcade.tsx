@@ -4,6 +4,8 @@ import { ScreenBar } from '../components/ScreenBar.tsx';
 import { Pager } from '../components/Pager.tsx';
 import type { ArcadeStatus } from '../lib/backend.ts';
 
+const TILE: Record<string, string> = { 'pattern-pulse': 'pattern-pulse', 'memory-flip': 'memory-flip', 'word-builder': 'word-builder', 'spot-difference': 'spot-diff', 'trivia-clash': 'trivia', odin: 'odin', 'shadow-signal': 'shadow-signal', 'squad-drawing': 'squad-drawing', 'escape-nexus': 'escape', 'word-rush': 'word-rush' };
+
 export const GAMES = [
   { id: 'pattern-pulse', label: 'Pattern Pulse', icon: '💡', reward: true },
   { id: 'memory-flip', label: 'Memory Flip', icon: '🃏', reward: true },
@@ -58,7 +60,7 @@ export function Arcade() {
                 return (
                   <button className="folder subject" key={g.id} onClick={() => go(`game:${g.id}`)}>
                     {isOpen(g) && <i className="red-dot" aria-label="Reward waiting" />}
-                    <span className="folder-icon" aria-hidden>{g.icon}</span>
+                    {TILE[g.id] ? <img className="folder-art" src={`/assets/games/game-tile-${TILE[g.id]}.webp`} alt="" draggable={false} /> : <span className="folder-icon" aria-hidden>{g.icon}</span>}
                     <b>{g.label}</b>
                     <em>{done ? '✅ Collected today' : g.reward ? '⭐ Daily reward' : TAGLINES[g.id] ?? 'Just for fun'}</em>
                   </button>

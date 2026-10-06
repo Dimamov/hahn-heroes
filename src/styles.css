@@ -1102,3 +1102,26 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .bigred img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; filter: drop-shadow(0 8px 0 #0006) drop-shadow(0 0 22px #ff3b3b88); }
 .bigred:active { transform: translateY(6px) scale(.97); box-shadow: none; }
 .bigred .siren-emoji { position: absolute; inset: 0; display: grid; place-items: center; font-size: 4rem; }
+.nex-pic { display: inline-block; width: 1em; height: 1em; object-fit: contain; vertical-align: middle; pointer-events: none; }
+.item-icon .nex-pic { width: 1.3em; height: 1.3em; }
+.nex-body .nex-pic, .park-pet .nex-pic { filter: drop-shadow(0 4px 8px #0008); }
+/* Finished art wiring (batch 02) */
+.folder-art { width: min(18vw, 8vh); flex: none; aspect-ratio: 1; object-fit: cover; border-radius: 16px; border: 2px solid #ffffff44; box-shadow: 0 0 14px #8b5cff88; pointer-events: none; }
+.tcard:has(.tcard-frame) { border-color: transparent; background: linear-gradient(160deg, #241a55, #120d2e); }
+.tcard-frame { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); object-fit: fill; pointer-events: none; z-index: 1; }
+.tcard > :not(.tcard-frame) { position: relative; z-index: 0; }
+.mem-back img, .mem-front img { width: 82%; height: 82%; object-fit: contain; pointer-events: none; }
+.mem-back img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; }
+.mem-back { padding: 0; background: none; }
+.mem-card.matched .mem-front { background: radial-gradient(circle at 30% 20%, #fde68a88, #b4530988 85%); }
+.ocard-icon { width: 58%; aspect-ratio: 1; object-fit: contain; filter: drop-shadow(0 2px 2px #0008); pointer-events: none; }
+.opile { background: url(/assets/games/odin-table.webp) center / cover; border-radius: 18px; }
+.rolecard { position: relative; }
+.role-art { width: 84px; height: 112px; object-fit: cover; border-radius: 10px; float: left; margin-right: 10px; }
+.game-hero.art.tall { width: min(40vw, 30vh); aspect-ratio: 2 / 3; }
+.game-hero.art.tall img { border-radius: 16px; }
+.nx-room { height: 14vh; max-height: 120px; border-radius: 14px; border: 2px solid #8b5cff66; background-size: cover; background-position: center; box-shadow: inset 0 -30px 30px #0b0a2499; flex: none; }
+@media (max-height: 480px) and (orientation: landscape) { .nx-room { display: none; } .role-art { width: 48px; height: 64px; } }
+.tile-art { width: min(15vw, 8.5vh); aspect-ratio: 1; object-fit: contain; filter: drop-shadow(0 0 8px var(--tint, #8b5cff)); pointer-events: none; }
+@media (max-height: 480px) and (orientation: landscape) { .tile-art { width: 10vh; } }
+@media (max-height: 480px) and (orientation: landscape) { .folder-art { width: 14vh; } }

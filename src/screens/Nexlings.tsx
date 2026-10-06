@@ -1,3 +1,4 @@
+import { NexlingPic } from '../components/NexlingPic.tsx';
 import { useCallback, useEffect, useState } from 'react';
 import { useSession } from '../App.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
@@ -51,7 +52,7 @@ export function Nexlings() {
   const form = (type: NexlingType, title: string, button: string) => (
     <main className="screen">
       <ScreenBar title={title} onBack={() => { setChoosing(null); setEditing(false); setError(''); }} />
-      <div className="nex-preview" style={{ borderColor: color }}><span style={{ fontSize: SIZES[0] }}>{type.icon}</span><b>{type.name}</b></div>
+      <div className="nex-preview" style={{ borderColor: color }}><span style={{ fontSize: SIZES[1] }}><NexlingPic type={type.id} egg /></span><b>{type.name}</b></div>
       <label className="field plain"><span>Give it a name</span><input value={name} maxLength={16} onChange={(e) => setName(e.target.value)} placeholder={type.name} /></label>
       <div className="chips" aria-label="Colour">
         {HOUSE_COLORS.map((c) => <button key={c} aria-label={c} className={`chip${color === c ? ' chosen' : ''}`} style={{ background: c, width: 36, height: 36, padding: 0 }} onClick={() => setColor(c)} />)}
@@ -72,14 +73,14 @@ export function Nexlings() {
         <p className="note">{mine ? 'A new Nexling starts as a Hatchling. Your points are safe.' : 'Every Nexling is a great partner. Each grows extra from a different kind of play.'}</p>
         <ItemGrid perPage={4} items={NEXLING_TYPES} empty="" render={(t) => (
           <button key={t.id} className="item-tile nex" onClick={() => { setChoosing(t); setName(''); setColor(HOUSE_COLORS[5]); }}>
-            <span className="item-icon">{t.icon}</span><b>{t.name}</b><small>Extra from {SOURCE_LABEL[t.bonus]}</small>
+            <span className="item-icon"><NexlingPic type={t.id} egg /></span><b>{t.name}</b><small>Extra from {SOURCE_LABEL[t.bonus]}</small>
           </button>
         )} />
       </main>
     );
   }
 
-  if (playing && mineType) return <NexlingPlay pet={{ icon: mineType.icon, name: mine.nickname, color: mine.color }} onBack={() => setPlaying(false)} />;
+  if (playing && mineType) return <NexlingPlay pet={{ icon: <NexlingPic type={mineType.id} stage={mine.stage} />, name: mine.nickname, color: mine.color }} onBack={() => setPlaying(false)} />;
   const stage = mine.stage;
   const lo = state.stages[stage - 1] ?? 0;
   const pct = mine.nextAt ? Math.min(100, Math.round(((mine.growth - lo) / (mine.nextAt - lo)) * 100)) : 100;
@@ -88,7 +89,7 @@ export function Nexlings() {
       <ScreenBar title="Nexlings" onBack={() => go('home')} />
       {evolved && <button className="evolve" onClick={() => setEvolved(null)}>🎉 {mine.nickname} grew into a {STAGE_NAMES[evolved - 1]}!</button>}
       <div className="nex-stage" style={{ borderColor: mine.color, boxShadow: `0 0 28px ${mine.color}66` }}>
-        <span className={`nex-body s${stage}`} style={{ fontSize: SIZES[stage - 1] }} aria-label={`${mineType?.name}, ${STAGE_NAMES[stage - 1]}`}>{mineType?.icon}</span>
+        <span className={`nex-body s${stage}`} style={{ fontSize: SIZES[stage - 1] }} aria-label={`${mineType?.name}, ${STAGE_NAMES[stage - 1]}`}>{mineType && <NexlingPic type={mineType.id} stage={stage} />}</span>
       </div>
       <b className="house-name" style={{ textAlign: 'center' }}>{mine.nickname}</b>
       <p className="muted" style={{ textAlign: 'center', margin: 0 }}>{mineType?.name} · Stage {stage}: {STAGE_NAMES[stage - 1]}</p>

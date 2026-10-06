@@ -127,6 +127,7 @@ export function EscapeNexus() {
         <b>⏱ {clock(view.secondsLeft)}</b>
         <div className="rush-timer"><i style={{ width: `${view.secondsTotal ? Math.min(100, (view.secondsLeft / view.secondsTotal) * 100) : 0}%` }} /></div>
       </div>
+      <div className="nx-room" style={{ backgroundImage: `url(/assets/games/escape-room-0${(view.players.length % 3) + 1}-wide.webp)` }} aria-hidden />
       <div className="nxsquad" aria-label="Squad seals">
         {view.players.map((p) => (
           <div key={p.i} className={`nxmate${p.me ? ' me' : ''}${p.done ? ' done' : ''}`}>
