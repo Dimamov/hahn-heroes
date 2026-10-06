@@ -131,12 +131,13 @@ export type JoinClassResult =
   | { ok: true; name: string }
   | { ok: false; error: 'invalid_code' | 'wrong_grade' | 'already_in_class' | 'too_many_tries' };
 
+export type ClassLiveKind = 'quiz' | 'boss' | 'mystery';
 export interface ClassLivePlayer { name: string; starter: string; score: number; correct: number; me: boolean; answered: boolean }
 /** One view of a live class game, for the teacher's big screen and for students. */
 export interface ClassLiveState {
   code: string;
   role: 'teacher' | 'student';
-  kind: 'quiz' | 'boss';
+  kind: ClassLiveKind;
   state: 'lobby' | 'playing' | 'done' | 'closed';
   phase: 'question' | 'reveal';
   idx: number;
@@ -175,7 +176,7 @@ export interface ClassGoal {
 }
 export interface PracticeAssignment { id: string; subject: string; target: number; due: string; done?: number; className?: string; students?: { name: string; done: number }[] }
 export interface StudentQuestion { id: string; prompt: string; status: 'pending' | 'approved' | 'rejected'; choices?: string[]; answer?: number; explanation?: string; by?: string }
-export interface ClassLiveOpen { code: string; kind: 'quiz' | 'boss'; state: 'lobby' | 'playing'; joined: boolean }
+export interface ClassLiveOpen { code: string; kind: ClassLiveKind; state: 'lobby' | 'playing'; joined: boolean }
 
 export interface TriviaState {
   date: string; // YYYY-MM-DD, school time
@@ -809,7 +810,7 @@ export interface Backend {
   classLiveLeave(): Promise<void>;
   classLiveAnswer(choice: number): Promise<void>;
   classLiveState(code: string): Promise<ClassLiveState>;
-  classLiveCreate(classId: string, kind: 'quiz' | 'boss', subject: string, count: number, missionId?: string): Promise<string>;
+  classLiveCreate(classId: string, kind: ClassLiveKind, subject: string, count: number, missionId?: string): Promise<string>;
   classLiveStart(code: string): Promise<void>;
   classLiveSkip(code: string): Promise<void>;
   classLiveEnd(code: string): Promise<void>;

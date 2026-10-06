@@ -1,0 +1,201 @@
+-- Mystery reveal: a third live class game. Every right answer uncovers a piece of a hidden picture and the class finishes it together.
+-- Built on the boss machinery: the 'health' is the number of right answers the class still needs.
+alter table public.class_sessions drop constraint class_sessions_kind_check;
+alter table public.class_sessions add constraint class_sessions_kind_check check (kind in ('quiz', 'boss', 'mystery'));
+
+create or replace function public.class_live_create(p_class uuid, p_kind text, p_subject text, p_count int, p_mission uuid default null) returns text
+language plpgsql security definer set search_path = public as $$
+declare v_code text; v_id uuid; v_try int := 0; v_n int := p_count; v_boss text;
+begin
+  if not teaches_class(p_class) then raise exception 'not your class'; end if;
+  if p_kind not in ('quiz', 'boss', 'mystery') then raise exception 'pick quiz, boss or mystery'; end if;
+  if p_subject not in ('mixed', 'math', 'vocab', 'reading', 'science') then raise exception 'pick a subject'; end if;
+  if p_mission is not null then
+    if not exists (select 1 from class_missions where id = p_mission and class_id = p_class) then raise exception 'that quiz is not in this class'; end if;
+    v_n := jsonb_array_length((select questions from class_missions where id = p_mission));
+  end if;
+  if v_n not between 3 and 20 then raise exception 'pick 3 to 20 questions'; end if;
+  update class_sessions set state = 'closed' where class_id = p_class and state in ('lobby', 'playing');
+  select id into v_boss from raid_bosses order by random() limit 1;
+  loop
+    v_code := (select string_agg(substr('ABCDEFGHJKLMNPRSTUVWXYZ', 1 + floor(random() * 23)::int, 1), '') from generate_series(1, 4));
+    begin
+      insert into class_sessions (class_id, kind, code, subject, mission_id, question_count, boss_id)
+      values (p_class, p_kind, v_code, p_subject, p_mission, v_n, case when p_kind = 'boss' then v_boss end) returning id into v_id;
+      exit;
+    exception when unique_violation then
+      v_try := v_try + 1;
+      if v_try > 20 then raise exception 'try again'; end if;
+    end;
+  end loop;
+  return v_code;
+end $$;
+
+create or replace function public.class_live_start(p_code text) returns void
+language plpgsql security definer set search_path = public as $$
+declare s class_sessions; v_rules jsonb := setting('class_live'); v_n int; v_players int; v_picked text[]; v_grade smallint;
+begin
+  select * into s from class_sessions where code = upper(trim(p_code)) and state = 'lobby' for update;
+  if s.id is null or not teaches_class(s.class_id) then raise exception 'no lobby with that code'; end if;
+  select count(*) into v_players from class_session_players where session_id = s.id and left_at is null;
+  if v_players < 1 then raise exception 'wait for at least one student'; end if;
+  select grade into v_grade from classes where id = s.class_id;
+  if s.mission_id is not null then
+    insert into class_session_questions (session_id, idx, mission_id, q_idx, seconds)
+    select s.id, i, s.mission_id, i, case when length(coalesce((select passage from class_missions where id = s.mission_id), '')) > 0
+                                         then (v_rules->>'reading_seconds')::int else (v_rules->>'seconds')::int end
+      from generate_series(0, s.question_count - 1) i;
+  else
+    select array_agg(id) into v_picked from (
+      select q.id from questions q
+       where q.active and q.grade = v_grade and (s.subject = 'mixed' or q.subject::text = s.subject)
+       order by random() limit s.question_count) x;
+    if coalesce(array_length(v_picked, 1), 0) < s.question_count then raise exception 'not enough questions for that choice'; end if;
+    insert into class_session_questions (session_id, idx, question_id, seconds)
+    select s.id, t.i - 1, t.id,
+           case when position(E'\n\n' in (select prompt from questions where id = t.id)) > 0
+                then (v_rules->>'reading_seconds')::int else (v_rules->>'seconds')::int end
+      from unnest(v_picked) with ordinality t(id, i);
+  end if;
+  v_n := s.question_count;
+  update class_sessions set state = 'playing', phase = 'question', idx = 0, phase_started_at = now(),
+         boss_max = case when kind = 'boss' then v_players * v_n * (v_rules->>'boss_hp_per_answer')::int when kind = 'mystery' then greatest(1, round(v_players * v_n * 0.7)::int) else 0 end,
+         boss_hp = case when kind = 'boss' then v_players * v_n * (v_rules->>'boss_hp_per_answer')::int when kind = 'mystery' then greatest(1, round(v_players * v_n * 0.7)::int) else 0 end
+   where id = s.id;
+end $$;
+
+create or replace function public.class_live_finish(p_session uuid) returns void
+language plpgsql security definer set search_path = public as $$
+declare s class_sessions; v_rules jsonb := setting('class_live'); p record; v_coins int; v_won boolean;
+begin
+  select * into s from class_sessions where id = p_session for update;
+  if s.rewarded then return; end if;
+  v_won := s.kind in ('boss', 'mystery') and s.boss_hp <= 0;
+  for p in select * from class_session_players where session_id = p_session loop
+    v_coins := 0;
+    if p.answered * 2 >= s.question_count then
+      if s.kind = 'quiz' then
+        v_coins := 5 + round(((v_rules->>'quiz_max_coins')::int - 5) * p.correct::numeric / s.question_count)::int;
+      else
+        v_coins := case when v_won then (v_rules->>'boss_win_coins')::int else (v_rules->>'boss_try_coins')::int end;
+      end if;
+    end if;
+    if v_coins > 0 then
+      perform award(p.child_id, 'coins', v_coins, 'class_mission', 'Live class', 'live:' || p_session);
+      perform award(p.child_id, 'xp', (v_rules->>'xp')::int, 'class_mission', 'Live class', 'live:' || p_session);
+    end if;
+  end loop;
+  update class_sessions set rewarded = true where id = p_session;
+end $$;
+
+create or replace function public.class_live_tick(p_session uuid) returns void
+language plpgsql security definer set search_path = public as $$
+declare s class_sessions; v_rules jsonb := setting('class_live'); v_secs int; v_active int; v_answered int; v_total int;
+begin
+  select * into s from class_sessions where id = p_session for update;
+  if s.state <> 'playing' then return; end if;
+  select count(*) into v_total from class_session_questions where session_id = p_session;
+  loop
+    select seconds into v_secs from class_session_questions where session_id = p_session and idx = s.idx;
+    select count(*) into v_active from class_session_players where session_id = p_session and left_at is null;
+    select count(*) into v_answered from class_session_answers a join class_session_players p on p.session_id = a.session_id and p.child_id = a.child_id
+     where a.session_id = p_session and a.idx = s.idx and p.left_at is null;
+    if s.phase = 'question' and (now() >= s.phase_started_at + make_interval(secs => v_secs) or (v_active > 0 and v_answered >= v_active)) then
+      update class_sessions set phase = 'reveal', phase_started_at = now() where id = p_session returning * into s;
+    elsif s.phase = 'reveal' and now() >= s.phase_started_at + make_interval(secs => (v_rules->>'reveal_seconds')::int) then
+      if s.idx + 1 >= v_total or (s.kind in ('boss', 'mystery') and s.boss_hp <= 0) then
+        update class_sessions set state = 'done' where id = p_session returning * into s;
+        perform class_live_finish(p_session);
+      else
+        update class_sessions set phase = 'question', idx = idx + 1, phase_started_at = now() where id = p_session returning * into s;
+      end if;
+    else
+      exit;
+    end if;
+    exit when s.state <> 'playing';
+  end loop;
+end $$;
+
+create or replace function public.class_live_answer(p_choice int) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  me uuid := me_hero(); s class_sessions; q jsonb; v_right boolean; v_points int := 0; v_damage int := 0; v_left numeric;
+begin
+  select cs.* into s from class_session_players p join class_sessions cs on cs.id = p.session_id
+   where p.child_id = me and p.left_at is null and cs.state = 'playing';
+  if s.id is null then raise exception 'you are not in a live game'; end if;
+  perform class_live_tick(s.id);
+  select * into s from class_sessions where id = s.id;
+  if s.state <> 'playing' or s.phase <> 'question' then return jsonb_build_object('late', true); end if;
+  if exists (select 1 from class_session_answers where session_id = s.id and idx = s.idx and child_id = me) then
+    return jsonb_build_object('repeat', true);
+  end if;
+  q := class_live_q(s.id, s.idx);
+  if p_choice is null or p_choice not between 0 and jsonb_array_length(q->'choices') - 1 then raise exception 'pick one of the choices'; end if;
+  v_right := p_choice = (q->>'answer')::int;
+  if v_right then
+    v_left := greatest(0, 1 - extract(epoch from now() - s.phase_started_at) / (q->>'seconds')::numeric);
+    v_points := 100 + floor(50 * v_left)::int;
+    if s.kind = 'boss' then v_damage := 10 + floor(10 * v_left)::int; elsif s.kind = 'mystery' then v_damage := 1; end if;
+  end if;
+  insert into class_session_answers (session_id, idx, child_id, choice, correct, points, damage)
+  values (s.id, s.idx, me, p_choice, v_right, v_points, v_damage);
+  update class_session_players set score = score + v_points, answered = answered + 1, correct = correct + case when v_right then 1 else 0 end
+   where session_id = s.id and child_id = me;
+  if v_damage > 0 then update class_sessions set boss_hp = greatest(0, boss_hp - v_damage) where id = s.id; end if;
+  perform class_live_tick(s.id);
+  return jsonb_build_object('accepted', true);
+end $$;
+
+create or replace function public.class_live_state(p_code text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  s class_sessions; v_rules jsonb := setting('class_live'); v_teacher boolean; v_q jsonb; v_out jsonb; v_boss raid_bosses; v_me uuid := auth.uid();
+begin
+  select * into s from class_sessions where code = upper(trim(p_code)) order by created_at desc limit 1;
+  if s.id is null then raise exception 'no live class with that code'; end if;
+  v_teacher := teaches_class(s.class_id);
+  if not v_teacher and not exists (select 1 from class_session_players where session_id = s.id and child_id = v_me) then
+    raise exception 'you are not in that game';
+  end if;
+  perform class_live_tick(s.id);
+  select * into s from class_sessions where id = s.id;
+  select * into v_boss from raid_bosses where id = s.boss_id;
+
+  v_out := jsonb_build_object(
+    'code', s.code, 'role', case when v_teacher then 'teacher' else 'student' end, 'kind', s.kind, 'state', s.state, 'phase', s.phase, 'idx', s.idx,
+    'total', s.question_count, 'class_name', (select name from classes where id = s.class_id),
+    'boss', case when s.kind = 'boss' then jsonb_build_object('name', v_boss.name, 'icon', v_boss.icon, 'hp', s.boss_hp, 'max', s.boss_max)
+                 when s.kind = 'mystery' then jsonb_build_object('name', 'Mystery picture', 'icon', '🖼️', 'hp', s.boss_hp, 'max', s.boss_max) end,
+    'players', coalesce((select jsonb_agg(jsonb_build_object(
+        'name', h.display_name, 'starter', h.starter_hero, 'score', p.score, 'correct', p.correct, 'me', p.child_id = v_me,
+        'answered', exists (select 1 from class_session_answers a where a.session_id = s.id and a.idx = s.idx and a.child_id = p.child_id))
+        order by p.score desc, h.display_name)
+      from class_session_players p join heroes h on h.id = p.child_id where p.session_id = s.id and p.left_at is null), '[]'::jsonb));
+
+  if s.state = 'playing' then
+    v_q := class_live_q(s.id, s.idx);
+    v_out := v_out || jsonb_build_object(
+      'seconds', (v_q->>'seconds')::int,
+      'seconds_left', greatest(0, ceil(case when s.phase = 'question'
+          then extract(epoch from s.phase_started_at + make_interval(secs => (v_q->>'seconds')::int) - now())
+          else extract(epoch from s.phase_started_at + make_interval(secs => (v_rules->>'reveal_seconds')::int) - now()) end))::int,
+      'question', jsonb_build_object('prompt', v_q->>'prompt', 'choices', v_q->'choices'),
+      'my_choice', (select choice from class_session_answers where session_id = s.id and idx = s.idx and child_id = v_me),
+      'answered', (select count(*) from class_session_answers a join class_session_players p on p.session_id = a.session_id and p.child_id = a.child_id
+                    where a.session_id = s.id and a.idx = s.idx and p.left_at is null));
+    if s.phase = 'reveal' then
+      v_out := v_out || jsonb_build_object('right_choice', (v_q->>'answer')::int, 'explanation', v_q->>'explanation',
+        'my_points', coalesce((select points from class_session_answers where session_id = s.id and idx = s.idx and child_id = v_me), 0),
+        'my_damage', coalesce((select damage from class_session_answers where session_id = s.id and idx = s.idx and child_id = v_me), 0),
+        'class_damage', (select coalesce(sum(damage), 0) from class_session_answers where session_id = s.id and idx = s.idx),
+        'choice_counts', (select coalesce(jsonb_object_agg(choice::text, n), '{}'::jsonb) from (
+            select choice, count(*) n from class_session_answers where session_id = s.id and idx = s.idx group by choice) c));
+    end if;
+  end if;
+  if s.state in ('done', 'closed') and not v_teacher then
+    v_out := v_out || jsonb_build_object('my_reward', coalesce((select sum(amount) from ledger_entries
+        where child_id = v_me and currency = 'coins' and idempotency_key = 'live:' || s.id), 0)::int);
+  end if;
+  return v_out;
+end $$;

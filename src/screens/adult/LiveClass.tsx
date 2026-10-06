@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import type { Backend, ClassInfo, ClassLiveState, ClassMissionResults } from '../../lib/backend.ts';
+import type { Backend, ClassInfo, ClassLiveKind, ClassLiveState, ClassMissionResults } from '../../lib/backend.ts';
 import { ScreenBar } from '../../components/ScreenBar.tsx';
 import { ClassGoalCard } from '../../components/ClassGoalCard.tsx';
-import { Board, BossBar, TimerBar, letter } from '../../components/LiveParts.tsx';
+import { Board, BossBar, MysteryPicture, TimerBar, letter } from '../../components/LiveParts.tsx';
 
 const SUBJECTS: [string, string][] = [['mixed', 'Mixed'], ['math', 'Math'], ['vocab', 'Words'], ['reading', 'Reading'], ['science', 'Science']];
 
@@ -10,7 +10,7 @@ const SUBJECTS: [string, string][] = [['mixed', 'Mixed'], ['math', 'Math'], ['vo
 export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: ClassInfo; onBack: () => void }) {
   const [code, setCode] = useState<string | null>(null);
   const [st, setSt] = useState<ClassLiveState | null>(null);
-  const [kind, setKind] = useState<'quiz' | 'boss'>('quiz');
+  const [kind, setKind] = useState<ClassLiveKind>('quiz');
   const [subject, setSubject] = useState('mixed');
   const [count, setCount] = useState(10);
   const [mission, setMission] = useState('');
@@ -46,8 +46,9 @@ export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: Cla
           <div className="seg">
             <button className={kind === 'quiz' ? 'chosen' : ''} onClick={() => setKind('quiz')}>⚡ Quiz battle</button>
             <button className={kind === 'boss' ? 'chosen' : ''} onClick={() => setKind('boss')}>🐲 Boss battle</button>
+            <button className={kind === 'mystery' ? 'chosen' : ''} onClick={() => setKind('mystery')}>🖼️ Mystery</button>
           </div>
-          <p className="hint">{kind === 'quiz' ? 'Everyone races on the same questions. Faster right answers score more.' : 'The whole class fights one boss together. Every right answer hurts it.'}</p>
+          <p className="hint">{kind === 'quiz' ? 'Everyone races on the same questions. Faster right answers score more.' : kind === 'boss' ? 'The whole class fights one boss together. Every right answer hurts it.' : 'Every right answer uncovers a piece of a hidden picture. The class finishes it together.'}</p>
           <h4>Subject</h4>
           <div className="chips">{SUBJECTS.map(([k, l]) => <button key={k} className={`chip${subject === k && !mission ? ' chosen' : ''}`} onClick={() => { setSubject(k); setMission(''); }}>{l}</button>)}</div>
           {missions.length > 0 && (
@@ -74,7 +75,7 @@ export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: Cla
   if (st.state === 'lobby') {
     return (
       <main className="screen live wide">
-        <ScreenBar title={st.kind === 'boss' ? 'Boss battle' : 'Quiz battle'} onBack={end} />
+        <ScreenBar title={st.kind === 'boss' ? 'Boss battle' : st.kind === 'mystery' ? 'Mystery reveal' : 'Quiz battle'} onBack={end} />
         <div className="live-join">
           <p className="hint">On your Chromebook, open HAHN Heroes and tap the live class button, or type this code:</p>
           <div className="live-code-big" aria-label="Game code">{st.code}</div>
@@ -97,7 +98,7 @@ export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: Cla
         <ScreenBar title="Live class" onBack={onBack} />
         <div className="live-join">
           <div className="soon-icon win-burst" aria-hidden>🏆</div>
-          <h3>{boss ? (won ? `The class beat ${boss.name}!` : `${boss.name} got away this time`) : 'Quiz battle over!'}</h3>
+          <h3>{st.kind === 'mystery' ? (won ? 'The class uncovered the whole picture!' : 'The picture stayed a mystery') : boss ? (won ? `The class beat ${boss.name}!` : `${boss.name} got away this time`) : 'Quiz battle over!'}</h3>
           <Board players={st.players} limit={10} big />
           <button className="btn primary" onClick={() => { setCode(null); setSt(null); }}>Run another</button>
         </div>
@@ -113,7 +114,7 @@ export function LiveClass({ backend, cls, onBack }: { backend: Backend; cls: Cla
     <main className="screen live wide">
       <ScreenBar title={`Question ${st.idx + 1}/${st.total}`} onBack={end} right={<b className="note pill">⏱ {st.secondsLeft ?? 0}s</b>} />
       <TimerBar state={st} />
-      {boss && <BossBar boss={boss} />}
+      {boss && (st.kind === 'mystery' ? <MysteryPicture code={st.code} boss={boss} /> : <BossBar boss={boss} />)}
       <div className="live-grid">
         <section className="live-main">
           <h3 className="question big-q">{q.prompt}</h3>

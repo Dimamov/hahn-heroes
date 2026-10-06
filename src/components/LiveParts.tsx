@@ -49,3 +49,32 @@ export function TimerBar({ state }: { state: ClassLiveState }) {
     </div>
   );
 }
+
+const PICTURES = ['/assets/games/escape-room-01-wide.webp', '/assets/games/escape-room-02-wide.webp', '/assets/games/escape-room-03-wide.webp', '/assets/games/game-tile-trivia.webp', '/assets/games/game-tile-escape.webp', '/assets/games/game-tile-pattern-pulse.webp'];
+const COLS = 5, ROWS = 4;
+const seed = (code: string) => [...code].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+/** A deterministic shuffle so every screen uncovers the same tiles in the same order. */
+const tileOrder = (code: string): number[] => {
+  let x = seed(code) || 1;
+  const rnd = () => { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; };
+  const a = Array.from({ length: COLS * ROWS }, (_, i) => i);
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+};
+
+/** The hidden picture. Every right answer from the class uncovers more of it. */
+export function MysteryPicture({ code, boss }: { code: string; boss: NonNullable<ClassLiveState['boss']> }) {
+  const done = boss.max ? 1 - boss.hp / boss.max : 0;
+  const open = boss.hp <= 0 ? COLS * ROWS : Math.floor(done * COLS * ROWS);
+  const order = tileOrder(code);
+  const shown = new Set(order.slice(0, open));
+  const pic = PICTURES[seed(code) % PICTURES.length];
+  return (
+    <div className="mystery" role="img" aria-label={`Mystery picture, ${Math.round(done * 100)} percent uncovered`}>
+      <img src={pic} alt="" draggable={false} />
+      <div className="mystery-grid" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}>
+        {Array.from({ length: COLS * ROWS }, (_, i) => <i key={i} className={shown.has(i) ? 'open' : ''}>{shown.has(i) ? '' : '?'}</i>)}
+      </div>
+    </div>
+  );
+}

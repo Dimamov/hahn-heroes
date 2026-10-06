@@ -2,10 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useSession } from '../App.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
 import { ClassGoalCard } from '../components/ClassGoalCard.tsx';
-import { Board, BossBar, TimerBar, letter } from '../components/LiveParts.tsx';
+import { Board, BossBar, MysteryPicture, TimerBar, letter } from '../components/LiveParts.tsx';
 import type { ClassLiveOpen, ClassLiveState } from '../lib/backend.ts';
 import { beep } from '../lib/sound.ts';
 import { burst, centerOf, flashEdge, popup, shake } from '../lib/fx.ts';
+
+const KIND_TITLE = { quiz: 'Quiz battle', boss: 'Boss battle', mystery: 'Mystery reveal' } as const;
+const KIND_ICON = { quiz: '⚡', boss: '🐲', mystery: '🖼️' } as const;
 
 const errText = (e: unknown) => {
   const m = e instanceof Error ? e.message : '';
@@ -68,7 +71,7 @@ export function ClassLive() {
     const c = centerOf(document.querySelector('.live-choices'));
     if ((st.myPoints ?? 0) > 0) {
       burst(c.x, c.y, '#4ade80', 20, 110);
-      popup(c.x, c.y, st.kind === 'boss' ? `-${st.myDamage} HP` : `+${st.myPoints}`, '#4ade80', true);
+      popup(c.x, c.y, st.kind === 'boss' ? `-${st.myDamage} HP` : st.kind === 'mystery' ? 'Piece found!' : `+${st.myPoints}`, '#4ade80', true);
       beep(784, 160, 'triangle');
     } else { shake(document.querySelector('.live-choices'), 5); flashEdge(); beep(200, 250, 'sawtooth'); }
   }, [revealKey]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -83,7 +86,7 @@ export function ClassLive() {
         <div className="live-join">
           <div className="soon-icon" aria-hidden>🏫</div>
           {open === undefined ? <div className="spinner" /> : open
-            ? <button className="btn primary big" onClick={() => join(open.code)}>{open.kind === 'boss' ? '🐲 Join the boss battle' : '⚡ Join the quiz battle'}</button>
+            ? <button className="btn primary big" onClick={() => join(open.code)}>{open.kind === 'boss' ? '🐲 Join the boss battle' : open.kind === 'mystery' ? '🖼️ Join the mystery' : '⚡ Join the quiz battle'}</button>
             : <p className="hint">Your teacher has not started a live game yet. When they do, a big button shows up here and on Home.</p>}
           <p className="hint">Or type the code from the screen</p>
           <input className="live-code" value={typed} maxLength={4} autoCapitalize="characters" aria-label="Class code" onChange={(e) => setTyped(e.target.value.toUpperCase())} />
@@ -99,9 +102,9 @@ export function ClassLive() {
   if (st.state === 'lobby') {
     return (
       <main className="screen live wide">
-        <ScreenBar title={st.kind === 'boss' ? 'Boss battle' : 'Quiz battle'} onBack={leave} />
+        <ScreenBar title={KIND_TITLE[st.kind]} onBack={leave} />
         <div className="live-join">
-          <div className="soon-icon" aria-hidden>{st.kind === 'boss' ? '🐲' : '⚡'}</div>
+          <div className="soon-icon" aria-hidden>{KIND_ICON[st.kind]}</div>
           <h3>You are in!</h3>
           <p className="hint">Waiting for your teacher to start. {st.players.length} {st.players.length === 1 ? 'hero is' : 'heroes are'} here.</p>
           <div className="chips">{st.players.map((p, i) => <span key={i} className={`chip${p.me ? ' chosen' : ''}`}>{p.name}</span>)}</div>
@@ -116,7 +119,8 @@ export function ClassLive() {
         <ScreenBar title="Live class" onBack={() => go('home')} />
         <div className="live-join">
           <div className="soon-icon win-burst" aria-hidden>{boss ? (won ? '🏆' : boss.icon) : '🏆'}</div>
-          <h3>{boss ? (won ? `Your class beat ${boss.name}!` : `${boss.name} got away this time`) : 'Quiz battle over!'}</h3>
+          <h3>{st.kind === 'mystery' ? (won ? 'Your class uncovered the whole picture!' : 'The picture stayed a mystery this time') : boss ? (won ? `Your class beat ${boss.name}!` : `${boss.name} got away this time`) : 'Quiz battle over!'}</h3>
+          {st.kind === 'mystery' && boss && <MysteryPicture code={st.code} boss={{ ...boss, hp: won ? 0 : boss.hp }} />}
           {st.myReward !== undefined && <p className="hint">{st.myReward > 0 ? `+${st.myReward} 💎 Nexus points and some XP for the class!` : 'Answer at least half the questions to earn points next time.'}</p>}
           <Board players={st.players} limit={5} />
           <button className="btn primary" onClick={() => go('home')}>Back to Home</button>
@@ -131,7 +135,7 @@ export function ClassLive() {
     <main className="screen live wide">
       <ScreenBar title={`Question ${st.idx + 1}/${st.total}`} onBack={leave} right={<b className="note pill">⏱ {st.secondsLeft ?? 0}s</b>} />
       <TimerBar state={st} />
-      {boss && <BossBar boss={boss} />}
+      {boss && (st.kind === 'mystery' ? <MysteryPicture code={st.code} boss={boss} /> : <BossBar boss={boss} />)}
       <div className="live-grid">
         <section className="live-main">
           <h3 className="question">{q.prompt}</h3>
@@ -146,7 +150,7 @@ export function ClassLive() {
             })}
           </div>
           {reveal
-            ? <div className={`feedback ${(st.myPoints ?? 0) > 0 ? 'ok' : 'no'}`} role="status"><b>{(st.myPoints ?? 0) > 0 ? (st.kind === 'boss' ? `✅ Hit! -${st.myDamage} HP` : `✅ +${st.myPoints}`) : st.myChoice == null ? '⏰ Time ran out.' : '❌ Not quite.'}</b> {st.explanation}</div>
+            ? <div className={`feedback ${(st.myPoints ?? 0) > 0 ? 'ok' : 'no'}`} role="status"><b>{(st.myPoints ?? 0) > 0 ? (st.kind === 'boss' ? `✅ Hit! -${st.myDamage} HP` : st.kind === 'mystery' ? '✅ You uncovered a piece!' : `✅ +${st.myPoints}`) : st.myChoice == null ? '⏰ Time ran out.' : '❌ Not quite.'}</b> {st.explanation}</div>
             : <p className="note">{st.myChoice != null ? 'Answer locked in! Waiting for the class…' : 'Pick your answer. You can press A, B, C or D too.'}</p>}
         </section>
         <aside className="live-side"><Board players={st.players} limit={6} /></aside>
