@@ -40,7 +40,7 @@ export function Home() {
   );
   const img = (src: string) => <img src={src} alt="" draggable={false} />;
   return (
-    <main className="screen live home2">
+    <main className="screen home2">
       <section className="home-hero" style={{ backgroundImage: 'linear-gradient(180deg, rgba(11,10,36,.15), rgba(11,10,36,.9)), url(/assets/backgrounds/hahn-entrance-tall.webp)' }}>
         <header className="home-top">
           <button className="hero-chip level-chip" onClick={() => go('profile')} aria-label="My profile">
@@ -57,10 +57,10 @@ export function Home() {
           <h1>H.A.H.N.</h1>
           <small>Heroes Awakening: Hidden Nexus</small>
         </div>
+        {dailyAvailable && <button className="daily-pill" onClick={claim}><i className="red-dot" aria-label="Reward waiting" />🎁 Collect daily Nexus points</button>}
         <div className="home-squad" aria-hidden>{squad.map((id, n) => <span key={id} className={n === 2 ? 'lead' : ''}><HeroArt id={id} /></span>)}</div>
       </section>
 
-      {dailyAvailable && <button className="daily ready" onClick={claim}><i className="red-dot" aria-label="Reward waiting" />🎁 Collect your daily Nexus points</button>}
       {popped !== null && <div className="pop" role="status">+{popped} 💎</div>}
       <WeekRecap />
       {isQuiet() && <button className="live-banner quiet-banner" onClick={() => go('quiet')}>🤫 Quiet mode is on. Tap to change it</button>}

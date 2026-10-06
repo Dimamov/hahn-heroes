@@ -2,8 +2,8 @@ export function Welcome({ demo, onNew, onSignIn, onAdult, onPrivacy }: { demo: b
   return (
     <main className="screen welcome" style={{ backgroundImage: 'linear-gradient(180deg, rgba(11,10,36,.35), rgba(11,10,36,.92) 70%), url(/assets/backgrounds/hahn-entrance-tall.webp)' }}>
       <div className="grow" />
-      <img className="logo" src="/icon-192.png" alt="" width={96} height={96} />
-      <h1>HAHN Heroes</h1>
+      <img className="logo" src="/assets/brand/emblem-hahn.webp" alt="" width={110} height={110} />
+      <h1>H.A.H.N.</h1>
       <p className="tagline">Heroes Awakening: Hidden Nexus</p>
       <div className="stack">
         <button className="btn primary" onClick={onNew}>New Hero</button>
