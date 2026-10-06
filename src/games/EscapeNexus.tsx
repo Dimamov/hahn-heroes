@@ -61,7 +61,7 @@ export function EscapeNexus() {
   if (!code || !room) {
     return (
       <GameFrame title="Escape the Nexus" hint="A team game! Everyone breaks their own seal by answering three questions. If anyone gets stuck, the whole squad is trapped, so help each other. You can only play with your own grade.">
-        <GameHero icon="🔐" />
+        <GameHero icon="🔐" art="seal-01" />
         <div className="grow" />
         <button className="btn primary" onClick={() => act(async () => setCode(await backend.createRoom('escape-nexus')))}>🏠 Host a room</button>
         <p className="hint">or join a friend's room</p>
@@ -130,6 +130,7 @@ export function EscapeNexus() {
       <div className="nxsquad" aria-label="Squad seals">
         {view.players.map((p) => (
           <div key={p.i} className={`nxmate${p.me ? ' me' : ''}${p.done ? ' done' : ''}`}>
+            <img className={`nx-seal${p.done ? ' open' : ''}`} src={`/assets/games/seal-0${(p.i % 6) + 1}.webp`} alt="" draggable={false} />
             <HeroArt id={p.starter} className="chip-hero" />
             <span>{p.me ? 'You' : p.name.split(' ')[0]}</span>
             <b aria-label={`${p.solved} of ${p.need} locks open`}>{Array.from({ length: p.need }, (_, k) => (k < p.solved ? '🔓' : '🔒')).join('')}</b>

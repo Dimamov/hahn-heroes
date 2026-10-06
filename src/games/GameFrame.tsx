@@ -46,6 +46,6 @@ export function WinPanel({ game, message, onAgain }: { game: string; message: st
 }
 
 /** A big glowing character for a lobby or intro screen, so it is not a blank page. */
-export function GameHero({ icon }: { icon: string }) {
-  return <div className="game-hero" aria-hidden><span>{icon}</span></div>;
+export function GameHero({ icon, art }: { icon: string; art?: string }) {
+  return <div className={`game-hero${art ? ' art' : ''}`} aria-hidden>{art ? <img src={`/assets/games/${art}.webp`} alt="" draggable={false} /> : <span>{icon}</span>}</div>;
 }
