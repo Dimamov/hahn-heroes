@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { GameFrame, WinPanel } from './GameFrame.tsx';
 import { beep } from '../lib/sound.ts';
+import { burst, centerOf, popup, shake } from '../lib/fx.ts';
 import { SIZE, WIN_SCORE, newGame, place, sizeOf, canPlace, type Piece } from '../lib/blocks.ts';
 
 const COLORS = ['#38bdf8', '#f472b6', '#facc15', '#4ade80', '#a78bfa'];
@@ -21,13 +22,19 @@ export function BlockBlast() {
   const [won, setWon] = useState(false);
   const piece = sel !== null ? g.tray[sel] : null;
 
-  const tap = (r: number, c: number) => {
+  const tap = (r: number, c: number, el: Element) => {
     if (!piece || sel === null) return;
     const { h, w } = sizeOf(piece.shape);
     const row = Math.min(r, SIZE - h), col = Math.min(c, SIZE - w); // keep the piece on the board
-    if (!canPlace(g.board, piece.shape, row, col)) { beep(200, 80, 'sawtooth'); return; }
+    if (!canPlace(g.board, piece.shape, row, col)) { beep(200, 80, 'sawtooth'); shake(el.parentElement, 4); return; }
     const n = place(g, sel, row, col, Math.random);
     beep(n.score - g.score > piece.shape.length ? 760 : 440, 90, 'triangle');
+    const gain = n.score - g.score, pos = centerOf(el);
+    burst(pos.x, pos.y, COLORS[piece.color], 8, 50);
+    if (gain > piece.shape.length) {
+      burst(pos.x, pos.y, '#fbbf24', 22, 110); shake(el.parentElement, 6);
+      popup(pos.x, pos.y - 20, `CLEAR! +${gain}`, '#fbbf24', true);
+    }
     setG(n);
     setSel(n.tray.findIndex((t) => t !== null));
     if (n.score >= WIN_SCORE) setWon(true);
@@ -52,7 +59,7 @@ export function BlockBlast() {
       <p className="note">Score {g.score} / {WIN_SCORE}</p>
       <div className="blk-board" style={{ gridTemplateColumns: `repeat(${SIZE}, 1fr)` }}>
         {g.board.map((row, r) => row.map((v, c) => (
-          <button key={`${r}-${c}`} className="blk-cell" style={v === null ? undefined : { background: COLORS[v] }} onClick={() => tap(r, c)} aria-label={`Row ${r + 1} column ${c + 1}${v === null ? '' : ' filled'}`} />
+          <button key={`${r}-${c}`} className="blk-cell" style={v === null ? undefined : { background: COLORS[v] }} onClick={(e) => tap(r, c, e.currentTarget)} aria-label={`Row ${r + 1} column ${c + 1}${v === null ? '' : ' filled'}`} />
         )))}
       </div>
       <div className="blk-tray">

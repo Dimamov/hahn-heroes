@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from '../App.tsx';
-import { GameFrame } from './GameFrame.tsx';
+import { GameFrame, GameHero } from './GameFrame.tsx';
 import { ChatButton } from './ChatBox.tsx';
 import { PlayerList } from './TriviaClash.tsx';
 import type { DrawingView, RoomState } from '../lib/backend.ts';
@@ -132,6 +132,7 @@ export function SquadDrawing() {
   if (!code || !room) {
     return (
       <GameFrame title="Squad Drawing" hint="Take turns drawing a secret word while your friends guess. You can only play with your own grade.">
+        <GameHero icon="🎨" />
         <div className="grow" />
         <button className="btn primary" onClick={() => act(async () => setCode(await backend.createRoom('squad-drawing')))}>🏠 Host a room</button>
         <p className="hint">or join a friend's room</p>

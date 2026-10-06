@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from '../App.tsx';
-import { GameFrame } from './GameFrame.tsx';
+import { GameFrame, GameHero } from './GameFrame.tsx';
 import { ChatButton } from './ChatBox.tsx';
 import { PlayerList } from './TriviaClash.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
@@ -61,6 +61,7 @@ export function EscapeNexus() {
   if (!code || !room) {
     return (
       <GameFrame title="Escape the Nexus" hint="A team game! Everyone breaks their own seal by answering three questions. If anyone gets stuck, the whole squad is trapped, so help each other. You can only play with your own grade.">
+        <GameHero icon="🔐" />
         <div className="grow" />
         <button className="btn primary" onClick={() => act(async () => setCode(await backend.createRoom('escape-nexus')))}>🏠 Host a room</button>
         <p className="hint">or join a friend's room</p>

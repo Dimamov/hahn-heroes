@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { burst, centerOf, popup, shake } from '../lib/fx.ts';
 import { GameFrame } from './GameFrame.tsx';
 import { useSession } from '../App.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
@@ -31,6 +32,11 @@ export function Arena() {
   const play = (m: Move) => {
     const next = playTurn(battle, m, botMove(battle, Math.random));
     setHit(next.bot.hp < battle.bot.hp ? 'foe' : next.hero.hp < battle.hero.hp ? 'hero' : null);
+    const sides = document.querySelectorAll('.arena-side');
+    const hit = (i: number, dmg: number, color: string) => { const c = centerOf(sides[i]); burst(c.x, c.y, color, 14, 80); popup(c.x, c.y, `-${dmg}`, color, dmg >= 15); };
+    if (next.bot.hp < battle.bot.hp) { const d = battle.bot.hp - next.bot.hp; hit(1, d, '#fbbf24'); if (d >= 15) shake(document.querySelector('.arena-field'), 8); }
+    if (next.hero.hp < battle.hero.hp) hit(0, battle.hero.hp - next.hero.hp, '#ff5c7a');
+    if (next.hero.hp > battle.hero.hp) { const c = centerOf(sides[0]); burst(c.x, c.y, '#4ade80', 12); popup(c.x, c.y, `+${next.hero.hp - battle.hero.hp}`, '#4ade80', true); }
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setHit(null), 600);
     setBattle(next);

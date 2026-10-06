@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from '../App.tsx';
-import { GameFrame } from './GameFrame.tsx';
+import { GameFrame, GameHero } from './GameFrame.tsx';
 import { ChatButton } from './ChatBox.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
 import type { RoomState } from '../lib/backend.ts';
@@ -50,6 +50,7 @@ export function TriviaClash() {
   if (!code || !room) {
     return (
       <GameFrame title="Trivia Clash" hint="Race your friends! Everyone gets the same fresh questions. You can only play with your own grade.">
+        <GameHero icon="⚡" />
         <div className="grow" />
         <button className="btn primary" onClick={() => act(async () => setCode(await backend.createRoom('trivia-clash')))}>🏠 Host a room</button>
         <p className="hint">or join a friend's room</p>

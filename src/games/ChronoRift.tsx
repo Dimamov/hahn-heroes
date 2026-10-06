@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { GameFrame, WinPanel } from './GameFrame.tsx';
 import { beep } from '../lib/sound.ts';
+import { burst, centerOf, flashEdge, popup, shake } from '../lib/fx.ts';
 import { ROUNDS, WIN_AT, checkOrder, pickRounds, scramble, swap, type RiftSet } from '../lib/chrono.ts';
 
 interface Round { set: RiftSet; order: number[] }
@@ -34,7 +35,8 @@ export function ChronoRift() {
     setMarks(m); setTries((t) => t + 1); setPick(null);
     const ok = m.every(Boolean);
     beep(ok ? 784 : 220, 140, 'triangle');
-    if (ok) setCorrect((c) => c + 1);
+    if (ok) { setCorrect((c) => c + 1); const c = centerOf(document.querySelector('.rift-list')); burst(c.x, c.y, '#22d3ee', 24, 130); popup(c.x, c.y, 'TIMELINE FIXED!', '#fbbf24', true); }
+    else { shake(document.querySelector('.rift-list'), 5); if (tries >= 1) flashEdge(); }
   };
   const next = () => {
     if (i + 1 >= ROUNDS) { setDone(correct >= WIN_AT ? 'won' : 'lost'); setPhase('over'); return; }

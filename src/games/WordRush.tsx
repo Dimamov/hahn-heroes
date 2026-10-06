@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GameFrame } from './GameFrame.tsx';
+import { GameFrame, GameHero } from './GameFrame.tsx';
 import { beep } from '../lib/sound.ts';
 
 const CATEGORIES = [
@@ -45,7 +45,7 @@ export function WordRush() {
   if (!started) {
     return (
       <GameFrame title="Word Rush" hint="Pass the device around. Say a word for the category that starts with the letter before time runs out!">
-        <div className="grow" />
+        <GameHero icon="⏱️" /><div className="grow" />
         <p className="hint">How many players?</p>
         <div className="chips">{[2, 3, 4, 5, 6].map((n) => <button key={n} className={`chip${players === n ? ' chosen' : ''}`} onClick={() => setPlayers(n)}>{n}</button>)}</div>
         <div className="grow" />

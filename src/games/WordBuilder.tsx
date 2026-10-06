@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { GameFrame, WinPanel } from './GameFrame.tsx';
 import { beep } from '../lib/sound.ts';
+import { burst, centerOf, popup, shake } from '../lib/fx.ts';
 import puzzles from '../../content/word-builder.json';
 
 interface Puzzle { letters: string; word: string; words: string[] }
@@ -18,6 +19,7 @@ export function WordBuilder() {
   const [found, setFound] = useState<string[]>([]);
   const [msg, setMsg] = useState('');
   const [won, setWon] = useState(false);
+  const slots = useRef<HTMLDivElement>(null);
 
   const reset = () => {
     const next = pick();
@@ -29,17 +31,19 @@ export function WordBuilder() {
   const submit = () => {
     if (word.length < 3) { setMsg('Use at least 3 letters.'); return; }
     if (found.includes(word)) { setMsg('You already found that one!'); setPicked([]); return; }
-    if (!valid.has(word)) { setMsg("That's not in my word list. Try another!"); setPicked([]); beep(150, 250, 'sawtooth'); return; }
+    if (!valid.has(word)) { setMsg("That's not in my word list. Try another!"); setPicked([]); beep(150, 250, 'sawtooth'); shake(slots.current, 6); return; }
     const next = [...found, word];
     setFound(next); setPicked([]); setMsg(word === puzzle.word ? 'Wow, you found the big word!' : 'Nice!');
     beep(660, 200, 'triangle');
+    const c = centerOf(slots.current);
+    burst(c.x, c.y, '#22d3ee', 16, 90); popup(c.x, c.y, word === puzzle.word ? 'BIG WORD! +1' : `+${word.length}`, '#fbbf24', word === puzzle.word);
     if (next.length >= GOAL) setWon(true);
   };
 
   if (won) return <GameFrame title="Word Builder"><WinPanel game="word-builder" message={`You built ${found.length} words!`} onAgain={reset} /></GameFrame>;
   return (
     <GameFrame title="Word Builder" hint={`Build ${GOAL} words from these letters (3 or more letters).`}>
-      <div className="wb-slots" aria-live="polite">{word || <span className="muted">Tap letters</span>}</div>
+      <div className="wb-slots" ref={slots} aria-live="polite">{word || <span className="muted">Tap letters</span>}</div>
       <p className="note" role="status">{msg || `${found.length} of ${GOAL} found`}</p>
       <div className="wb-tiles">
         {tiles.map((t, i) => (

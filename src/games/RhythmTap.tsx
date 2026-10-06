@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { GameFrame } from './GameFrame.tsx';
 import { PagedList } from '../components/PagedList.tsx';
+import { burst, centerOf, flashEdge, popup } from '../lib/fx.ts';
 import { FALL_SECONDS, judgeTap, stars, sweepMisses, type Note } from '../lib/rhythm.ts';
 import type { Level, ParsedSong, SongDef } from '../lib/songs.ts';
 
@@ -71,7 +72,7 @@ function Play({ song, level, libs, onDone, onExit }: { song: ParsedSong; level: 
     let raf = 0;
     const loop = () => {
       const t = now();
-      if (sweepMisses(notes.current, t) > 0) { setCombo(0); setSaid('Missed'); }
+      if (sweepMisses(notes.current, t) > 0) { setCombo(0); setSaid('Missed'); flashEdge('#ff5c7a66'); }
       const last = notes.current[notes.current.length - 1];
       if (!finished.current && last.result !== null) {
         finished.current = true;
@@ -88,7 +89,14 @@ function Play({ song, level, libs, onDone, onExit }: { song: ParsedSong; level: 
   const tap = (lane: number) => {
     const r = judgeTap(notes.current, lane, now());
     libs.synth.tapClick(lane);
-    if (r) { setCombo((c) => c + 1); setSaid(r === 'perfect' ? 'Perfect!' : 'Good'); } else setSaid('Wait for the note');
+    const pad = document.querySelectorAll('.rt-pad')[lane];
+    const c = centerOf(document.querySelectorAll('.rt-lane')[lane] ?? pad); const line = document.querySelector('.rt-line')?.getBoundingClientRect();
+    if (r) {
+      setCombo((n) => n + 1); setSaid(r === 'perfect' ? 'Perfect!' : 'Good');
+      const y = line ? line.top : c.y;
+      burst(c.x, y, LANES[lane], r === 'perfect' ? 14 : 8, 60); popup(c.x, y - 10, r === 'perfect' ? 'PERFECT!' : 'Good', r === 'perfect' ? '#fbbf24' : '#fff');
+      if ((combo + 1) % 10 === 0) popup(innerWidth / 2, innerHeight / 3, `${combo + 1} COMBO!`, '#ff3fa4', true);
+    } else setSaid('Wait for the note');
   };
 
   const t = now();

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { GameFrame, WinPanel } from './GameFrame.tsx';
 import { beep } from '../lib/sound.ts';
+import { burst, flashEdge, popup, shake } from '../lib/fx.ts';
 
 // Placeholder scenes drawn with emoji until the approved Hahn picture sets arrive. Each set has a
 // left picture and a right picture; a difference counts when tapped in either one.
@@ -48,8 +49,8 @@ export function SpotDifference() {
     const x = ((e.clientX - r.left) / r.width) * 100;
     const y = ((e.clientY - r.top) / r.height) * 100;
     const hit = scene.diffs.findIndex((d, n) => !found.includes(n) && Math.hypot(scene.items[d.i].x - x, scene.items[d.i].y - y) < HIT);
-    if (hit >= 0) { setFound([...found, hit]); beep(700, 150, 'triangle'); setReminder(false); return; }
-    beep(160, 200, 'sawtooth');
+    if (hit >= 0) { setFound([...found, hit]); beep(700, 150, 'triangle'); burst(e.clientX, e.clientY, '#fbbf24', 14, 70); popup(e.clientX, e.clientY, 'Found it!', '#fbbf24'); setReminder(false); return; }
+    beep(160, 200, 'sawtooth'); burst(e.clientX, e.clientY, '#ff5c7a', 6, 30); shake(e.currentTarget, 4); flashEdge();
     if (wrong + 1 >= 3) { setWrong(0); setReminder(true); } else setWrong(wrong + 1);
   };
 

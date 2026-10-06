@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from '../App.tsx';
-import { GameFrame } from './GameFrame.tsx';
+import { GameFrame, GameHero } from './GameFrame.tsx';
 import { ChatButton } from './ChatBox.tsx';
 import { PlayerList } from './TriviaClash.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
@@ -59,6 +59,7 @@ export function HideSeek() {
   if (!code || !room) {
     return (
       <GameFrame title="Hide and Seek" hint="Hide in the hall disguised as a prop, or search for your friends! 2 to 6 players, same grade. Everyone gets a turn as the seeker.">
+        <GameHero icon="🫣" />
         <div className="grow" />
         <button className="btn primary" onClick={() => act(async () => setCode(await backend.createRoom('hide-seek')))}>🏠 Host a room</button>
         <p className="hint">or join a friend's room</p>
