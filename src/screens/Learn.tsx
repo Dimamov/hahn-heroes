@@ -173,7 +173,6 @@ export function Practice({ subject }: { subject: Subject }) {
   return (
     <main className="screen">
       <ScreenBar title={`${info.label} ${i + 1}/${set.questions.length}`} onBack={back} right={<span className="bar-actions">{!result && !pending && !hint && <button className="read-aloud" aria-label="Need a hint?" disabled={hinting} onClick={askHint}>{hinting ? '…' : '💡'}</button>}<ReadAloud text={questionText(question, q.choices)} /></span>} />
-      <ScreenBar title={`${info.label} ${i + 1}/${set.questions.length}`} onBack={back} right={<ReadAloud text={questionText(question, q.choices)} />} />
       {!online && <div className="surge" role="status">📴 No Wi-Fi: your answers are saved and sent later.</div>}
       {surge && (surge.active && surge.endAt > Date.now()
         ? <div className="surge on" role="status">⚡ Nexus Surge! Points x{surge.mult} · {Math.floor((surge.endAt - Date.now()) / 60000)}:{String(Math.floor(((surge.endAt - Date.now()) % 60000) / 1000)).padStart(2, '0')} left{surge.started ? ' 🎉 It just started!' : ''}</div>
