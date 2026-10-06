@@ -41,8 +41,8 @@ begin
   -- weekly cap of 3 paid; skipping pays nothing; a teacher cannot decide for a student who is not theirs
   perform as_admin();
   insert into kind_nominations (nominator, nominee, reason, day) values
-    (u(145), u(146), 'teamwork', current_date - 1), (u(147), u(146), 'included', current_date - 1),
-    (u(147), u(146), 'taught', current_date - 2), (u(146), u(147), 'positive', current_date - 3);
+    (u(145), u(146), 'teamwork', school_date(now()) - 1), (u(147), u(146), 'included', school_date(now()) - 1),
+    (u(147), u(146), 'taught', school_date(now()) - 2), (u(146), u(147), 'positive', school_date(now()) - 3);
   select id into v_other from kind_nominations where nominee = u(147);
   perform as_user(3);
   perform expect_error(format($q$select kind_decide(%s, true)$q$, v_other), 'not your student');

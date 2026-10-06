@@ -42,6 +42,25 @@ begin
   perform teacher_character_remove_photo();
   assert teacher_character_get()->>'photo' is null and teacher_character_get()->>'art' is not null, 'photo gone, art stays';
 
+  assert (teacher_character_get()->>'shown')::boolean = false, 'hidden at first';
+  perform as_admin();
+  declare v_hero uuid;
+  begin
+    select m.child_id into v_hero from class_members m join classes c on c.id = m.class_id where c.teacher_id = v_teacher limit 1;
+    if v_hero is not null then
+      perform as_user_id(v_hero);
+      assert jsonb_array_length(my_teacher_characters()) = 0, 'class sees nothing until the teacher shows it';
+      perform as_user(3);
+      perform teacher_character_show(true);
+      perform as_user_id(v_hero);
+      r := my_teacher_characters();
+      assert jsonb_array_length(r) = 1 and r->0->>'art' is not null and r->0 ? 'name', 'class sees the shown character';
+      perform as_user(3);
+      perform teacher_character_submit('data:image/jpeg;base64,/9j/AAAA', '');
+      perform as_user_id(v_hero);
+      assert jsonb_array_length(my_teacher_characters()) = 0, 'a new look hides it again';
+    end if;
+  end;
   perform as_admin();
   delete from teacher_characters;
 end $$;

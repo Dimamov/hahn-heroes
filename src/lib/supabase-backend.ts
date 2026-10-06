@@ -195,6 +195,12 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async teacherCharacterRemovePhoto() {
       await rpc('teacher_character_remove_photo');
     },
+    async teacherCharacterShow(show) {
+      await rpc('teacher_character_show', { p_show: show });
+    },
+    async myTeacherCharacters() {
+      return (await rpc('my_teacher_characters')) as { name: string; art: string }[];
+    },
     async senseiCharacterQueue() {
       return (await rpc('sensei_character_queue')) ?? [];
     },
