@@ -49,7 +49,7 @@ export function Home() {
         {dailyAvailable ? '🎁 Collect your daily Nexus points' : '✅ Daily check-in collected'}
       </button>
       {isQuiet() && <button className="live-banner quiet-banner" onClick={() => go('quiet')}>🤫 Quiet mode is on. Tap to change it</button>}
-      {live && <button className="live-banner" onClick={() => go('classlive')}>{live.kind === 'boss' ? '🐲 Your class is fighting a boss! Tap to join' : live.kind === 'mystery' ? '🖼️ Your class mystery is live! Tap to join' : '⚡ Your class quiz battle is live! Tap to join'}</button>}
+      {live && <button className="live-banner" onClick={() => go('classlive')}>{live.kind === 'boss' ? '🐲 Your class is fighting a boss! Tap to join' : live.kind === 'mystery' ? '🖼️ Your class mystery is live! Tap to join' : live.kind === 'duel' ? '⚔️ A vocab duel is starting! Tap to join' : '⚡ Your class quiz battle is live! Tap to join'}</button>}
       {popped !== null && <div className="pop" role="status">+{popped} 💎</div>}
       <WeekRecap />
 

@@ -945,6 +945,13 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
         boss: r.boss ?? null, players: r.players ?? [], seconds: r.seconds, secondsLeft: r.seconds_left, question: r.question,
         myChoice: r.my_choice ?? null, answered: r.answered, rightChoice: r.right_choice, explanation: r.explanation,
         myPoints: r.my_points, myDamage: r.my_damage, classDamage: r.class_damage, choiceCounts: r.choice_counts, myReward: r.my_reward,
+        duel: r.duel ? {
+          round: r.duel.round, rounds: r.duel.rounds, myStatus: r.duel.my_status,
+          matches: (r.duel.matches ?? []).map((m: any) => ({
+            round: m.round, slot: m.slot, me: !!m.me, a: m.a, b: m.b ?? null, winner: m.winner ?? null,
+            aAnswered: !!m.a_answered, bAnswered: !!m.b_answered, aRight: m.a_right ?? null, bRight: m.b_right ?? null,
+          })),
+        } : undefined,
       };
     },
     async classLiveCreate(classId, kind, subject, count, missionId) {

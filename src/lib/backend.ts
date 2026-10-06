@@ -131,7 +131,13 @@ export type JoinClassResult =
   | { ok: true; name: string }
   | { ok: false; error: 'invalid_code' | 'wrong_grade' | 'already_in_class' | 'too_many_tries' };
 
-export type ClassLiveKind = 'quiz' | 'boss' | 'mystery';
+export type ClassLiveKind = 'quiz' | 'boss' | 'mystery' | 'duel';
+export interface DuelSide { name: string; starter: string; score: number }
+export interface DuelMatch {
+  round: number; slot: number; me: boolean; a: DuelSide; b: DuelSide | null; winner: 'a' | 'b' | null;
+  aAnswered: boolean; bAnswered: boolean; aRight: boolean | null; bRight: boolean | null;
+}
+export interface ClassDuel { round: number; rounds: number; myStatus: 'dueling' | 'bye' | 'out' | 'champion' | 'watching'; matches: DuelMatch[] }
 export interface ClassLivePlayer { name: string; starter: string; score: number; correct: number; me: boolean; answered: boolean }
 /** One view of a live class game, for the teacher's big screen and for students. */
 export interface ClassLiveState {
@@ -157,6 +163,7 @@ export interface ClassLiveState {
   classDamage?: number;
   choiceCounts?: Record<string, number>;
   myReward?: number;
+  duel?: ClassDuel;
 }
 export interface ClassGoal {
   on: boolean;

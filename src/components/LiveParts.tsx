@@ -1,4 +1,4 @@
-import type { ClassLivePlayer, ClassLiveState } from '../lib/backend.ts';
+import type { ClassDuel, ClassLivePlayer, ClassLiveState } from '../lib/backend.ts';
 import { HeroArt } from './HeroArt.tsx';
 
 const LETTERS = ['A', 'B', 'C', 'D'];
@@ -75,6 +75,42 @@ export function MysteryPicture({ code, boss }: { code: string; boss: NonNullable
       <div className="mystery-grid" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}>
         {Array.from({ length: COLS * ROWS }, (_, i) => <i key={i} className={shown.has(i) ? 'open' : ''}>{shown.has(i) ? '' : '?'}</i>)}
       </div>
+    </div>
+  );
+}
+
+const ROUND_NAME = (round: number, rounds: number) => (round === rounds ? 'Final' : round === rounds - 1 && rounds > 2 ? 'Semifinal' : `Round ${round}`);
+
+/** The knockout bracket: one column per round, with who is winning each pair. */
+export function Bracket({ duel }: { duel: ClassDuel }) {
+  const rounds = Array.from({ length: Math.max(duel.rounds, duel.round) }, (_, i) => i + 1);
+  return (
+    <div className="bracket" aria-label="Duel bracket">
+      {rounds.map((r) => {
+        const ms = duel.matches.filter((m) => m.round === r);
+        if (ms.length === 0) return <div key={r} className="bracket-col"><b className="bracket-title">{ROUND_NAME(r, duel.rounds)}</b><div className="bracket-wait">?</div></div>;
+        return (
+          <div key={r} className="bracket-col">
+            <b className="bracket-title">{ROUND_NAME(r, duel.rounds)}</b>
+            {ms.map((m) => (
+              <div key={m.slot} className={`bracket-match${m.me ? ' me' : ''}`}>
+                <div className={`bracket-side${m.winner === 'a' ? ' won' : m.winner === 'b' ? ' lost' : ''}`}>
+                  <HeroArt id={m.a.starter} className="chip-hero" /><span className="nm">{m.a.name}</span>
+                  <b>{m.aRight == null ? (m.aAnswered ? '✋' : '') : m.aRight ? '✅' : '❌'}</b><b className="pts">{m.a.score}</b>
+                </div>
+                {m.b
+                  ? (
+                    <div className={`bracket-side${m.winner === 'b' ? ' won' : m.winner === 'a' ? ' lost' : ''}`}>
+                      <HeroArt id={m.b.starter} className="chip-hero" /><span className="nm">{m.b.name}</span>
+                      <b>{m.bRight == null ? (m.bAnswered ? '✋' : '') : m.bRight ? '✅' : '❌'}</b><b className="pts">{m.b.score}</b>
+                    </div>
+                  )
+                  : <div className="bracket-side bye">free pass</div>}
+              </div>
+            ))}
+          </div>
+        );
+      })}
     </div>
   );
 }

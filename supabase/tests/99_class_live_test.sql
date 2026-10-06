@@ -28,7 +28,7 @@ begin
 
   perform as_user(3);
   perform expect_error(format($q$select class_live_create(%L, 'quiz', 'mixed', 2)$q$, c), '3 to 20');
-  perform expect_error(format($q$select class_live_create(%L, 'party', 'mixed', 3)$q$, c), 'quiz, boss or mystery');
+  perform expect_error(format($q$select class_live_create(%L, 'party', 'mixed', 3)$q$, c), 'quiz, boss, mystery or duel');
   code := class_live_create(c, 'quiz', 'math', 3);
   assert length(code) = 4, 'four letter code';
   perform expect_error(format($q$select class_live_start(%L)$q$, code), 'at least one student');
@@ -86,8 +86,8 @@ begin
   perform as_user(169); assert (class_live_state(code)->>'my_reward')::int = 0, 'C gets nothing';
   perform as_admin();
   perform class_live_finish((select id from class_sessions where kind = 'quiz' and state = 'done' limit 1));
-  assert (select count(*) from ledger_entries where idempotency_key like 'live:%' and currency = 'coins') = 2, 'paid once only';
-  assert (select count(*) from ledger_entries where idempotency_key like 'live:%' and source = 'class_mission') = 4, 'coins and xp for two heroes count as class_mission';
+  assert (select count(*) from ledger_entries where idempotency_key like 'live:%' and currency = 'coins' and child_id in (u(167), u(168), u(169))) = 2, 'paid once only';
+  assert (select count(*) from ledger_entries where idempotency_key like 'live:%' and source = 'class_mission' and child_id in (u(167), u(168), u(169))) = 4, 'coins and xp for two heroes count as class_mission';
 
   -- boss battle: the class wins together
   perform as_user(3);

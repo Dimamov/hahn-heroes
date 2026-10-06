@@ -1184,3 +1184,16 @@ body.doom::after { content: ''; position: fixed; inset: 0; z-index: 40; pointer-
 .mystery-grid { position: absolute; inset: 0; display: grid; }
 .mystery-grid i { display: grid; place-items: center; font: 900 1.4rem 'Baloo 2', 'Nunito', system-ui; font-style: normal; color: #ffffff55; background: linear-gradient(135deg, #2d2870, #14113f); border: 1px solid #0b0a24; transition: opacity .7s, transform .7s; }
 .mystery-grid i.open { opacity: 0; transform: scale(.6); pointer-events: none; }
+.bracket { display: flex; gap: 12px; overflow-x: auto; width: 100%; padding-bottom: 6px; }
+.bracket-col { display: flex; flex-direction: column; justify-content: space-around; gap: 10px; min-width: 210px; flex: 1; }
+.bracket-title { text-align: center; color: var(--cyan); }
+.bracket-wait { text-align: center; opacity: .4; font-size: 2rem; }
+.bracket-match { border-radius: 14px; background: var(--panel); border: 2px solid transparent; overflow: hidden; }
+.bracket-match.me { border-color: var(--cyan); }
+.bracket-side { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-weight: 800; }
+.bracket-side + .bracket-side { border-top: 1px solid #ffffff22; }
+.bracket-side .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bracket-side .pts { color: var(--cyan); min-width: 1.2em; text-align: right; }
+.bracket-side.won { background: #34d39933; }
+.bracket-side.lost { opacity: .5; }
+.bracket-side.bye { opacity: .6; font-style: italic; }
