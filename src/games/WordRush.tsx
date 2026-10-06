@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { GameFrame, GameHero } from './GameFrame.tsx';
 import { beep } from '../lib/sound.ts';
+import { burst, flashEdge, popup, shake } from '../lib/fx.ts';
 
 const CATEGORIES = [
   'Animals', 'Foods', 'Things at school', 'Countries', 'Sports', 'Jobs', 'Things in a kitchen', 'Colors of things', 'Movies or shows',
@@ -25,9 +26,9 @@ export function WordRush() {
   const newCard = () => setCard({ cat: rnd(CATEGORIES), letter: rnd(LETTERS) });
   const start = () => { setAlive(Array.from({ length: players }, (_, i) => i)); setTurn(0); setOut(null); setLeft(SECONDS); newCard(); setStarted(true); };
 
-  const pass = () => { setTurn((t) => (t + 1) % alive.length); setLeft(SECONDS); newCard(); beep(520, 100, 'triangle'); };
+  const pass = () => { burst(innerWidth / 2, innerHeight / 2, '#22d3ee', 14, 90); popup(innerWidth / 2, innerHeight / 2, 'Nice!', '#fbbf24', true); setTurn((t) => (t + 1) % alive.length); setLeft(SECONDS); newCard(); beep(520, 100, 'triangle'); };
   const timeUp = () => {
-    beep(150, 500, 'sawtooth');
+    beep(150, 500, 'sawtooth'); shake(); flashEdge();
     const player = alive[turn];
     setOut(player);
     const rest = alive.filter((p) => p !== player);

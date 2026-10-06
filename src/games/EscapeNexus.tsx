@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from '../App.tsx';
 import { GameFrame, GameHero } from './GameFrame.tsx';
+import { burst, centerOf, flashEdge, popup, shake } from '../lib/fx.ts';
+import { beep } from '../lib/sound.ts';
 import { ChatButton } from './ChatBox.tsx';
 import { PlayerList } from './TriviaClash.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
@@ -120,7 +122,14 @@ export function EscapeNexus() {
   const passage = q && parts >= 0 ? q.prompt.slice(0, parts) : null;
   const question = q ? (parts < 0 ? q.prompt : q.prompt.slice(parts + 2)) : '';
   const lowTime = view.secondsLeft <= 20;
-  const submit = (n: number) => act(async () => { setPicked(n); const res = await backend.nexusAnswer(n); setFeedback(res); setPicked(null); });
+  const submit = (n: number) => act(async () => {
+    setPicked(n);
+    const res = await backend.nexusAnswer(n);
+    setFeedback(res); setPicked(null);
+    const c = centerOf(document.querySelector('.nx-room') ?? document.querySelector('.nxsquad'));
+    if (res.correct) { burst(c.x, c.y, '#4ade80', 22, 110); popup(c.x, c.y, 'LOCK OPEN!', '#4ade80', true); beep(784, 180, 'triangle'); }
+    else { shake(); flashEdge(); popup(c.x, c.y, `-${res.penalty}s`, '#ff5c7a', true); beep(200, 300, 'sawtooth'); }
+  });
   return (
     <GameFrame title="Escape the Nexus" onExit={leave} right={<ChatButton />}>
       <div className={`nxclock${lowTime ? ' low' : ''}`} role="timer" aria-label={`${view.secondsLeft} seconds left`}>

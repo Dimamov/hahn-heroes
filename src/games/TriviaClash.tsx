@@ -4,6 +4,18 @@ import { GameFrame, GameHero } from './GameFrame.tsx';
 import { ChatButton } from './ChatBox.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
 import type { RoomState } from '../lib/backend.ts';
+import { beep } from '../lib/sound.ts';
+import { burst, centerOf, flashEdge, popup, shake } from '../lib/fx.ts';
+
+/** Fires the right or wrong effect once when an answer is revealed. Renders nothing. */
+function RevealFx({ points }: { points: number }) {
+  useEffect(() => {
+    const c = centerOf(document.querySelector('.choices'));
+    if (points > 0) { burst(c.x, c.y, '#4ade80', 20, 110); popup(c.x, c.y, `+${points}`, '#4ade80', true); beep(784, 160, 'triangle'); }
+    else { shake(document.querySelector('.choices'), 5); flashEdge(); beep(200, 250, 'sawtooth'); }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
 
 const errText = (e: unknown) => {
   const m = e instanceof Error ? e.message : '';
@@ -114,6 +126,7 @@ export function TriviaClash() {
           return <button key={n} className={`choice${state}`} disabled={reveal || picked !== null} onClick={() => act(async () => { await backend.roomAnswer(n); await poll(room.code); })}>{c}</button>;
         })}
       </div>
+      {reveal && <RevealFx key={room.idx} points={room.myPoints ?? 0} />}
       {reveal
         ? <div className={`feedback ${(room.myPoints ?? 0) > 0 ? 'ok' : 'no'}`} role="status"><b>{(room.myPoints ?? 0) > 0 ? `✅ +${room.myPoints}` : picked === null ? '⏰ Time ran out.' : '❌ Not quite.'}</b> {room.explanation}</div>
         : <p className="note">{picked !== null ? 'Answer locked in! Waiting for the others...' : 'Pick your answer!'}</p>}

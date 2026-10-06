@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from '../App.tsx';
 import { GameFrame, GameHero } from './GameFrame.tsx';
+import { burst, centerOf, popup, shake } from '../lib/fx.ts';
+import { beep } from '../lib/sound.ts';
 import { ChatButton } from './ChatBox.tsx';
 import { PlayerList } from './TriviaClash.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
@@ -123,7 +125,15 @@ export function Odin() {
   }
 
   const cols = handColumns(view.hand.length);
-  const play = (card: string, color?: string) => act(async () => { setPickFor(null); await backend.odinMove(card, color); });
+  const play = (card: string, color?: string) => act(async () => {
+    setPickFor(null);
+    await backend.odinMove(card, color);
+    const c = centerOf(document.querySelector('.opile'));
+    const big = isWild(card) || /[SRD]$/.test(card);
+    burst(c.x, c.y, big ? '#fbbf24' : '#22d3ee', big ? 20 : 10, big ? 100 : 60);
+    if (big) { popup(c.x, c.y, card === 'W4' ? '+4 WILD!' : card === 'W' ? 'WILD!' : card.endsWith('S') ? 'SKIP!' : card.endsWith('R') ? 'REVERSE!' : '+2!', '#fbbf24', true); shake(document.querySelector('.opile'), 4); }
+    beep(big ? 700 : 500, 100, 'triangle');
+  });
   const current = view.players.find((p) => p.turn);
   return (
     <GameFrame title="ODIN" onExit={leave} right={<ChatButton />}>
