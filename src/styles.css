@@ -1356,3 +1356,23 @@ html, body { background: #0b0a24; }
 .classroom-card b { display: block; } .classroom-card small { color: var(--muted); font-weight: 700; }
 .classroom-card .switch { margin-left: auto; flex: none; padding: 6px 16px; border-radius: 20px; font: 800 .95rem 'Baloo 2', system-ui; background: #0008; border: 2px solid currentColor; }
 .btn.launch { font-size: 1.25rem; padding: 16px; background: linear-gradient(135deg, #7c3aed, #db2777); }
+/* Finished card art sits in the frame's art window (about 8% to 92% across, 15% to 65% down); the name goes in the text window. */
+.tcard.has-art { aspect-ratio: 530 / 742; min-height: 0; padding: 0; justify-content: flex-start; background: #0b0a24; overflow: hidden; }
+.tcard.has-art .tcard-art { position: absolute; left: 8.3%; top: 15.5%; width: 83.4%; height: 49.3%; object-fit: cover; border-radius: 6px; z-index: 0; }
+.tcard.has-art .card-name { position: absolute; left: 10%; right: 10%; top: 70.6%; height: 9%; display: flex; align-items: center; justify-content: center; font-size: clamp(.5rem, 2.4vw, .78rem); z-index: 2; text-shadow: 0 1px 3px #000; }
+.tcard.has-art .card-rarity { position: absolute; left: 0; right: 0; top: 80.5%; font-size: clamp(.45rem, 2vw, .66rem); z-index: 2; text-shadow: 0 1px 3px #000; }
+.tcard.has-art .card-qty { z-index: 3; top: 4%; right: 8%; }
+/* Spot the Difference with the approved pictures */
+.spot-board { width: min(100%, 46vh); aspect-ratio: 3 / 2; overflow: hidden; background: #12103a; }
+.spot-board img { width: 100%; height: 100%; object-fit: fill; display: block; pointer-events: none; user-select: none; }
+.spot-ring { aspect-ratio: 1; }
+@media (min-aspect-ratio: 5/4) { .spot-pair { grid-template-columns: 1fr 1fr; align-items: center; } .spot-board { width: min(100%, 78vh); } }
+/* Finished story pages and character poses */
+.panel-page { flex: 1 1 0; min-height: 0; max-width: 100%; max-height: 60%; width: auto; object-fit: contain; border-radius: 12px; box-shadow: 0 0 18px #8b5cff55; }
+.panel-page.square { flex: 0 1 auto; height: min(30vh, 240px); }
+.panel-name { display: inline-flex; align-items: center; gap: 8px; }
+.panel-pose { width: 44px; height: 44px; object-fit: contain; border-radius: 50%; background: #0b0a2488; border: 2px solid var(--gold, #fbbf24); }
+.panel-hero.pose { height: min(16vh, 130px); max-width: 30vw; }
+.adv-cover { width: 54px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #8b5cff; flex: none; }
+@media (max-height: 480px) and (orientation: landscape) { .panel-page { max-height: 100%; max-width: 34%; } .panel-hero.pose { height: 70px; } }
+@media (min-aspect-ratio: 5/4) { .screen.game:has(.spot-pair) { max-width: 1100px; } }

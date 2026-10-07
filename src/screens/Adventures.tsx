@@ -5,7 +5,7 @@ import { Pager } from '../components/Pager.tsx';
 import { ScreenBar } from '../components/ScreenBar.tsx';
 import { cardById } from '../lib/cards.ts';
 import { CHRONICLE, LAB_CASES, type AdvProgress, type LabCase } from '../lib/adventures.ts';
-import { EPISODES, episodeById, type StoryPanel, type StoryProgress } from '../lib/story.ts';
+import { EPISODES, episodeById, storyPage, storyPose, type StoryPanel, type StoryProgress } from '../lib/story.ts';
 import { CardFace } from '../components/CardFace.tsx';
 import { ReadAloud } from '../components/ReadAloud.tsx';
 import { questionText } from '../lib/speak.ts';
@@ -42,7 +42,7 @@ export function Adventures() {
             const p = progress.find((x) => x.episode === e.id);
             return (
               <button key={e.id} className="card adv-card" onClick={() => setOpen(e.id)}>
-                <span className="adv-icon" aria-hidden>📖</span>
+                {e.cover ? <img className="adv-cover" src={storyPage(e.cover)} alt="" loading="lazy" draggable={false} /> : <span className="adv-icon" aria-hidden>📖</span>}
                 <span><b>{e.title}</b><small>{p?.completed ? '✅ Finished' : p && p.panel > 0 ? `Continue (page ${p.panel + 1} of ${e.panels.length})` : e.blurb}</small></span>
               </button>
             );
@@ -100,13 +100,30 @@ function panelText(panel: StoryPanel): string {
   return spoken + panel.text;
 }
 
+/** A mentor's thinking pose when there is one, otherwise their hero picture. */
+function MentorArt({ id }: { id: string }) {
+  const [missing, setMissing] = useState(false);
+  return missing
+    ? <HeroArt id={id} className="panel-hero" />
+    : <img className="panel-hero pose" src={storyPose(`${id}-thinking`)} alt="" draggable={false} onError={() => setMissing(true)} />;
+}
+
 function Speaker({ panel }: { panel: Extract<StoryPanel, { kind: 'scene' }> }) {
   return (
     <>
-      <div className="panel-art" aria-hidden>
-        {panel.who ? panel.who.map((id) => <HeroArt key={id} id={id} className="panel-hero" />) : <span className="panel-emoji">{panel.art}</span>}
-      </div>
-      {panel.name && <b className="panel-name">{panel.name}</b>}
+      {panel.page
+        ? <img className="panel-page" src={storyPage(panel.page)} alt="" draggable={false} />
+        : (
+          <div className="panel-art" aria-hidden>
+            {panel.who ? panel.who.map((id) => <HeroArt key={id} id={id} className="panel-hero" />) : <span className="panel-emoji">{panel.art}</span>}
+          </div>
+        )}
+      {panel.name && (
+        <b className="panel-name">
+          {panel.pose && <img className="panel-pose" src={storyPose(panel.pose)} alt="" draggable={false} />}
+          {panel.name}
+        </b>
+      )}
     </>
   );
 }
@@ -138,7 +155,9 @@ function PanelView({ panel, episode, choices, solved, onChoice, onSolved, done, 
     };
     return (
       <div className={`panel bg-${panel.bg}`}>
-        <div className="panel-art" aria-hidden><span className="panel-emoji">{panel.art}</span></div>
+        {panel.page
+          ? <img className="panel-page" src={storyPage(chosen && panel.afterPage ? panel.afterPage : panel.page)} alt="" draggable={false} />
+          : <div className="panel-art" aria-hidden><span className="panel-emoji">{panel.art}</span></div>}
         <p className="panel-text">{chosen ? chosen.after : panel.text}</p>
         {!chosen && <div className="panel-options">{panel.options.map((o) => <button key={o.id} className="btn" onClick={() => pick(o.id)}>{o.label}</button>)}</div>}
         {chosen && <small className="swipe-hint">Swipe to keep reading</small>}
@@ -156,7 +175,7 @@ function PanelView({ panel, episode, choices, solved, onChoice, onSolved, done, 
     };
     return (
       <div className={`panel quiz bg-${panel.bg}`}>
-        <div className="panel-art" aria-hidden><HeroArt id={panel.mentor} className="panel-hero" /></div>
+        <div className="panel-art" aria-hidden><MentorArt id={panel.mentor} /></div>
         <p className="panel-tip">{panel.tip}</p>
         <p className="panel-text"><b>{panel.q}</b></p>
         <div className="panel-options">
@@ -176,7 +195,9 @@ function PanelView({ panel, episode, choices, solved, onChoice, onSolved, done, 
   const card = reward ? cardById(reward.card) : null;
   return (
     <div className={`panel bg-${panel.bg}`}>
-      <div className="panel-art" aria-hidden><span className="panel-emoji">{panel.art}</span></div>
+      {panel.page
+        ? <img className="panel-page square" src={storyPage(panel.page)} alt="" draggable={false} />
+        : <div className="panel-art" aria-hidden><span className="panel-emoji">{panel.art}</span></div>}
       <p className="panel-text">{panel.text}</p>
       {card && <CardFace id={card.id} />}
       {reward && <p className="note" role="status">You earned the {card?.name} card{reward.coins ? ` and ${reward.coins} points` : ''}! 🎉</p>}
