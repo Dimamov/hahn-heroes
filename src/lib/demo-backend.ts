@@ -1405,7 +1405,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       const me = meHero().id;
       storyEpisode(episode);
       const r = storyRow(me, episode);
-      if (r.solved.length < 3) throw new Error('answer every checkpoint first');
+      // Episode 1 has no checkpoints any more (story_episodes.checkpoints = 0).
       if (r.done) return { repeat: true, card: 'e-keeper' };
       r.done = true;
       r.panel = 200;

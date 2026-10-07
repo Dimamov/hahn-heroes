@@ -1403,3 +1403,22 @@ html, body { background: #0b0a24; }
 @keyframes to-panel { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes to-pop { from { transform: scale(0); } to { transform: scale(1); } }
 @keyframes to-blink { 50% { opacity: .4; } }
+
+/* Full-screen story shots (Episode 1 onward): the picture fills the page, bubbles sit on top near the bottom. */
+.shot { position: relative; height: 100%; width: 100%; min-width: 0; overflow: hidden; border-radius: 16px; background: #0b0a24; }
+.shot-fill { position: absolute; inset: -6%; width: 112%; height: 112%; object-fit: cover; filter: blur(22px) brightness(.55); }
+.shot-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.shot-pose { position: absolute; left: 50%; bottom: 40%; transform: translateX(-50%); height: 46%; max-width: 90%; object-fit: contain; filter: drop-shadow(0 0 18px #8b5cffaa); }
+.shot-text { position: absolute; left: 0; right: 0; bottom: 0; padding: 38px 12px 12px; display: flex; flex-direction: column; gap: 6px; align-items: stretch; background: linear-gradient(180deg, transparent, #0b0a24d9 38%); max-height: 62%; overflow-y: auto; }
+.shot-caption { margin: 0; text-align: center; font-style: italic; font-size: clamp(1rem, 2.4vh, 1.2rem); text-shadow: 0 1px 6px #000; }
+.bubble { margin: 0; padding: 7px 12px; border-radius: 16px; background: #fffffff2; color: #1b1740; font-size: clamp(.95rem, 2.2vh, 1.15rem); line-height: 1.3; text-align: left; box-shadow: 0 2px 10px #0008; }
+.bubble b { display: block; font-size: .78em; color: #6d28d9; letter-spacing: .02em; }
+.shot-titlecard { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 16px; background: radial-gradient(circle, #0b0a2499, #0b0a24d9); }
+.shot-titlecard img { width: min(78%, 360px); height: auto; }
+.shot-titlecard h2 { margin: 0; font-size: clamp(1.8rem, 6vh, 2.8rem); text-shadow: 0 0 18px #a78bfa; }
+.shot-titlecard small { letter-spacing: .25em; text-transform: uppercase; opacity: .85; }
+.shot-hint { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; }
+.shot-glitch .shot-img { animation: shot-glitch 1.6s steps(2, end) infinite; }
+@keyframes shot-glitch { 0%, 100% { transform: none; filter: none; } 20% { transform: translate(-3px, 1px); filter: hue-rotate(40deg) brightness(1.4); } 40% { transform: translate(4px, -2px); filter: hue-rotate(-40deg); } 60% { transform: none; filter: brightness(.5); } 80% { transform: translate(-2px, 0); filter: saturate(2); } }
+@media (prefers-reduced-motion: reduce) { .shot-glitch .shot-img { animation: none; } }
+@media (orientation: landscape) and (min-width: 700px) { .shot-text { left: 50%; transform: translateX(-50%); width: min(560px, 90%); border-radius: 16px 16px 0 0; } }

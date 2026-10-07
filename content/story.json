@@ -3,32 +3,310 @@
     "id": "ep1",
     "title": "Episode 1: The Hidden Nexus",
     "cover": "ep01-cover",
-    "blurb": "After the last bell, a symbol on the wall begins to glow...",
+    "blurb": "A symbol on the school wall begins to glow, and five friends step into the Hidden Nexus...",
     "panels": [
-      { "kind": "scene", "bg": "dusk", "page": "ep01-p01", "who": ["ana", "isabella", "anayah", "luna", "kacee"], "text": "After the last bell, Hahn Intermediate School grew quiet. But Ana and her squad, Isabella, Anayah, Luna and Kacee, were not ready to go home just yet." },
-      { "kind": "scene", "bg": "hall", "page": "ep01-p02", "art": "🏫", "who": ["ana"], "text": "Near the front entrance, Ana stopped. On the wall, an old H.A.H.N. symbol was glowing a soft violet. It hummed, like it was trying to say something." },
-      { "kind": "choice", "id": "touch", "bg": "hall", "page": "ep01-p03", "afterPage": "ep01-p04", "art": "💜", "text": "Someone had to reach out first. Who touched the symbol?",
-        "options": [
-          { "id": "ana", "label": "Ana", "after": "Ana reached out first, bravely. Her friends rushed to join her, and soon all five hands were on the symbol. (+5 points)" },
-          { "id": "isabella", "label": "Isabella", "after": "Isabella read the symbol carefully, then touched it first. Her friends rushed to join her, and soon all five hands were on it. (+5 XP)" },
-          { "id": "together", "label": "All together", "after": "The squad counted down, three, two, one, and touched the symbol at the very same moment. (+1 skill point)" }
-        ] },
-      { "kind": "scene", "bg": "portal", "page": "ep01-p05", "art": "✨🌀✨", "text": "Light flooded the hallway. The lockers turned to crystal. The ceiling melted into a violet sky full of stars. The school had become something new: the Nexus." },
-      { "kind": "scene", "bg": "portal", "page": "ep01-p06", "pose": "sensei-happy", "art": "🧙", "name": "The Sensei", "text": "\"Welcome, heroes,\" said a calm voice. A tall figure in glowing robes stepped out of the light, his face hidden deep inside his hood. \"I am the Sensei. I made the Nexus, and I have been waiting for you.\"" },
-      { "kind": "quiz", "id": "cp1", "bg": "portal", "mentor": "isabella", "tip": "Isabella whispers: \"Let's check our supplies. Stay calm and count.\"",
-        "q": "The Sensei gives each of the 5 heroes 12 glowing crystals. How many crystals is that in all?",
-        "choices": ["50", "60", "72"] },
-      { "kind": "scene", "bg": "portal", "page": "ep01-p07", "pose": "sensei-encouraging", "art": "🧙", "name": "The Sensei", "text": "\"The Nexus needs a Keeper,\" the Sensei said. \"Someone wise, who cares about every student.\" He reached up into the swirling light and gently pulled down someone very surprising: the principal." },
-      { "kind": "scene", "bg": "keeper", "page": "ep01-p08", "pose": "keeper-surprised", "art": "👑🐺🐺", "name": "The First Keeper", "text": "In a flash of purple, the principal changed. Curly blonde hair, white and gold robes, a purple cape lined with crystals, a glowing crystal staff, a spellbook, and two gray wolves at her side. \"I am... the First Keeper?\"" },
-      { "kind": "quiz", "id": "cp2", "bg": "keeper", "mentor": "luna", "tip": "Luna grins: \"That's a word we can figure out from the story!\"",
-        "q": "The Sensei calls her the First Keeper. What does a keeper do?",
-        "choices": ["Looks after something and keeps it safe", "Runs away from problems", "Breaks things apart"] },
-      { "kind": "scene", "bg": "keeper", "page": "ep01-p09", "pose": "keeper-happy", "art": "👑", "name": "The First Keeper", "text": "The First Keeper smiled. \"Learning, kindness and hard work will make this world stronger. Heroes, are you ready to protect the Nexus together?\"" },
-      { "kind": "scene", "bg": "portal", "page": "ep01-p10", "who": ["ana", "isabella", "anayah", "luna", "kacee"], "text": "Ana looked at her squad. One by one, they nodded. \"We're ready,\" said Ana. Outside the crystal windows, new doors began to glow." },
-      { "kind": "quiz", "id": "cp3", "bg": "portal", "mentor": "kacee", "tip": "Kacee points at the crystal wall: \"Look how the light bounces. Science!\"",
-        "q": "Light bounces off the shiny crystal walls. What is it called when light bounces off a surface?",
-        "choices": ["Absorption", "Evaporation", "Reflection"] },
-      { "kind": "end", "bg": "dusk", "page": "ep01-collectible", "art": "🌟", "text": "To be continued... The Sensei says new adventures are waiting in the Nexus. Episode 2 is coming soon!" }
+      {
+        "kind": "title",
+        "page": "ep01-bg-entrance-nexus",
+        "eyebrow": "Episode 1",
+        "name": "The Hidden Nexus"
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-bg-portal-closed",
+        "caption": "Somewhere between the bell and the buses, the school blinked.",
+        "fx": "glitch"
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-bg-school-front",
+        "caption": "Hahn Intermediate School. Normal. Totally, completely normal."
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-04-steps",
+        "lines": [
+          {
+            "who": "Ana",
+            "text": "Race you to homeroom!"
+          },
+          {
+            "who": "Isabella",
+            "text": "We're walking. Nobody races on stairs."
+          },
+          {
+            "who": "Ana",
+            "text": "Walking... very fast, then!"
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-05-hallway",
+        "lines": [
+          {
+            "who": "Kacee",
+            "text": "And that's why you never trust a cafeteria taco."
+          },
+          {
+            "who": "Luna",
+            "text": "...Did anyone else just feel watched?"
+          },
+          {
+            "who": "Anayah",
+            "text": "It's a school. Somebody is always watching."
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-06-glowing-locker",
+        "lines": [
+          {
+            "who": "Ana",
+            "text": "Okay, who painted a glowing purple sticker on our wall?"
+          },
+          {
+            "who": "Kacee",
+            "text": "Stickers don't hum."
+          },
+          {
+            "who": "Luna",
+            "text": "...It's humming."
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-07-symbol-closeup",
+        "lines": [
+          {
+            "who": "Ana",
+            "text": "What is this?"
+          },
+          {
+            "who": "Isabella",
+            "text": "Don't touch it. Whatever it is, don't touch it."
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-08-light-swallows",
+        "lines": [
+          {
+            "who": "Isabella",
+            "text": "Nobody touch it."
+          },
+          {
+            "who": "Ana",
+            "text": "Too late!"
+          },
+          {
+            "who": "Everyone",
+            "text": "ANAAAA!"
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-bg-nexus-hub",
+        "caption": "No hallway. No lockers. Just a whole new world.",
+        "lines": [
+          {
+            "who": "Anayah",
+            "text": "Okay. Okay. We're fine. This is fine."
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-10a-outfit-ana",
+        "lines": [
+          {
+            "who": "Ana",
+            "text": "Wait... what am I wearing? ...I LOVE it."
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-10b-outfit-isabella",
+        "lines": [
+          {
+            "who": "Isabella",
+            "text": "This is... tactically perfect. Pockets everywhere."
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-10c-outfit-anayah",
+        "lines": [
+          {
+            "who": "Anayah",
+            "text": "Okay, the scarf is doing a lot for me."
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-10d-outfit-luna",
+        "lines": [
+          {
+            "who": "Luna",
+            "text": "I have a moon cape. A MOON CAPE."
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-10e-outfit-kacee",
+        "lines": [
+          {
+            "who": "Kacee",
+            "text": "Fingerless gloves. Now I can high-five dramatically."
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-11-admire",
+        "lines": [
+          {
+            "who": "Isabella",
+            "text": "Ana, you have a tiny sparkly bow-tie hat."
+          },
+          {
+            "who": "Ana",
+            "text": "It's called style, and it stays."
+          },
+          {
+            "who": "Kacee",
+            "text": "It's winking at me."
+          },
+          {
+            "who": "Luna",
+            "text": "It is winking at you."
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-12-powers",
+        "lines": [
+          {
+            "who": "Luna",
+            "text": "My hand is glowing. Is that normal?"
+          },
+          {
+            "who": "Ana",
+            "text": "Nothing about today is normal. Let's go!"
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-bg-sensei-chamber",
+        "lines": [
+          {
+            "who": "The Sensei",
+            "text": "Welcome to the Nexus, heroes. I am the Sensei. I built this place to protect your school."
+          },
+          {
+            "who": "Ana",
+            "text": "Cool. Why us?"
+          },
+          {
+            "who": "The Sensei",
+            "text": "Because you are curious, kind, and slightly too brave."
+          },
+          {
+            "who": "Ana",
+            "text": "Slightly?"
+          }
+        ],
+        "pose": "sensei-happy"
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-bg-nexus-hub",
+        "lines": [
+          {
+            "who": "The Sensei",
+            "text": "Every question you answer, every game you win, every card you earn makes the Nexus stronger. Learning is your power."
+          },
+          {
+            "who": "Kacee",
+            "text": "So homework is... a superpower?"
+          },
+          {
+            "who": "The Sensei",
+            "text": "Homework is a very small superpower. Games are a medium one. Teamwork is the big one."
+          }
+        ],
+        "pose": "sensei-encouraging"
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-bg-nexus-portal",
+        "lines": [
+          {
+            "who": "The Sensei",
+            "text": "There is one problem. I cannot watch every portal at once, and I cannot do this alone."
+          },
+          {
+            "who": "Isabella",
+            "text": "So who can?"
+          },
+          {
+            "who": "The Sensei",
+            "text": "I know just the person. Someone who loves and cares about every student in this school."
+          }
+        ],
+        "pose": "sensei-thinking"
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-16-principal-desk",
+        "caption": "The coffee was still warm. It wouldn't be for long.",
+        "lines": [
+          {
+            "who": "The Principal",
+            "text": "If this is another surprise assembly, I'm not ready."
+          }
+        ]
+      },
+      {
+        "kind": "shot",
+        "page": "ep01-17-portal-pulls-principal",
+        "lines": [
+          {
+            "who": "The Principal",
+            "text": "Oh, you've got to be kidding me!"
+          },
+          {
+            "who": "The Sensei",
+            "text": "Please do not be alarmed. I will explain everything. Briefly."
+          },
+          {
+            "who": "The Sensei",
+            "text": "Briefly... because I have somewhere to be. Good luck, heroes."
+          }
+        ]
+      },
+      {
+        "kind": "end",
+        "full": true,
+        "page": "ep01-18-flicker",
+        "lines": [
+          {
+            "who": "The Sensei",
+            "text": "And someone keep an eye on the cafeteria. Something about it feels... wobbly."
+          }
+        ],
+        "text": "To be continued in Episode 2."
+      }
     ]
   }
 ]

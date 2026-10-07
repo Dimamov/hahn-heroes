@@ -95,6 +95,11 @@ function Reader({ progress, onBack }: { progress: StoryProgress; onBack: () => v
 
 /** What a story panel sounds like when read out. */
 function panelText(panel: StoryPanel): string {
+  if (panel.kind === 'title') return `${panel.eyebrow}. ${panel.name}.`;
+  if (panel.kind === 'shot' || (panel.kind === 'end' && panel.lines)) {
+    const lines = panel.lines?.map((l) => `${l.who} says: ${l.text}`) ?? [];
+    return [panel.kind === 'shot' ? panel.caption : panel.text, ...lines].filter(Boolean).join(' ');
+  }
   if (panel.kind === 'quiz') return `${panel.tip} ${questionText(panel.q, panel.choices)}`;
   const spoken = 'name' in panel && panel.name ? `${panel.name} says: ` : '';
   return spoken + panel.text;
@@ -128,6 +133,27 @@ function Speaker({ panel }: { panel: Extract<StoryPanel, { kind: 'scene' }> }) {
   );
 }
 
+/** A full-screen story picture: blurred copy fills the screen, the sharp picture sits on top and is never cropped. */
+function ShotArt({ page }: { page: string }) {
+  const src = storyPage(page);
+  return (
+    <>
+      <img className="shot-fill" src={src} alt="" aria-hidden draggable={false} />
+      <img className="shot-img" src={src} alt="" draggable={false} />
+    </>
+  );
+}
+
+function ShotText({ caption, lines }: { caption?: string; lines?: { who: string; text: string }[] }) {
+  if (!caption && !lines?.length) return null;
+  return (
+    <div className="shot-text">
+      {caption && <p className="shot-caption">{caption}</p>}
+      {lines?.map((l, i) => <p className="bubble" key={i}><b>{l.who}</b>{l.text}</p>)}
+    </div>
+  );
+}
+
 function PanelView({ panel, episode, choices, solved, onChoice, onSolved, done, remaining, onDone }: {
   panel: StoryPanel; episode: string; choices: Record<string, string>; solved: string[];
   onChoice: (id: string, option: string) => void; onSolved: (id: string) => void; done: boolean; remaining: number; onDone: () => void;
@@ -138,6 +164,48 @@ function PanelView({ panel, episode, choices, solved, onChoice, onSolved, done, 
   const [explain, setExplain] = useState('');
   const [reward, setReward] = useState<{ card: string; coins?: number } | null>(null);
 
+  if (panel.kind === 'title') {
+    return (
+      <div className="shot shot-title">
+        <ShotArt page={panel.page} />
+        <div className="shot-titlecard">
+          <img src="/assets/brand/logo-hahn-heroes.webp" alt="HAHN Heroes" width={900} height={622} draggable={false} />
+          <small>{panel.eyebrow}</small>
+          <h2>{panel.name}</h2>
+        </div>
+        <small className="swipe-hint shot-hint">Swipe to begin</small>
+      </div>
+    );
+  }
+  if (panel.kind === 'shot') {
+    return (
+      <div className={`shot${panel.fx === 'glitch' ? ' shot-glitch' : ''}`}>
+        <ShotArt page={panel.page} />
+        {panel.pose && <img className="shot-pose" src={storyPose(panel.pose)} alt="" draggable={false} />}
+        <ShotText caption={panel.caption} lines={panel.lines} />
+      </div>
+    );
+  }
+  if (panel.kind === 'end' && panel.full) {
+    const finishFull = async () => {
+      try { const r = await backend.storyComplete(episode); setReward({ card: r.card, coins: r.coins }); onDone(); } catch { setNote("That didn't work. Try again."); }
+    };
+    const rewardCard = reward ? cardById(reward.card) : null;
+    return (
+      <div className="shot">
+        <ShotArt page={panel.page ?? ""} />
+        <div className="shot-text">
+          {panel.lines?.map((l, i) => <p className="bubble" key={i}><b>{l.who}</b>{l.text}</p>)}
+          <p className="shot-caption">{panel.text}</p>
+          {rewardCard && <CardFace id={rewardCard.id} />}
+          {reward && <p className="note" role="status">You earned the {rewardCard?.name} card{reward.coins ? ` and ${reward.coins} points` : ''}! 🎉</p>}
+          {!done && !reward && <button className="btn primary" onClick={finishFull}>Finish the episode</button>}
+          {done && !reward && <small className="note">✅ Episode finished. Your card is in your collection.</small>}
+          <p className="error" role="alert">{note}</p>
+        </div>
+      </div>
+    );
+  }
   if (panel.kind === 'scene') {
     return (
       <div className={`panel bg-${panel.bg}`}>
@@ -194,7 +262,7 @@ function PanelView({ panel, episode, choices, solved, onChoice, onSolved, done, 
   };
   const card = reward ? cardById(reward.card) : null;
   return (
-    <div className={`panel bg-${panel.bg}`}>
+    <div className={`panel bg-${panel.bg ?? "dusk"}`}>
       {panel.page
         ? <img className="panel-page square" src={storyPage(panel.page)} alt="" draggable={false} />
         : <div className="panel-art" aria-hidden><span className="panel-emoji">{panel.art}</span></div>}
