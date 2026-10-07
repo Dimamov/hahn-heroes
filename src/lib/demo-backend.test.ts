@@ -1151,7 +1151,6 @@ describe('demo backend: grown-ups and missions', () => {
       expect((await b.storyState())[0].panel).toBe(5);
       expect(await b.storyChoose('ep1', 'touch', 'ana')).toMatchObject({ repeat: false, amount: 5 });
       expect(await b.storyChoose('ep1', 'touch', 'isabella')).toEqual({ repeat: true, option: 'ana' });
-      await expect(b.storyComplete('ep1')).rejects.toThrow('checkpoint');
       expect(await b.storyAnswer('ep1', 'cp1', 0)).toEqual({ correct: false });
       for (const [cp, pick] of [['cp1', 1], ['cp2', 0], ['cp3', 2]] as const) {
         expect(await b.storyAnswer('ep1', cp, pick)).toMatchObject({ correct: true, first: true });
@@ -1160,6 +1159,15 @@ describe('demo backend: grown-ups and missions', () => {
       expect(await b.storyComplete('ep1')).toEqual({ repeat: false, card: 'e-keeper', coins: 20 });
       expect(await b.storyComplete('ep1')).toEqual({ repeat: true, card: 'e-keeper' });
       expect((await b.cardsState()).cards.find((c) => c.id === 'e-keeper')?.qty).toBe(1);
+    });
+  });
+
+  describe('story without checkpoints', () => {
+    it('lets a reader finish Episode 1 straight away and pays the card once', async () => {
+      const b = make();
+      await b.signUp(input);
+      expect(await b.storyComplete('ep1')).toEqual({ repeat: false, card: 'e-keeper', coins: 20 });
+      expect(await b.storyComplete('ep1')).toEqual({ repeat: true, card: 'e-keeper' });
     });
   });
 

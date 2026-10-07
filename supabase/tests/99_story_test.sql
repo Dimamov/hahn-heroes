@@ -29,7 +29,6 @@ begin
   r := story_answer('ep1', 'cp1', 1);
   assert (r->>'correct')::boolean and (r->>'first')::boolean and r->>'explanation' like '%60 crystals%', 'right';
   assert not (story_answer('ep1', 'cp1', 1)->>'first')::boolean, 'second time pays nothing';
-  perform expect_error($q$select story_complete('ep1')$q$, 'every checkpoint');
   perform story_answer('ep1', 'cp2', 0);
   perform story_answer('ep1', 'cp3', 2);
 
@@ -42,4 +41,6 @@ begin
   assert (select qty from hero_cards where hero_id = u(91) and card_id = 'e-keeper') = 1, 'one card';
   perform as_user(92);
   assert (story_state()->0->>'panel')::int = 0 and jsonb_array_length(story_state()->0->'solved') = 0, 'other hero untouched';
+  -- Episode 1 has no checkpoints any more: a fresh reader can finish it straight away, once.
+  assert not (story_complete('ep1')->>'repeat')::boolean, 'finish without checkpoints';
 end $$;
