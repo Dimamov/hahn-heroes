@@ -53,9 +53,7 @@ export function Home() {
           <button className="bell gear" onClick={() => go('profile')} aria-label="My profile and settings">⚙️</button>
         </header>
         <div className="home-logo">
-          <img src="/assets/brand/emblem-hahn.webp" alt="" draggable={false} />
-          <h1>H.A.H.N.</h1>
-          <small>Heroes Awakening: Hidden Nexus</small>
+          <img src="/assets/brand/logo-hahn-heroes.webp" alt="HAHN Heroes" width={900} height={622} draggable={false} />
         </div>
         {dailyAvailable && <button className="daily-pill" onClick={claim}><i className="red-dot" aria-label="Reward waiting" />🎁 Collect daily Nexus points</button>}
         <div className="home-squad" aria-hidden>{squad.map((id, n) => <span key={id} className={n === 2 ? 'lead' : ''}><HeroArt id={id} /></span>)}</div>
