@@ -1376,3 +1376,30 @@ html, body { background: #0b0a24; }
 .adv-cover { width: 54px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #8b5cff; flex: none; }
 @media (max-height: 480px) and (orientation: landscape) { .panel-page { max-height: 100%; max-width: 34%; } .panel-hero.pose { height: 70px; } }
 @media (min-aspect-ratio: 5/4) { .screen.game:has(.spot-pair) { max-width: 1100px; } }
+
+/* Sensei full-screen takeover */
+.takeover { position: fixed; inset: 0; z-index: 9999; display: grid; grid-template-rows: 1fr auto; align-items: end; justify-items: center; overflow: hidden; cursor: pointer; background: #07051a; animation: to-in .35s ease-out; }
+.takeover .to-bg { position: absolute; inset: 0; background: radial-gradient(circle at 50% 38%, rgba(139,92,255,.55), rgba(7,5,26,.96) 70%), url('/assets/sensei/bg-sensei-takeover.webp') center/cover; opacity: .95; animation: to-pulse 4s ease-in-out infinite; }
+.takeover .to-rings { position: absolute; left: 50%; top: 36%; width: 0; height: 0; }
+.takeover .to-rings i { position: absolute; left: 0; top: 0; width: 60vmin; height: 60vmin; margin: -30vmin 0 0 -30vmin; border-radius: 50%; border: 3px solid rgba(56,189,248,.7); box-shadow: 0 0 30px #8b5cff, inset 0 0 30px #38bdf8; animation: to-ring 3s ease-out infinite; opacity: 0; }
+.takeover .to-rings i:nth-child(2) { animation-delay: 1s; border-color: rgba(244,114,182,.7); }
+.takeover .to-rings i:nth-child(3) { animation-delay: 2s; border-color: rgba(251,191,36,.7); }
+.takeover .to-sparks b { position: absolute; bottom: -10px; width: 6px; height: 6px; border-radius: 50%; background: #fde68a; box-shadow: 0 0 10px #fbbf24; animation: to-rise 4s linear infinite; }
+.takeover .to-fx { position: absolute; left: 50%; top: 36%; width: 80vmin; max-width: 640px; transform: translate(-50%, -50%); animation: to-spin 12s linear infinite; mix-blend-mode: screen; pointer-events: none; }
+.takeover .to-sensei { position: relative; align-self: end; height: min(52vh, 480px); max-width: 90vw; object-fit: contain; filter: drop-shadow(0 0 24px #8b5cff); animation: to-hero .7s cubic-bezier(.2,1.3,.4,1) both, to-float 3.5s ease-in-out .7s infinite; margin-bottom: -2vh; }
+.takeover .to-panel { position: relative; width: min(94vw, 560px); margin: 0 0 max(14px, env(safe-area-inset-bottom)); padding: 16px 18px 12px; text-align: center; border-radius: 22px; background: linear-gradient(160deg, rgba(30,24,92,.96), rgba(14,10,48,.96)); border: 2px solid #38bdf8; box-shadow: 0 0 28px rgba(139,92,255,.8); animation: to-panel .55s ease-out .45s both; }
+.takeover .to-panel small { color: #fbbf24; letter-spacing: .14em; font-size: .72rem; }
+.takeover .to-panel h2 { margin: 4px 0 6px; font-size: clamp(1.3rem, 4.5vh, 1.9rem); }
+.takeover .to-panel p { margin: 0; line-height: 1.35; font-size: clamp(.95rem, 2.4vh, 1.1rem); max-height: 22vh; overflow: auto; }
+.takeover .to-reward { margin: 8px auto 0; width: fit-content; padding: 4px 16px; border-radius: 99px; background: linear-gradient(90deg, #f59e0b, #fbbf24); color: #1b1240; font-weight: 800; font-size: 1.4rem; animation: to-pop .6s cubic-bezier(.2,1.6,.4,1) 1s both; }
+.takeover .to-tap { display: block; margin-top: 10px; color: #a5b4fc; font-size: .85rem; animation: to-blink 1.6s ease-in-out infinite; }
+@keyframes to-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes to-pulse { 50% { opacity: .75; } }
+@keyframes to-ring { 0% { transform: scale(.2); opacity: .9; } 100% { transform: scale(1.6); opacity: 0; } }
+@keyframes to-rise { to { transform: translateY(-110vh); opacity: 0; } }
+@keyframes to-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes to-hero { from { transform: translateY(60%) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes to-float { 50% { transform: translateY(-8px); } }
+@keyframes to-panel { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes to-pop { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes to-blink { 50% { opacity: .4; } }

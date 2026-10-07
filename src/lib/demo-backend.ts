@@ -289,7 +289,7 @@ interface Db {
   classMissions: ClassMissionRow[];
   submissions: SubmissionRow[];
   announcements: Announcement[];
-  senseiMessages?: (SenseiMessage & { heroId: string; rewardsGiven: number })[];
+  senseiMessages?: (SenseiMessage & { heroId: string; rewardsGiven: number; handled?: boolean; seen?: boolean })[];
   teacherCharacters?: Record<string, TeacherCharacter>;
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
@@ -2912,7 +2912,12 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     async senseiMyMessages() {
       const hero = meHero();
       return (db.senseiMessages ?? []).filter((m) => m.heroId === hero.id).sort((a, b) => b.id - a.id).slice(0, 20)
-        .map(({ id, kind, body, status, reward, reply, createdAt }) => ({ id, kind, body, status, reward, reply, createdAt }));
+        .map(({ id, kind, body, status, reward, reply, createdAt, handled, seen }) => ({ id, kind, body, status, reward, reply, createdAt, unseen: !!handled && !seen && (!!reply || reward > 0) }));
+    },
+    async senseiRepliesSeen() {
+      const hero = meHero();
+      for (const m of db.senseiMessages ?? []) if (m.heroId === hero.id && m.handled) m.seen = true;
+      commit();
     },
     async senseiInbox() {
       meAdult('sensei');
@@ -2930,6 +2935,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       m.reward += paid;
       if (reward > 0) m.rewardsGiven += 1;
       m.reply = reply.trim() || m.reply;
+      m.handled = true; m.seen = false;
       commit();
       return paid;
     },

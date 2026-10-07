@@ -186,6 +186,9 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiMyMessages() {
       return await rpc('sensei_my_messages');
     },
+    async senseiRepliesSeen() {
+      await rpc('sensei_replies_seen');
+    },
     async senseiInbox() {
       return await rpc('sensei_inbox');
     },

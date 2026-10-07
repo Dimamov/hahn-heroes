@@ -39,6 +39,9 @@ begin
   assert (select (m->>'reward')::int from jsonb_array_elements(sensei_my_messages()) m where (m->>'id')::bigint = v_id) = 75, 'hero sees the total';
   assert (select m->>'status' from jsonb_array_elements(sensei_my_messages()) m where (m->>'id')::bigint = v_id) = 'rewarded', 'status rewarded';
   assert (select m->>'reply' from jsonb_array_elements(sensei_my_messages()) m where (m->>'id')::bigint = v_id) = 'Fixed it!', 'reply shows';
+  assert (select (m->>'unseen')::boolean from jsonb_array_elements(sensei_my_messages()) m where (m->>'id')::bigint = v_id), 'reply is unseen';
+  perform sensei_replies_seen();
+  assert not (select (m->>'unseen')::boolean from jsonb_array_elements(sensei_my_messages()) m where (m->>'id')::bigint = v_id), 'seen after the takeover';
   perform as_admin();
   assert (select coalesce(sum(amount), 0) from ledger_entries where child_id = u(190) and source = 'sensei') = 75, 'diamonds landed';
 end $$;

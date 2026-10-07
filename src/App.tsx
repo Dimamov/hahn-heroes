@@ -8,6 +8,7 @@ import { Onboarding } from './screens/Onboarding.tsx';
 import { SignIn } from './screens/SignIn.tsx';
 import { Home } from './screens/Home.tsx';
 import { Destination } from './screens/Destination.tsx';
+import { SenseiTakeover } from './components/SenseiTakeover.tsx';
 import { SenseiContact } from './screens/SenseiContact.tsx';
 import { Notifications } from './screens/Notifications.tsx';
 import { Profile } from './screens/Profile.tsx';
@@ -224,6 +225,7 @@ export default function App() {
   const practiceSubject = screen.startsWith('practice:') ? (screen.slice(9) as Subject) : null;
   return (
     <SessionContext.Provider value={session}>
+      <SenseiTakeover backend={backend} heroId={hero.id} paused={screen.startsWith('game:') || !!quizId || !!practiceSubject} onDone={() => { refresh().catch(() => undefined); }} />
       {screen === 'home' && <Home />}
       {screen === 'profile' && <Profile />}
       {screen === 'classlive' && <ClassLive />}
