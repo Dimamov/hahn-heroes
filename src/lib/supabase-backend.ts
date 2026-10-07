@@ -180,6 +180,19 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async senseiDeleteAnnouncement(id) {
       await rpc('sensei_delete_announcement', { p_id: id });
     },
+    async senseiMessageSend(kind, body) {
+      await rpc('sensei_message_send', { p_kind: kind, p_body: body });
+    },
+    async senseiMyMessages() {
+      return await rpc('sensei_my_messages');
+    },
+    async senseiInbox() {
+      return await rpc('sensei_inbox');
+    },
+    async senseiMessageResolve(id, reward, reply, close = false) {
+      const r = await rpc('sensei_message_resolve', { p_id: id, p_reward: reward, p_reply: reply, p_close: close });
+      return (r as { awarded?: number })?.awarded ?? 0;
+    },
     async teacherCharacter() {
       return await rpc('teacher_character_get');
     },

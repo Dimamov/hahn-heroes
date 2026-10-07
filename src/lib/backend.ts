@@ -230,6 +230,18 @@ export interface Announcement {
   createdAt: string;
 }
 
+export type SenseiMessageKind = 'message' | 'bug' | 'idea';
+export interface SenseiMessage {
+  id: number;
+  kind: SenseiMessageKind;
+  body: string;
+  status: 'new' | 'seen' | 'rewarded' | 'closed';
+  reward: number;
+  reply: string | null;
+  createdAt: string;
+}
+export interface SenseiInboxItem extends SenseiMessage { hero: string; heroCode: string; grade: number }
+
 export interface ChildSummary {
   id: string;
   displayName: string;
@@ -587,6 +599,12 @@ export interface Backend {
   submitClassMission(id: string, answers: number[]): Promise<ClassResult>;
   announcements(): Promise<{ items: Announcement[]; unread: number }>;
   senseiDeleteAnnouncement(id: number): Promise<void>;
+  /** A hero writes to the Sensei inside the app. No email address is ever shown. */
+  senseiMessageSend(kind: SenseiMessageKind, body: string): Promise<void>;
+  senseiMyMessages(): Promise<SenseiMessage[]>;
+  senseiInbox(): Promise<SenseiInboxItem[]>;
+  /** Thank a hero (reward 0) or grant diamonds (1 to 500). Returns the diamonds actually paid. */
+  senseiMessageResolve(id: number, reward: number, reply: string, close?: boolean): Promise<number>;
   markAnnouncementsRead(): Promise<void>;
   /** Push notifications: is the server set up (and its public key), this person's choices, and their devices. */
   pushKey(): Promise<{ configured: boolean; key: string | null }>;

@@ -667,6 +667,24 @@ describe('demo backend: grown-ups and missions', () => {
     expect((await b.announcements()).unread).toBe(0);
   });
 
+  it('sends heroes\' messages to a private Sensei inbox and pays rewards once per grant', async () => {
+    const { b, hero } = await setup();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    await b.senseiMessageSend('bug', 'The shop is stuck');
+    await expect(b.senseiMessageSend('bug', '   ')).rejects.toThrow();
+    expect((await b.senseiMyMessages())).toHaveLength(1);
+    await expect(b.senseiInbox()).rejects.toThrow();
+    await b.signOut();
+    await b.adultSignIn('sensei@demo.test', 'sensei');
+    const [item] = await b.senseiInbox();
+    expect(item.hero).toBe(hero.displayName);
+    expect(await b.senseiMessageResolve(item.id, 25, 'Great catch!')).toBe(25);
+    await b.signOut();
+    await b.signIn(hero.heroCode, [0, 4, 8, 2]);
+    const [mine] = await b.senseiMyMessages();
+    expect(mine).toMatchObject({ status: 'rewarded', reward: 25, reply: 'Great catch!' });
+  });
+
   it('lets the Sensei remove an old announcement for everyone', async () => {
     const { b, hero } = await setup();
     await b.adultSignIn('sensei@demo.test', 'sensei');

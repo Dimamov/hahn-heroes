@@ -8,9 +8,10 @@ import { shrinkImage } from '../../lib/image-file.ts';
 import { UsageReportScreen } from './UsageReport.tsx';
 import { KindReview } from './KindReview.tsx';
 import { CodeMaker } from './CodeMaker.tsx';
+import { SenseiInbox } from './SenseiInbox.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
 
-type View = 'home' | 'challenge' | 'events' | 'delete' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes' | 'kind' | 'usage' | 'email';
+type View = 'home' | 'challenge' | 'events' | 'delete' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes' | 'kind' | 'usage' | 'email' | 'inbox';
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
@@ -22,6 +23,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
   const back = () => { reload(); setView('home'); };
 
   if (view === 'teachers') return <Teachers backend={backend} onBack={back} />;
+  if (view === 'inbox') return <SenseiInbox backend={backend} onBack={back} />;
   if (view === 'announce') return <Announce backend={backend} onBack={back} />;
   if (view === 'drawings') return <DrawingReports backend={backend} onBack={back} />;
   if (view === 'codes') return <CodeMaker backend={backend} onBack={back} />;
@@ -64,6 +66,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
         <button className="btn" onClick={() => setView('traffic')}>📈 Players and traffic</button>
         <button className="btn" onClick={() => setView('usage')}>🗓 Monthly report</button>
         <button className="btn" onClick={() => setView('teachers')}>Teachers to approve{overview && overview.pendingTeachers > 0 ? ` (${overview.pendingTeachers})` : ''}</button>
+        <button className="btn" onClick={() => setView('inbox')}>📬 Inbox: messages, bugs, ideas</button>
         <button className="btn" onClick={() => setView('announce')}>📣 Post an announcement</button>
         <button className="btn" onClick={() => setView('challenge')}>🏁 Weekly House challenge</button>
         <button className="btn" onClick={() => setView('events')}>🍂 Seasonal events</button>
