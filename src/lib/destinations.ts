@@ -39,7 +39,7 @@ export const DESTINATIONS: Destination[] = [
   { id: 'squad', label: 'Squad', icon: '👥', tint: '#38bdf8', blurb: 'Your friends and your squad.', milestone: 'Squad play' },
   { id: 'house', label: 'House', icon: '🏰', tint: '#fb923c', blurb: 'Your class House and the leaderboards.', milestone: 'Houses' },
   { id: 'settings', label: 'Settings', icon: '⚙️', tint: '#94a3b8', blurb: 'Sound, motion and reading options.', milestone: 'Collections' },
-  { id: 'sensei', label: 'Contact the Sensei', icon: '🧙', tint: '#c084fc', blurb: 'Send a message or report a bug.', milestone: 'Foundation', href: 'mailto:info@detcorddigital.com?subject=HAHN%20Heroes' },
+  { id: 'sensei', label: 'The Sensei', icon: '🧙', tint: '#c084fc', blurb: 'Send a message, report a bug or suggest an idea.', milestone: 'Foundation' },
   { id: 'guide', label: 'How the Nexus Works', icon: '❓', tint: '#60a5fa', blurb: 'The Sensei explains how to play.', milestone: 'Story and events' },
   { id: 'donotpress', label: 'Do Not Press', icon: '🚨', tint: '#ef4444', blurb: 'You were warned...', milestone: 'Solo arcade (Fun Box)' },
 ];

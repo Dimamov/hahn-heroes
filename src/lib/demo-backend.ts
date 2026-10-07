@@ -33,7 +33,7 @@ import { STICKER_BGS, STICKER_COST, STICKER_DAILY, STICKER_DECOS, STICKER_FRAMES
 import { EMOTES, type EmoteId, type Pose } from './showcase.ts';
 import {
   AdultAuthError, HOUSE_COLORS, SECRET_PLACES, SQUAD_WORDS, SUBJECTS, SignInError, emptyBalances,
-  type Adult, type Announcement, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
+  type Adult, type Announcement, type SenseiMessage, type Backend, type ClassInfo, type ClassMission, type ClassMissionResults,
   type ClassResult, type Hero, type HouseIdentity, type HomeMission, type HomeMissionStatus, type Identity, type NewClassMission,
   type QuestState, type QuizQuestion, type RoomState, type SignUpInput, type Subject, type SubjectProgress, type TeacherCharacter, type TriviaState,
 } from './backend.ts';
@@ -289,6 +289,7 @@ interface Db {
   classMissions: ClassMissionRow[];
   submissions: SubmissionRow[];
   announcements: Announcement[];
+  senseiMessages?: (SenseiMessage & { heroId: string; rewardsGiven: number })[];
   teacherCharacters?: Record<string, TeacherCharacter>;
   reads: { userId: string; announcementId: number }[];
   triviaNight: { weekday: string; time: string };
@@ -2897,6 +2898,40 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
     async aiDraftQuiz() {
       meAdult('teacher');
       throw new Error('not_set_up');
+    },
+    async senseiMessageSend(kind, body) {
+      const hero = meHero();
+      const text = body.trim();
+      if (!['message', 'bug', 'idea'].includes(kind)) throw new Error('bad kind');
+      if (text.length < 1 || text.length > 500) throw new Error('write 1 to 500 characters');
+      const rows = (db.senseiMessages ??= []);
+      if (rows.filter((m) => m.heroId === hero.id && at() - new Date(m.createdAt).getTime() < 24 * HOUR).length >= 10) throw new Error('too many messages today');
+      rows.push({ id: Math.max(0, ...rows.map((m) => m.id)) + 1, heroId: hero.id, kind, body: text, status: 'new', reward: 0, rewardsGiven: 0, reply: null, createdAt: now().toISOString() });
+      commit();
+    },
+    async senseiMyMessages() {
+      const hero = meHero();
+      return (db.senseiMessages ?? []).filter((m) => m.heroId === hero.id).sort((a, b) => b.id - a.id).slice(0, 20)
+        .map(({ id, kind, body, status, reward, reply, createdAt }) => ({ id, kind, body, status, reward, reply, createdAt }));
+    },
+    async senseiInbox() {
+      meAdult('sensei');
+      return [...(db.senseiMessages ?? [])].sort((a, b) => Number(b.status === 'new') - Number(a.status === 'new') || b.id - a.id).slice(0, 60)
+        .map((m) => { const h = heroById(m.heroId); return { id: m.id, kind: m.kind, body: m.body, status: m.status, reward: m.reward, reply: m.reply, createdAt: m.createdAt, hero: h?.displayName ?? 'Hero', heroCode: h?.heroCode ?? '', grade: h?.grade ?? 5 }; });
+    },
+    async senseiMessageResolve(id, reward, reply, close = false) {
+      meAdult('sensei');
+      if (!Number.isInteger(reward) || reward < 0 || reward > 500) throw new Error('reward must be 0 to 500');
+      const m = (db.senseiMessages ?? []).find((x) => x.id === id);
+      if (!m) throw new Error('no such message');
+      let paid = 0;
+      if (reward > 0) paid = award(m.heroId, 'coins', reward, 'sensei', `sensei_msg:${m.id}:${m.rewardsGiven + 1}`).awarded;
+      m.status = reward > 0 ? 'rewarded' : close ? 'closed' : 'seen';
+      m.reward += paid;
+      if (reward > 0) m.rewardsGiven += 1;
+      m.reply = reply.trim() || m.reply;
+      commit();
+      return paid;
     },
     async senseiDeleteAnnouncement(id) {
       meAdult('sensei');

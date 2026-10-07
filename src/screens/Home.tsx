@@ -90,7 +90,7 @@ export function Home() {
         {tile('donotpress', 'Do Not Press', '', img('/assets/games/do-not-press.webp'), '#ef4444')}
         <button className="sensei-bar" onClick={() => go('sensei')}>
         <span className="sensei-face" aria-hidden>🧙</span>
-        <span><b>Contact the Sensei</b><small>I&apos;m here to help</small></span>
+        <span><b>The Sensei</b><small>I&apos;m here to help</small></span>
         <span className="art-tile-go" aria-hidden>›</span>
       </button>
       </div>
