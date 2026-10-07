@@ -832,6 +832,9 @@ export interface Backend {
   classPracticeAssign(classId: string, subject: string, target: number, due: string): Promise<void>;
   classPracticeCancel(id: string): Promise<void>;
   // Class streak goal
+  /** Classroom mode: a teacher passes the class; a student leaves it out and learns whether their class has it on. */
+  classroomModeStatus(classId?: string): Promise<boolean>;
+  classroomModeSet(classId: string, on: boolean): Promise<void>;
   classGoalStatus(classId?: string): Promise<ClassGoal | null>;
   classGoalSet(classId: string, days: number, share: number): Promise<void>;
   classGoalOff(classId: string): Promise<void>;

@@ -4,14 +4,21 @@ import { isQuiet } from '../lib/sound.ts';
 import { useSession } from '../App.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
 import { WeekRecap } from '../components/WeekRecap.tsx';
+import { ClassroomHome } from './ClassroomHome.tsx';
+import { isChromebook } from '../lib/device.ts';
 
 export function Home() {
   const { hero, balances, dailyAvailable, unread, missionDot, arcadeDot, questDot, backend, refresh, go } = useSession();
   const [popped, setPopped] = useState<number | null>(null);
   const [live, setLive] = useState<ClassLiveOpen | null>(null);
+  const [classroom, setClassroom] = useState(false);
   useEffect(() => {
     let stop = false;
-    const look = () => backend.classLiveOpen().then((o) => { if (!stop) setLive(o); }).catch(() => undefined);
+    const chromebook = isChromebook();
+    const look = () => {
+      backend.classLiveOpen().then((o) => { if (!stop) setLive(o); }).catch(() => undefined);
+      if (chromebook) backend.classroomModeStatus().then((on) => { if (!stop) setClassroom(on); }).catch(() => undefined);
+    };
     void look();
     const id = window.setInterval(look, 8000);
     return () => { stop = true; window.clearInterval(id); };
@@ -25,6 +32,8 @@ export function Home() {
       setTimeout(() => setPopped(null), 2200);
     } catch { /* the badge stays; the child can tap again */ }
   };
+
+  if (classroom) return <ClassroomHome live={live} />;
 
   const level = Math.floor(balances.xp / 100) + 1;
   const into = balances.xp % 100;

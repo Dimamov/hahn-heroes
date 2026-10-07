@@ -73,13 +73,23 @@ function NewClass({ backend, onBack, onDone }: { backend: Backend; onBack: () =>
 
 function ClassScreen({ backend, cls, onBack, onNew, onHouse, onReport, onCodes, onLive, onPractice, onQuestions }: { backend: Backend; cls: ClassInfo; onBack: () => void; onNew: () => void; onHouse: () => void; onReport: () => void; onCodes: () => void; onLive: () => void; onPractice: () => void; onQuestions: () => void }) {
   const [results, setResults] = useState<ClassMissionResults[] | null>(null);
+  const [roomOn, setRoomOn] = useState<boolean | null>(null);
   const load = () => backend.classResults(cls.id).then(setResults).catch(() => setResults([]));
-  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { load(); backend.classroomModeStatus(cls.id).then(setRoomOn).catch(() => setRoomOn(null)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const flipRoom = async () => { if (roomOn === null) return; const next = !roomOn; setRoomOn(next); try { await backend.classroomModeSet(cls.id, next); } catch { setRoomOn(!next); } };
   const reset = async (missionId: string, childId: string) => { await backend.resetSubmission(missionId, childId).catch(() => {}); load(); };
   return (
     <main className="screen">
       <ScreenBar title={cls.name} onBack={onBack} />
       <div className="big-code" aria-label="Class code"><small>Class code</small><b>{cls.joinCode}</b></div>
+      <button className="btn primary launch" onClick={onLive}>🚀 Launch a live game</button>
+      {roomOn !== null && (
+        <button className={`classroom-card${roomOn ? ' on' : ''}`} onClick={flipRoom} aria-pressed={roomOn}>
+          <span aria-hidden style={{ fontSize: '1.8rem' }}>🏫</span>
+          <span><b>Classroom mode</b><small>{roomOn ? 'On. Students on school Chromebooks see the classroom home.' : 'Off. Turn on when class starts. Chromebooks only.'}</small></span>
+          <span className="switch">{roomOn ? 'ON' : 'OFF'}</span>
+        </button>
+      )}
       {results === null ? <div className="spinner" /> : (
         <PagedList items={results} perPage={1} empty="No class missions yet. Tap New mission to make a reading quiz."
           render={(m) => (
@@ -96,7 +106,6 @@ function ClassScreen({ backend, cls, onBack, onNew, onHouse, onReport, onCodes, 
             </div>
           )} />
       )}
-      <button className="btn primary" onClick={onLive}>📺 Live class game</button>
       <div className="btn-grid">
         <button className="btn ghost" onClick={onPractice}>📚 Homework</button>
         <button className="btn ghost" onClick={onQuestions}>✏️ Questions</button>
