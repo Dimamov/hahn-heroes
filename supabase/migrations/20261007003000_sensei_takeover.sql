@@ -2,8 +2,7 @@
 -- The Sensei also gets a push notification when a hero writes to the inbox.
 alter table public.sensei_messages add column hero_seen_at timestamptz;
 
-drop function public.sensei_my_messages();
-create function public.sensei_my_messages() returns jsonb
+create or replace function public.sensei_my_messages() returns jsonb
 language plpgsql stable security definer set search_path = public as $$
 declare v_hero uuid := me_hero();
 begin
@@ -47,8 +46,8 @@ begin
   return v_res;
 end $$;
 
-revoke execute on function public.sensei_my_messages(), public.sensei_replies_seen() from public, anon;
-grant execute on function public.sensei_my_messages(), public.sensei_replies_seen() to authenticated;
+revoke execute on function public.sensei_replies_seen() from public, anon;
+grant execute on function public.sensei_replies_seen() to authenticated;
 
 -- Push to the Sensei for each new hero message (no names, no text). Needs the Sensei to turn notifications on.
 create function public.push_on_sensei_message() returns trigger
