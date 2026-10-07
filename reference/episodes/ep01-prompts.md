@@ -35,7 +35,7 @@ All five girls wear the standard school uniform from the uniform reference: navy
 
 The girls are 10 and 11 years old, with friendly, school-appropriate proportions and modest outfits.
 
-Never put speech bubbles, captions, text, letters or numbers in any image. The app adds the words.
+Never put speech bubbles, captions, text, letters or numbers in any image. The app draws the speech bubbles on top later, so in every panel where someone talks, leave clear open space (sky, wall or plain background) near that character's head, about a fifth of the panel, with no faces or important details in it.
 
 The only logos allowed are the violet Nexus star and, if a school cardinal appears, the Davison "D" cardinal I uploaded. No other team logos.
 ```
