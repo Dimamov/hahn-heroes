@@ -14,9 +14,9 @@ const save = (from, name) => sharp(from).resize(768, 1152, { fit: 'inside', with
 for (const f of readdirSync(join(src, '12-episode-01')).filter((n) => /^ep01-\d\d.*\.png$/.test(n)).sort()) {
   await save(join(src, '12-episode-01', f), basename(f, '.png'));
 }
-// The cartoon school front is reused (the new school-front art is still a photo); backgrounds sit behind Sensei poses.
+// Reused backgrounds: the title card, the glitch cold open, and the Nexus rooms behind the Sensei poses.
 for (const [from, name] of [
-  ['bg-entrance-real-tall', 'ep01-bg-school-front'], ['bg-entrance-nexus-tall', 'ep01-bg-entrance-nexus'], ['bg-portal-closed-tall', 'ep01-bg-portal-closed'],
+  ['bg-entrance-nexus-tall', 'ep01-bg-entrance-nexus'], ['bg-portal-closed-tall', 'ep01-bg-portal-closed'],
   ['bg-nexus-hub-tall', 'ep01-bg-nexus-hub'], ['bg-sensei-chamber-tall', 'ep01-bg-sensei-chamber'], ['bg-nexus-portal-tall', 'ep01-bg-nexus-portal'],
 ]) await save(join(src, '03-backgrounds', from + '.png'), name);
 // The cover on the Adventures list is the whole squad with their powers.
