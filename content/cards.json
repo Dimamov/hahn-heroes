@@ -4,6 +4,7 @@
   "name": "Hahn Front Hall",
   "rarity": "common",
   "icon": "🏫",
+  "art": "card-art-001",
   "flavor": "Where every hero first steps into the Nexus."
  },
  {
@@ -11,6 +12,7 @@
   "name": "Lucky Locker",
   "rarity": "common",
   "icon": "🔐",
+  "art": "card-art-003",
   "flavor": "It always opens on the first try. Almost."
  },
  {
@@ -18,6 +20,7 @@
   "name": "Power Pencil",
   "rarity": "common",
   "icon": "✏️",
+  "art": "card-art-012",
   "flavor": "Sharpened by a thousand good ideas."
  },
  {
@@ -25,6 +28,7 @@
   "name": "Quest Notebook",
   "rarity": "common",
   "icon": "📓",
+  "art": "card-art-046",
   "flavor": "Every great quest starts on page one."
  },
  {
@@ -32,6 +36,7 @@
   "name": "Hero Lunch",
   "rarity": "common",
   "icon": "🥪",
+  "art": "card-art-006",
   "flavor": "Snack power restored."
  },
  {
@@ -39,6 +44,7 @@
   "name": "Nexus Bell",
   "rarity": "common",
   "icon": "🔔",
+  "art": "card-art-014",
   "flavor": "Rings when something awesome is about to happen."
  },
  {
@@ -46,6 +52,7 @@
   "name": "Magic Backpack",
   "rarity": "common",
   "icon": "🎒",
+  "art": "card-art-056",
   "flavor": "Holds more than it should."
  },
  {
@@ -53,6 +60,7 @@
   "name": "Time Clock",
   "rarity": "common",
   "icon": "⏰",
+  "art": "card-art-002",
   "flavor": "Never late, never early."
  },
  {
@@ -60,6 +68,7 @@
   "name": "Academy Map",
   "rarity": "common",
   "icon": "🗺️",
+  "art": "card-art-013",
   "flavor": "Some rooms are only on the secret side."
  },
  {
@@ -67,6 +76,7 @@
   "name": "Study Lamp",
   "rarity": "common",
   "icon": "💡",
+  "art": "card-art-050",
   "flavor": "Glows brighter with every right answer."
  },
  {
@@ -74,6 +84,7 @@
   "name": "Dusty Tome",
   "rarity": "common",
   "icon": "📖",
+  "art": "card-art-005",
   "flavor": "The pages turn on their own."
  },
  {
@@ -81,6 +92,7 @@
   "name": "Lost Compass",
   "rarity": "common",
   "icon": "🧭",
+  "art": "card-art-048",
   "flavor": "Points to whatever you need most."
  },
  {
@@ -88,6 +100,7 @@
   "name": "Sprint Sneakers",
   "rarity": "common",
   "icon": "👟",
+  "art": "card-art-007",
   "flavor": "Hallway speed record holder."
  },
  {
@@ -95,6 +108,7 @@
   "name": "Crystal Calculator",
   "rarity": "common",
   "icon": "🧮",
+  "art": "card-art-010",
   "flavor": "Adds up to adventure."
  },
  {
@@ -102,6 +116,7 @@
   "name": "Wonder Globe",
   "rarity": "common",
   "icon": "🌍",
+  "art": "card-art-004",
   "flavor": "Spin it and pick a mystery."
  },
  {
@@ -109,6 +124,7 @@
   "name": "Bubbly Flask",
   "rarity": "common",
   "icon": "🧪",
+  "art": "card-art-027",
   "flavor": "Do not shake. Okay, shake a little."
  },
  {
@@ -116,6 +132,7 @@
   "name": "Tiny Trophy",
   "rarity": "common",
   "icon": "🏆",
+  "art": "card-art-053",
   "flavor": "Small, shiny and well earned."
  },
  {
@@ -123,6 +140,7 @@
   "name": "Wish Star",
   "rarity": "common",
   "icon": "⭐",
+  "art": "card-art-052",
   "flavor": "Make a wish for a friend."
  },
  {
@@ -130,6 +148,7 @@
   "name": "Emberling Egg",
   "rarity": "uncommon",
   "icon": "🥚",
+  "art": "card-art-033",
   "flavor": "Warm to the touch, and humming."
  },
  {
@@ -137,6 +156,7 @@
   "name": "Zephling Breeze",
   "rarity": "uncommon",
   "icon": "🌬️",
+  "art": "card-art-041",
   "flavor": "Carries giggles across the playground."
  },
  {
@@ -144,6 +164,7 @@
   "name": "Tideling Splash",
   "rarity": "uncommon",
   "icon": "💧",
+  "art": "card-art-035",
   "flavor": "Calm on top, deep underneath."
  },
  {
@@ -151,6 +172,7 @@
   "name": "Mossling Sprout",
   "rarity": "uncommon",
   "icon": "🌱",
+  "art": "card-art-037",
   "flavor": "Grows when you help someone."
  },
  {
@@ -158,6 +180,7 @@
   "name": "Frostling Flake",
   "rarity": "uncommon",
   "icon": "❄️",
+  "art": "card-art-043",
   "flavor": "Every one is different. Just like you."
  },
  {
@@ -165,6 +188,7 @@
   "name": "Sparkling Zap",
   "rarity": "uncommon",
   "icon": "⚡",
+  "art": "card-art-039",
   "flavor": "Quick as a good idea."
  },
  {
@@ -172,6 +196,7 @@
   "name": "Glimmerling Gleam",
   "rarity": "uncommon",
   "icon": "✨",
+  "art": "card-art-031",
   "flavor": "Shines brightest at big moments."
  },
  {
@@ -179,6 +204,7 @@
   "name": "Library Owl",
   "rarity": "uncommon",
   "icon": "🦉",
+  "art": "card-art-030",
   "flavor": "Knows where every book is hiding."
  },
  {
@@ -186,6 +212,7 @@
   "name": "Gray Wolf Pup",
   "rarity": "uncommon",
   "icon": "🐺",
+  "art": "card-art-024",
   "flavor": "A guardian in training."
  },
  {
@@ -193,6 +220,7 @@
   "name": "Rainbow Bridge",
   "rarity": "uncommon",
   "icon": "🌈",
+  "art": "card-art-011",
   "flavor": "Connects two worlds and two friends."
  },
  {
@@ -200,6 +228,7 @@
   "name": "Storm Cloak",
   "rarity": "uncommon",
   "icon": "🧣",
+  "art": "card-art-009",
   "flavor": "Weathers any pop quiz."
  },
  {
@@ -207,6 +236,7 @@
   "name": "Silver Key",
   "rarity": "uncommon",
   "icon": "🗝️",
+  "art": "card-art-049",
   "flavor": "Fits a door nobody has found yet."
  },
  {
@@ -214,6 +244,7 @@
   "name": "Isabella, Swift Scout",
   "rarity": "rare",
   "icon": "🏃‍♀️",
+  "art": "card-art-017",
   "flavor": "First to every clue, last to give up."
  },
  {
@@ -221,6 +252,7 @@
   "name": "Anayah, Kind Heart",
   "rarity": "rare",
   "icon": "💖",
+  "art": "card-art-018",
   "flavor": "Her kindness is her strongest power."
  },
  {
@@ -228,6 +260,7 @@
   "name": "Luna, Moon Mage",
   "rarity": "rare",
   "icon": "🌙",
+  "art": "card-art-019",
   "flavor": "Her spells glow in the dark."
  },
  {
@@ -235,6 +268,7 @@
   "name": "Kacee, Bright Spark",
   "rarity": "rare",
   "icon": "🔥",
+  "art": "card-art-020",
   "flavor": "Turns a bad day into a good plan."
  },
  {
@@ -242,6 +276,7 @@
   "name": "The Nexus Portal",
   "rarity": "rare",
   "icon": "🌀",
+  "art": "card-art-015",
   "flavor": "A swirl of violet light and possibility."
  },
  {
@@ -249,6 +284,7 @@
   "name": "Violet Crystal",
   "rarity": "rare",
   "icon": "🔮",
+  "art": "card-art-051",
   "flavor": "Hums when a hero is near."
  },
  {
@@ -256,6 +292,7 @@
   "name": "Ana, Hero of the Nexus",
   "rarity": "epic",
   "icon": "🦸‍♀️",
+  "art": "card-art-016",
   "flavor": "She touched the symbol and the world woke up."
  },
  {
@@ -263,6 +300,7 @@
   "name": "The First Keeper",
   "rarity": "epic",
   "icon": "👑",
+  "art": "card-art-021",
   "flavor": "Guardian of the academy, flanked by two gray wolves."
  },
  {
@@ -270,6 +308,7 @@
   "name": "The Founding Squad",
   "rarity": "epic",
   "icon": "🤝",
+  "art": "card-art-055",
   "flavor": "Five friends. One Nexus. Endless adventures."
  },
  {
@@ -277,6 +316,7 @@
   "name": "The Sensei",
   "rarity": "legendary",
   "icon": "🧙",
+  "art": "card-art-022",
   "flavor": "Creator of the Nexus. He only appears to those who are ready."
  },
  {
@@ -284,6 +324,7 @@
   "name": "The H.A.H.N. Emblem",
   "rarity": "legendary",
   "icon": "🛡️",
+  "art": "card-art-047",
   "flavor": "Heroes Awakening: Hidden Nexus."
  }
 ]

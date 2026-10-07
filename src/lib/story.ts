@@ -2,11 +2,14 @@ import episodes from '../../content/story.json';
 
 export interface StoryOption { id: string; label: string; after: string }
 export type StoryPanel =
-  | { kind: 'scene'; bg: string; text: string; art?: string; name?: string; who?: string[] }
-  | { kind: 'choice'; id: string; bg: string; text: string; art?: string; options: StoryOption[] }
+  | { kind: 'scene'; bg: string; text: string; art?: string; name?: string; who?: string[]; page?: string; pose?: string }
+  | { kind: 'choice'; id: string; bg: string; text: string; art?: string; page?: string; afterPage?: string; options: StoryOption[] }
   | { kind: 'quiz'; id: string; bg: string; q: string; choices: string[]; mentor: string; tip: string }
-  | { kind: 'end'; bg: string; text: string; art?: string };
-export interface StoryEpisode { id: string; title: string; blurb: string; panels: StoryPanel[] }
+  | { kind: 'end'; bg: string; text: string; art?: string; page?: string };
+/** `page` is a finished picture in /assets/story/<episode>/; `pose` is a character pose in /assets/story/poses/. Both fall back to the emoji or hero art. */
+export interface StoryEpisode { id: string; title: string; blurb: string; cover?: string; panels: StoryPanel[] }
+export const storyPage = (name: string) => `/assets/story/${name.split('-')[0]}/${name}.webp`;
+export const storyPose = (name: string) => `/assets/story/poses/pose-${name}.webp`;
 
 export const EPISODES = episodes as StoryEpisode[];
 export const episodeById = (id: string) => EPISODES.find((e) => e.id === id);

@@ -1,7 +1,7 @@
 import cards from '../../content/cards.json';
 
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-export interface CardDef { id: string; name: string; rarity: Rarity; icon: string; flavor: string }
+export interface CardDef { id: string; name: string; rarity: Rarity; icon: string; art?: string; flavor: string }
 export const CARDS = cards as CardDef[];
 export const cardById = (id: string) => CARDS.find((c) => c.id === id);
 export const RARITIES: { id: Rarity; label: string; color: string; value: number }[] = [

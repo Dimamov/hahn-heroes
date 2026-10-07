@@ -29,6 +29,13 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,webp,svg}'],
+        // The big story, card and puzzle pictures load when first needed, then stay cached.
+        globIgnores: ['assets/story/**', 'assets/cards/art/**', 'assets/games/spot-*'],
+        runtimeCaching: [{
+          urlPattern: ({ url }) => /^\/assets\/(story|cards\/art)\/|^\/assets\/games\/spot-/.test(url.pathname),
+          handler: 'CacheFirst',
+          options: { cacheName: 'hahn-art', expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 90 } },
+        }],
         navigateFallback: '/index.html',
         importScripts: ['push-sw.js'],
       },
