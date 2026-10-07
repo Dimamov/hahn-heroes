@@ -972,6 +972,8 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     },
     async classPracticeAssign(classId, subject, target, due) { await rpc('class_practice_assign', { p_class: classId, p_subject: subject, p_target: target, p_due: due }); },
     async classPracticeCancel(id) { await rpc('class_practice_cancel', { p_id: id }); },
+    async classroomModeStatus(classId) { return !!(await rpc('classroom_mode_status', { p_class: classId ?? null })); },
+    async classroomModeSet(classId, on) { await rpc('classroom_mode_set', { p_class: classId, p_on: on }); },
     async classGoalStatus(classId) {
       const r = (await rpc('class_goal_status', { p_class: classId ?? null })) as any;
       if (!r) return null;
