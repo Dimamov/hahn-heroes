@@ -25,11 +25,14 @@ export function urlBase64ToUint8Array(b64: string): Uint8Array<ArrayBuffer> {
 }
 
 /** The toggles each kind of person sees. */
-export const PUSH_KINDS: Record<'kid' | 'parent', { key: keyof PushPrefs; label: string }[]> = {
+export const PUSH_KINDS: Record<'kid' | 'parent' | 'sensei', { key: keyof PushPrefs; label: string }[]> = {
   kid: [
     { key: 'chore_accepted', label: 'When my chore is accepted' },
     { key: 'quiz_soon', label: 'Trivia Night is about to start' },
     { key: 'sensei_message', label: 'Messages from the Sensei' },
+  ],
+  sensei: [
+    { key: 'sensei_message', label: 'A hero writes to the Sensei inbox' },
   ],
   parent: [
     { key: 'chore_waiting', label: 'A chore is waiting for my approval' },

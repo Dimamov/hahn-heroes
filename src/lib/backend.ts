@@ -239,6 +239,8 @@ export interface SenseiMessage {
   reward: number;
   reply: string | null;
   createdAt: string;
+  /** The Sensei answered or rewarded it and the hero has not seen the takeover yet. */
+  unseen?: boolean;
 }
 export interface SenseiInboxItem extends SenseiMessage { hero: string; heroCode: string; grade: number }
 
@@ -602,6 +604,7 @@ export interface Backend {
   /** A hero writes to the Sensei inside the app. No email address is ever shown. */
   senseiMessageSend(kind: SenseiMessageKind, body: string): Promise<void>;
   senseiMyMessages(): Promise<SenseiMessage[]>;
+  senseiRepliesSeen(): Promise<void>;
   senseiInbox(): Promise<SenseiInboxItem[]>;
   /** Thank a hero (reward 0) or grant diamonds (1 to 500). Returns the diamonds actually paid. */
   senseiMessageResolve(id: number, reward: number, reply: string, close?: boolean): Promise<number>;

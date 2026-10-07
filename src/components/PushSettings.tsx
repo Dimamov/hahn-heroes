@@ -12,7 +12,7 @@ type State =
   | { name: 'on'; key: string; prefs: PushPrefs };
 
 /** Opt-in for push notifications, with one switch per kind of message and quiet hours. */
-export function PushSettings({ backend, role }: { backend: Backend; role: 'kid' | 'parent' }) {
+export function PushSettings({ backend, role }: { backend: Backend; role: 'kid' | 'parent' | 'sensei' }) {
   const [state, setState] = useState<State>({ name: 'loading' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -72,7 +72,7 @@ export function PushSettings({ backend, role }: { backend: Backend; role: 'kid' 
       <div className="push-box">
         <div className="card">
           <b>🔔 Get a quick heads-up</b>
-          <p className="hint">{role === 'kid'
+          <p className="hint">{role === 'sensei' ? 'Get a heads-up when a hero sends a message, bug report or idea. Messages never include the hero\'s name or text.' : role === 'kid'
             ? 'Hero alerts tell you when a chore is accepted, when Trivia Night is about to start, and when the Sensei has a message. Ask a grown-up before you turn them on.'
             : 'Get a heads-up when a chore is waiting for you and a weekly summary. Nothing is sent at night, and messages never include your child\'s name.'}</p>
         </div>
