@@ -1324,3 +1324,7 @@ html, body { background: #0b0a24; }
 /* iPhone: the safe-area padding left a visible gap under the last row */
 .screen.home2 { padding-bottom: 10px; }
 
+/* Official HAHN Heroes logo */
+.home-logo img { height: clamp(110px, 21vh, 210px); max-width: 92%; width: auto; object-fit: contain; filter: drop-shadow(0 0 22px #8b5cff) drop-shadow(0 4px 8px #000a); }
+.welcome .wide-logo { width: min(86vw, 380px); height: auto; max-height: 34vh; object-fit: contain; }
+.home-squad { height: 42%; }
