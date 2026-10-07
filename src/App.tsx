@@ -72,6 +72,11 @@ import { AdultAuth } from './screens/adult/AdultAuth.tsx';
 import { NewPassword } from './screens/adult/NewPassword.tsx';
 import { EmailLinkScreen } from './screens/adult/EmailLink.tsx';
 import { AdultApp } from './screens/adult/AdultApp.tsx';
+import { isChromebook } from './lib/device.ts';
+
+/** Screens a student can open while classroom mode is on. Games, shop-style play and social areas stay closed. */
+const CLASSROOM_OK = new Set(['home', 'classlive', 'learn', 'missions', 'missions-home', 'missions-class', 'house', 'quiet', 'hero', 'sensei', 'profile', 'settings', 'announcements', 'notifications', 'privacy', 'parentcode', 'guide', 'myweek']);
+const classroomAllows = (id: string) => CLASSROOM_OK.has(id);
 
 interface Session {
   backend: Backend;
@@ -82,6 +87,8 @@ interface Session {
   missionDot: boolean;
   arcadeDot: boolean;
   questDot: boolean;
+  /** True while the teacher has classroom mode on and this is a school Chromebook. */
+  classroom: boolean;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
   go: (screen: string) => void;
@@ -113,6 +120,7 @@ export default function App() {
   const [arcadeDot, setArcadeDot] = useState(false);
   const [questDot, setQuestDot] = useState(false);
   const [privacy, setPrivacy] = useState(false);
+  const [classroom, setClassroom] = useState(false);
 
   const [secret, setSecret] = useState<SecretState | null>(null);
   const [treasure, setTreasure] = useState<TreasureState | null>(null);
@@ -164,6 +172,18 @@ export default function App() {
     return () => { clearInterval(id); document.removeEventListener('visibilitychange', send); };
   }, [backend, who, screen]);
 
+  // Classroom mode: on a school Chromebook, while the teacher has it on, only learning screens open.
+  useEffect(() => {
+    if (!hero || !isChromebook()) { setClassroom(false); return; }
+    let stop = false;
+    const look = () => backend.classroomModeStatus().then((on) => { if (!stop) setClassroom(on); }).catch(() => undefined);
+    void look();
+    const id = window.setInterval(look, 10000);
+    return () => { stop = true; window.clearInterval(id); };
+  }, [backend, hero]);
+  const go = useCallback((id: string) => setScreen(classroom && !classroomAllows(id) ? 'home' : id), [classroom]);
+  useEffect(() => { if (classroom && !classroomAllows(screen)) setScreen('home'); }, [classroom, screen]);
+
   const enterHero = (h: Hero) => { setHero(h); setScreen('home'); };
   const signOut = useCallback(async () => {
     await backend.signOut();
@@ -198,7 +218,7 @@ export default function App() {
     return <Welcome demo={backend.mode === 'demo'} onNew={() => setScreen('new')} onSignIn={() => setScreen('signin')} onAdult={() => setScreen('adult')} onPrivacy={() => setPrivacy(true)} />;
   }
 
-  const session: Session = { backend, hero, balances, dailyAvailable, unread, missionDot, arcadeDot, questDot, refresh, signOut, go: setScreen, screen };
+  const session: Session = { backend, hero, balances, dailyAvailable, unread, missionDot, arcadeDot, questDot, classroom, refresh, signOut, go, screen };
   const quizId = screen.startsWith('quiz:') ? screen.slice(5) : null;
   const practiceSubject = screen.startsWith('practice:') ? (screen.slice(9) as Subject) : null;
   return (
