@@ -28,7 +28,7 @@ The cast. Match every face and hairstyle exactly to the reference sheets I uploa
 - Anayah: long wavy strawberry-blonde hair with pink streaks, brown eyes.
 - Luna: long brown hair fading to blue and violet at the ends, blue-gray eyes.
 - Isabella: long layered brown hair with golden highlights, brown eyes.
-- The Sensei: tall, hood always up, face hidden in shadow except a stubbled jaw and a kind smile, black robes with gold trim and violet sashes, a triangle emblem on his chest.
+- The Sensei: tall, hood always up, face hidden in shadow except a stubbled jaw and a kind smile (never show his full face), black robes with gold trim and violet sashes, a triangle emblem on his chest.
 - Mrs. Collins, the principal: shoulder-length curly blonde hair with bangs, warm smile. Her First Keeper form is in the reference I uploaded.
 
 All five girls wear the standard school uniform from the uniform reference: navy and violet zip jacket with the violet star emblem, plain black or white tee, dark cargo pants, black and white sneakers. No slogans or words on any shirt.
@@ -170,4 +170,4 @@ Square 1:1 collectible card illustration, art only, no frame, border, name or te
 ## Notes
 
 - **Nexus forms:** the kids stay in school uniforms for this whole episode. Luna and Isabella don't have Nexus forms yet. When they do, pages 5 through 10 and the card can be redone with the girls transformed.
-- **Sensei description:** `story.json` currently describes the Sensei as "a bald, bearded man," but the approved art is hooded with his face in shadow. These prompts follow the art. Update that line in the story text to match.
+- **The Sensei's face is never shown.** His identity is a later reveal, so keep the hood up and the face in shadow on every page.

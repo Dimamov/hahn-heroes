@@ -14,7 +14,7 @@ These are the approved character sheets for H.A.H.N. Heroes. They are reference 
 | `characters/luna-sheet.png` | Luna | Squad. Brown hair fading to blue and violet, moon theme |
 | `characters/isabella-sheet.png` | Isabella | Squad. Long brown hair, gold and green theme |
 | `characters/first-keeper-mrs-collins.png` | Mrs. Collins, the First Keeper | The principal. White and gold robes, crystal staff, spellbook, two gray wolves with purple eyes |
-| `characters/sensei.png` | The Sensei | Creator of the Nexus. Hood always up, face in shadow except a stubbled jaw, black and gold robes with violet sashes |
+| `characters/sensei.png` | The Sensei | Creator of the Nexus. Hood always up, face in shadow except a stubbled jaw, black and gold robes with violet sashes. His face is never shown and his identity stays secret until a later reveal |
 | `characters/squad-school-uniform.png` | The squad at school | Shows the standard school uniform (from the current Episode 1, page 1) |
 | `characters/mr-chopstick-sheet.png` | Mr. Chapman, "Mr. Chopstick" | Teacher. Later episodes only, not in Episode 1 |
 | `brand/davison-cardinal-logo.png` | Davison "D" cardinal | The only cardinal logo to use anywhere |

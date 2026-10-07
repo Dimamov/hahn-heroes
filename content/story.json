@@ -14,7 +14,7 @@
           { "id": "together", "label": "All together", "after": "The squad counted down, three, two, one, and touched the symbol at the very same moment. (+1 skill point)" }
         ] },
       { "kind": "scene", "bg": "portal", "page": "ep01-p05", "art": "✨🌀✨", "text": "Light flooded the hallway. The lockers turned to crystal. The ceiling melted into a violet sky full of stars. The school had become something new: the Nexus." },
-      { "kind": "scene", "bg": "portal", "page": "ep01-p06", "pose": "sensei-happy", "art": "🧙", "name": "The Sensei", "text": "\"Welcome, heroes,\" said a calm voice. A bald, bearded man in glowing robes stepped out of the light. \"I am the Sensei. I made the Nexus, and I have been waiting for you.\"" },
+      { "kind": "scene", "bg": "portal", "page": "ep01-p06", "pose": "sensei-happy", "art": "🧙", "name": "The Sensei", "text": "\"Welcome, heroes,\" said a calm voice. A tall figure in glowing robes stepped out of the light, his face hidden deep inside his hood. \"I am the Sensei. I made the Nexus, and I have been waiting for you.\"" },
       { "kind": "quiz", "id": "cp1", "bg": "portal", "mentor": "isabella", "tip": "Isabella whispers: \"Let's check our supplies. Stay calm and count.\"",
         "q": "The Sensei gives each of the 5 heroes 12 glowing crystals. How many crystals is that in all?",
         "choices": ["50", "60", "72"] },
