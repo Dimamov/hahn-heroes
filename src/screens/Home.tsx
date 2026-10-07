@@ -5,19 +5,15 @@ import { useSession } from '../App.tsx';
 import { HeroArt } from '../components/HeroArt.tsx';
 import { WeekRecap } from '../components/WeekRecap.tsx';
 import { ClassroomHome } from './ClassroomHome.tsx';
-import { isChromebook } from '../lib/device.ts';
 
 export function Home() {
-  const { hero, balances, dailyAvailable, unread, missionDot, arcadeDot, questDot, backend, refresh, go } = useSession();
+  const { hero, balances, dailyAvailable, unread, missionDot, arcadeDot, questDot, classroom, backend, refresh, go } = useSession();
   const [popped, setPopped] = useState<number | null>(null);
   const [live, setLive] = useState<ClassLiveOpen | null>(null);
-  const [classroom, setClassroom] = useState(false);
   useEffect(() => {
     let stop = false;
-    const chromebook = isChromebook();
     const look = () => {
       backend.classLiveOpen().then((o) => { if (!stop) setLive(o); }).catch(() => undefined);
-      if (chromebook) backend.classroomModeStatus().then((on) => { if (!stop) setClassroom(on); }).catch(() => undefined);
     };
     void look();
     const id = window.setInterval(look, 8000);

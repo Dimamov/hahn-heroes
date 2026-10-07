@@ -122,7 +122,7 @@ export function ClassLive() {
           <div className="soon-icon win-burst" aria-hidden>{boss ? (won ? '🏆' : boss.icon) : '🏆'}</div>
           <h3>{st.kind === 'duel' ? (st.duel?.myStatus === 'champion' ? 'You are the vocab champion! 🏆' : 'The duel is over!') : st.kind === 'mystery' ? (won ? 'Your class uncovered the whole picture!' : 'The picture stayed a mystery this time') : boss ? (won ? `Your class beat ${boss.name}!` : `${boss.name} got away this time`) : 'Quiz battle over!'}</h3>
           {st.kind === 'mystery' && boss && <MysteryPicture code={st.code} boss={{ ...boss, hp: won ? 0 : boss.hp }} />}
-          {st.myReward !== undefined && <p className="hint">{st.myReward > 0 ? `+${st.myReward} 💎 Nexus points and some XP for the class!` : 'Answer at least half the questions to earn points next time.'}</p>}
+          {st.myReward !== undefined && <p className="hint">{st.myReward > 0 ? `+${st.myReward} 💎 diamonds and some ⭐ stars for the class!` : 'Answer at least half the questions to earn points next time.'}</p>}
           {st.kind === 'duel' && st.duel ? <Bracket duel={st.duel} /> : <Board players={st.players} limit={5} />}
           <button className="btn primary" onClick={() => go('home')}>Back to Home</button>
         </div>
