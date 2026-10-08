@@ -4,7 +4,7 @@ import { ScreenBar } from '../components/ScreenBar.tsx';
 import { Pager } from '../components/Pager.tsx';
 import type { ArcadeStatus } from '../lib/backend.ts';
 
-const TILE: Record<string, string> = { 'pattern-pulse': 'pattern-pulse', 'memory-flip': 'memory-flip', 'word-builder': 'word-builder', 'spot-difference': 'spot-diff', 'trivia-clash': 'trivia', odin: 'odin', 'shadow-signal': 'shadow-signal', 'squad-drawing': 'squad-drawing', 'escape-nexus': 'escape', 'word-rush': 'word-rush' };
+const TILE: Record<string, string> = { 'pattern-pulse': 'pattern-pulse', 'memory-flip': 'memory-flip', 'word-builder': 'word-builder', 'spot-difference': 'spot-diff', 'trivia-clash': 'trivia', odin: 'odin', 'shadow-signal': 'shadow-signal', 'squad-drawing': 'squad-drawing', 'escape-nexus': 'escape', 'word-rush': 'word-rush', 'gate-runner': 'gate-runner' };
 
 export const GAMES = [
   { id: 'pattern-pulse', label: 'Pattern Pulse', icon: '💡', reward: true },
@@ -13,6 +13,7 @@ export const GAMES = [
   { id: 'spot-difference', label: 'Spot the Difference', icon: '🔍', reward: true },
   { id: 'whack-shadow', label: 'Whack-a-Shadow', icon: '👻', reward: true },
   { id: 'chrono-rift', label: 'Chrono-Rift', icon: '🌀', reward: true },
+  { id: 'gate-runner', label: 'Gate Runner', icon: '🌀', reward: true },
   { id: 'nexus-dash', label: 'Nexus Dash', icon: '🏃', reward: true },
   { id: 'bubble-pop', label: 'Bubble Pop', icon: '🫧', reward: true },
   { id: 'shadow-spy', label: 'Shadow Spy', icon: '🕶️', reward: false },

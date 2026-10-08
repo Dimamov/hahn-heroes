@@ -38,6 +38,7 @@ import { ChronoRift } from './games/ChronoRift.tsx';
 import { JamSession } from './games/JamSession.tsx';
 import { HideSeek } from './games/HideSeek.tsx';
 import { NexusDash } from './games/NexusDash.tsx';
+import { GateRunner } from './games/GateRunner.tsx';
 import { Voice } from './screens/Voice.tsx';
 import { BubblePop } from './games/BubblePop.tsx';
 import { Race } from './screens/Race.tsx';
@@ -306,6 +307,7 @@ export default function App({ practice, onExit }: { practice?: Backend; onExit?:
       {screen === 'game:jam' && <JamSession />}
       {screen === 'game:hide-seek' && <HideSeek />}
       {screen === 'game:nexus-dash' && <NexusDash />}
+      {screen === 'game:gate-runner' && <GateRunner />}
       {screen === 'game:bubble-pop' && <BubblePop />}
       {screen === 'game:shadow-spy' && <ShadowSignal emoji />}
       {screen === 'game:fun-box' && <FunBox />}
