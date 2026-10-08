@@ -23,6 +23,22 @@ function play(seconds: number, seed: number, bot: boolean): DashState {
 }
 
 describe('Nexus Dash', () => {
+  it('a barrier cannot be jumped over, only slid under', () => {
+    const rng = seeded(5);
+    for (let tries = 0; tries < 2; tries++) {
+      const s = newState();
+      s.time = 10; // barriers only appear after a few seconds
+      s.obstacles = [{ kind: 'bar', x: 60, w: 10, top: 0, h: GROUND - 8 }];
+      s.sinceSpawn = -9999;
+      for (let t = 0; t < 3 && !s.over; t += 1 / 60) {
+        const o = s.obstacles[0];
+        if (o && o.x - 24 < 14 && o.x > 20) { if (tries === 0) jump(s); else slide(s); }
+        step(s, 1 / 60, rng);
+      }
+      expect(s.over, tries === 0 ? 'jumping hits it' : 'sliding passes').toBe(tries === 0);
+    }
+  });
+
   it('a hero who never moves hits the first trap', () => {
     const s = play(30, 3, false);
     expect(s.over).toBe(true);

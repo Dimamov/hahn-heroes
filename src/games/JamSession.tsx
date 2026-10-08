@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GameFrame } from './GameFrame.tsx';
 import { useSession } from '../App.tsx';
 import { KITS, LOOP_MS, PADS_PER_KIT, cleanLoop, newHits, padInfo, padNumber, type LoopHit } from '../lib/jam.ts';
@@ -18,41 +18,65 @@ export function JamSession() {
   const seen = useRef<Record<string, number>>({});
   const recStart = useRef(0);
   const rec = useRef<LoopHit[]>([]);
-  const timers = useRef<number[]>([]);
-  const clearTimers = () => { timers.current.forEach((t) => window.clearTimeout(t)); timers.current = []; };
+  const recLayer = useRef(false); // true while adding a layer on top of a playing loop
+  const recTimer = useRef<number | null>(null);
+  const loopRef = useRef<LoopHit[]>([]);
+  const loopStart = useRef(0);
+  const loopLen = useRef(LOOP_MS);
+  const loopTimers = useRef<number[]>([]);
+  const stopLoop = () => { loopTimers.current.forEach((t) => window.clearTimeout(t)); loopTimers.current = []; };
+  const clearTimers = () => { stopLoop(); if (recTimer.current !== null) { window.clearTimeout(recTimer.current); recTimer.current = null; } };
 
-  const stopRec = useCallback(() => {
+  // The loop plays on its own clock. Layers recorded later line up with it and join in from the next cycle.
+  const startLoop = () => {
+    stopLoop();
+    loopStart.current = Date.now();
+    const cycle = () => {
+      for (const h of loopRef.current) {
+        loopTimers.current.push(window.setTimeout(() => {
+          playPad(h.pad, 0.8); setLit(h.pad);
+          window.setTimeout(() => setLit((l) => (l === h.pad ? null : l)), 100);
+        }, h.t));
+      }
+      loopTimers.current.push(window.setTimeout(cycle, loopLen.current));
+    };
+    cycle();
+  };
+
+  const finishRec = () => {
+    if (recTimer.current !== null) { window.clearTimeout(recTimer.current); recTimer.current = null; }
     const hits = cleanLoop(rec.current);
+    if (recLayer.current) {
+      loopRef.current = cleanLoop([...loopRef.current, ...hits.map((h) => ({ ...h, t: h.t % loopLen.current }))]);
+      setLoop(loopRef.current);
+      setMode('loop');
+      return;
+    }
+    loopRef.current = hits;
+    loopLen.current = Math.min(LOOP_MS, Math.max(1000, Date.now() - recStart.current));
     setLoop(hits);
+    if (hits.length) startLoop();
     setMode(hits.length ? 'loop' : 'idle');
-  }, []);
+  };
 
   const tap = (pad: number) => {
     playPad(pad);
     setLit(pad);
     window.setTimeout(() => setLit((l) => (l === pad ? null : l)), 120);
     outbox.current.push(pad);
-    if (mode === 'rec') rec.current.push({ t: Date.now() - recStart.current, pad });
+    if (mode === 'rec') {
+      const t = recLayer.current ? (Date.now() - loopStart.current) % loopLen.current : Date.now() - recStart.current;
+      rec.current.push({ t, pad });
+    }
   };
 
   const toggleRec = () => {
-    clearTimers();
-    if (mode === 'rec') { stopRec(); return; }
-    rec.current = []; recStart.current = Date.now(); setMode('rec');
-    timers.current.push(window.setTimeout(stopRec, LOOP_MS));
+    if (mode === 'rec') { finishRec(); return; }
+    rec.current = []; recStart.current = Date.now();
+    if (mode === 'loop') { recLayer.current = true; setMode('rec'); recTimer.current = window.setTimeout(finishRec, loopLen.current); return; }
+    recLayer.current = false; setMode('rec');
+    recTimer.current = window.setTimeout(finishRec, LOOP_MS);
   };
-
-  // Loop playback: every cycle schedules each recorded hit.
-  useEffect(() => {
-    if (mode !== 'loop' || !loop.length) return;
-    const len = Math.max(1000, loop[loop.length - 1].t + 400);
-    const run = () => {
-      for (const h of loop) timers.current.push(window.setTimeout(() => { playPad(h.pad, 0.8); setLit(h.pad); window.setTimeout(() => setLit((l) => (l === h.pad ? null : l)), 100); }, h.t));
-      timers.current.push(window.setTimeout(run, len));
-    };
-    run();
-    return clearTimers;
-  }, [mode, loop]);
 
   // Squad: send my hits, read mates' hits once a second.
   useEffect(() => {
@@ -99,11 +123,11 @@ export function JamSession() {
         })}
       </div>
       <div className="jam-bar">
-        <button className={`btn ${mode === 'rec' ? 'primary' : 'ghost'}`} onClick={toggleRec}>{mode === 'rec' ? '⏹ Stop' : '⏺ Record loop'}</button>
-        {mode === 'loop' && <button className="btn ghost" onClick={() => { clearTimers(); setMode('idle'); setLoop([]); }}>Clear loop</button>}
+        <button className={`btn ${mode === 'rec' ? 'primary' : 'ghost'}`} onClick={toggleRec}>{mode === 'rec' ? '⏹ Stop' : loop.length ? '➕ Add a layer' : '⏺ Record loop'}</button>
+        {mode === 'loop' && <button className="btn ghost" onClick={() => { clearTimers(); loopRef.current = []; setMode('idle'); setLoop([]); }}>Clear loop</button>}
       </div>
       <p className="note jam-note" role="status">
-        {mode === 'rec' ? 'Recording... tap your pads (up to 8 seconds).' : mode === 'loop' ? '🔁 Your loop is playing. Add more pads on top!'
+        {mode === 'rec' ? (recLayer.current ? 'Recording a new layer... the loop keeps playing.' : 'Recording... tap your pads (up to 8 seconds).') : mode === 'loop' ? '🔁 Your loop is playing. Tap Add a layer to record more sounds on top!'
           : !feed.squad ? 'Playing solo. Join a squad to jam with friends.'
           : live.length ? live.map((m) => `${m.name}${now - (pulse[m.id] ?? 0) < 1500 ? ' 🎶' : ''}`).join(', ') + (live.length === 1 ? ' is jamming!' : ' are jamming!')
           : `${feed.squad} jam: nobody else is here yet. Their sounds play on your phone when they tap.`}

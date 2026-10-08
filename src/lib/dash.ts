@@ -44,7 +44,7 @@ const hits = (ax: number, aw: number, atop: number, ah: number, bx: number, bw: 
 function spawn(s: DashState, rng: () => number) {
   const bar = s.time > 6 && rng() < 0.35;
   const x = W + 10;
-  if (bar) s.obstacles.push({ kind: 'bar', x, w: 10, top: GROUND - 14, h: 6 }); // its bottom is 8 above the ground: slide under, do not jump
+  if (bar) s.obstacles.push({ kind: 'bar', x, w: 10, top: 0, h: GROUND - 8 }); // hangs from the top of the stage down to 8 above the ground: it cannot be jumped, only slid under
   else {
     s.obstacles.push({ kind: 'trap', x, w: 7, top: GROUND - 9, h: 9 });
     for (let i = 0; i < 3; i++) s.pickups.push({ kind: 'coin', x: x - 4 + i * 6, bottom: GROUND - 17 });
