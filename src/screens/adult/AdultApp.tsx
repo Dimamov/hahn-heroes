@@ -22,17 +22,21 @@ function SenseiShell({ backend, adult, onSignOut, onPrivacy, renderPractice }: O
   const practicing = view === 'parent' || view === 'student';
   return (
     <>
-      <div className="sensei-shell">
+      {renderPractice && (
+        <div className="view-bar">
+          <label>Viewing as
+            <select value={view} onChange={(e) => pick(e.target.value as View)} aria-label="Switch view">
+              {VIEWS.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
+            </select>
+          </label>
+          {practicing && <small>Practice: nothing here is real or saved.</small>}
+        </div>
+      )}
+      <div className={renderPractice ? 'sensei-shell with-bar' : 'sensei-shell'}>
         {view === 'family' ? <ParentHome backend={backend} adult={adult} onSignOut={() => pick('sensei')} onPrivacy={onPrivacy} />
           : !practicing || !renderPractice ? <SenseiHome backend={backend} adult={adult} onSignOut={onSignOut} />
             : practice ? renderPractice(practice, () => pick('sensei')) : <main className="screen center"><div className="spinner" aria-label="Loading" /></main>}
       </div>
-      {renderPractice && view !== 'family' && (
-        <nav className="view-switch" aria-label="Switch view">
-          {VIEWS.map((v) => <button key={v.id} className={v.id === view ? 'on' : ''} aria-pressed={v.id === view} onClick={() => pick(v.id)}>{v.label}</button>)}
-          {practicing && <small>Practice view: nothing here is real or saved.</small>}
-        </nav>
-      )}
     </>
   );
 }
