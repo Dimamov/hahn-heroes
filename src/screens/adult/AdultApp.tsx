@@ -6,29 +6,31 @@ import { TeacherHome } from './TeacherHome.tsx';
 import { SenseiHome } from './SenseiHome.tsx';
 
 type Props = { backend: Backend; adult: Adult; onAdult: (a: Adult) => void; onSignOut: () => void; onPrivacy: () => void; renderPractice?: (backend: Backend, exit: () => void) => ReactNode };
-type View = 'sensei' | 'parent' | 'student';
-const VIEWS: { id: View; label: string }[] = [{ id: 'sensei', label: '🧙 Sensei' }, { id: 'parent', label: '👪 Parent' }, { id: 'student', label: '🎒 Student' }];
+type View = 'sensei' | 'family' | 'parent' | 'student';
+const VIEWS: { id: View; label: string }[] = [{ id: 'sensei', label: '🧙 Sensei' }, { id: 'family', label: '🏠 My family' }, { id: 'parent', label: '👪 Parent (practice)' }, { id: 'student', label: '🎒 Student (practice)' }];
 
-/** The Sensei can switch between the Sensei tools and practice Parent and Student views without signing out. */
-function SenseiShell({ backend, adult, onSignOut, renderPractice }: Omit<Props, 'onAdult' | 'onPrivacy'>) {
+/** The Sensei can switch between the Sensei tools, the real parent portal for their own children, and practice Parent and Student views. */
+function SenseiShell({ backend, adult, onSignOut, onPrivacy, renderPractice }: Omit<Props, 'onAdult'>) {
   const [view, setView] = useState<View>('sensei');
   const [practice, setPractice] = useState<Backend | null>(null);
   const pick = (next: View) => {
     if (next === view) return;
     setPractice(null);
     setView(next);
-    if (next !== 'sensei') practiceBackend(next).then(setPractice).catch(() => setView('sensei'));
+    if (next === 'parent' || next === 'student') practiceBackend(next).then(setPractice).catch(() => setView('sensei'));
   };
+  const practicing = view === 'parent' || view === 'student';
   return (
     <>
       <div className="sensei-shell">
-        {view === 'sensei' || !renderPractice ? <SenseiHome backend={backend} adult={adult} onSignOut={onSignOut} />
-          : practice ? renderPractice(practice, () => pick('sensei')) : <main className="screen center"><div className="spinner" aria-label="Loading" /></main>}
+        {view === 'family' ? <ParentHome backend={backend} adult={adult} onSignOut={() => pick('sensei')} onPrivacy={onPrivacy} />
+          : !practicing || !renderPractice ? <SenseiHome backend={backend} adult={adult} onSignOut={onSignOut} />
+            : practice ? renderPractice(practice, () => pick('sensei')) : <main className="screen center"><div className="spinner" aria-label="Loading" /></main>}
       </div>
       {renderPractice && (
         <nav className="view-switch" aria-label="Switch view">
           {VIEWS.map((v) => <button key={v.id} className={v.id === view ? 'on' : ''} aria-pressed={v.id === view} onClick={() => pick(v.id)}>{v.label}</button>)}
-          {view !== 'sensei' && <small>Practice view: nothing here is real or saved.</small>}
+          {practicing && <small>Practice view: nothing here is real or saved.</small>}
         </nav>
       )}
     </>
