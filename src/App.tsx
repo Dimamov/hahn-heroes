@@ -124,6 +124,7 @@ export default function App({ practice, onExit }: { practice?: Backend; onExit?:
   const [questDot, setQuestDot] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [classroom, setClassroom] = useState(false);
+  const [rickrolled, setRickrolled] = useState(false);
 
   const [secret, setSecret] = useState<SecretState | null>(null);
   const [treasure, setTreasure] = useState<TreasureState | null>(null);
@@ -184,6 +185,23 @@ export default function App({ practice, onExit }: { practice?: Backend; onExit?:
     const id = window.setInterval(look, 10000);
     return () => { stop = true; window.clearInterval(id); };
   }, [backend, hero]);
+  // The Sensei's rickroll: when a fresh one appears, this hero's screen goes straight to Do Not Press, as if they pressed it.
+  useEffect(() => {
+    if (!hero || classroom) return;
+    const KEY = 'hh-rickroll-seen';
+    let stop = false;
+    const look = () => backend.rickrollLatest().then((r) => {
+      if (stop || !r) return;
+      let seen: number | null = null;
+      try { const v = localStorage.getItem(KEY); seen = v === null ? null : Number(v); } catch { /* blocked storage */ }
+      try { localStorage.setItem(KEY, String(r.id)); } catch { /* blocked storage */ }
+      if (seen !== null && r.id > seen && r.ageSeconds < 120) { setRickrolled(true); setScreen('donotpress'); }
+    }).catch(() => undefined);
+    void look();
+    const id = window.setInterval(look, 5000);
+    return () => { stop = true; window.clearInterval(id); };
+  }, [backend, hero, classroom]);
+  useEffect(() => { if (screen !== 'donotpress') setRickrolled(false); }, [screen]);
   const go = useCallback((id: string) => setScreen(classroom && !classroomAllows(id) ? 'home' : id), [classroom]);
   useEffect(() => { if (classroom && !classroomAllows(screen)) setScreen('home'); }, [classroom, screen]);
 
@@ -291,7 +309,7 @@ export default function App({ practice, onExit }: { practice?: Backend; onExit?:
       {screen === 'game:bubble-pop' && <BubblePop />}
       {screen === 'game:shadow-spy' && <ShadowSignal emoji />}
       {screen === 'game:fun-box' && <FunBox />}
-      {screen === 'donotpress' && <DoNotPress />}
+      {screen === 'donotpress' && <DoNotPress auto={rickrolled} />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
       {screen === 'notifications' && <Notifications />}

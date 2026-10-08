@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Backend } from '../lib/backend.ts';
+import { siren } from '../lib/sound.ts';
 
 interface Msg { key: string; title: string; text: string; reward: number; kind: 'announce' | 'reply' }
 
@@ -58,6 +59,9 @@ export function SenseiTakeover({ backend, heroId, paused, onDone }: { backend: B
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
   }); // eslint-disable-line react-hooks/exhaustive-deps
+  // A brief siren when a Sensei message arrives (silent in quiet mode, and phones may hold sound until the first tap).
+  const arrivedKey = m && !paused ? m.key : null;
+  useEffect(() => { if (arrivedKey) siren(1.5); }, [arrivedKey]);
   if (!m || paused) return null;
 
   return (

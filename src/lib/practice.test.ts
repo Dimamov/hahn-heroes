@@ -19,3 +19,11 @@ describe('Sensei practice views', () => {
     expect(x?.kind === 'hero' && y?.kind === 'hero' && x.hero.heroCode).not.toBe(undefined);
   });
 });
+
+describe('Sensei rickroll', () => {
+  it('only the Sensei can send one, and heroes can see it', async () => {
+    const b = await practiceBackend('student');
+    await expect(b.senseiRickroll()).rejects.toThrow('only the Sensei');
+    expect(await b.rickrollLatest()).toBeNull();
+  });
+});

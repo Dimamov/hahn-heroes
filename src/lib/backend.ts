@@ -756,6 +756,10 @@ export interface Backend {
   /** Jam Session: send my latest pad hits to the squad, and read what squad mates have played. */
   jamHit(pads: number[]): Promise<void>;
   jamFeed(): Promise<JamFeed>;
+  /** Sensei only: send every hero's screen to the Do Not Press rickroll. At most one every 30 seconds. */
+  senseiRickroll(): Promise<void>;
+  /** Heroes: the newest rickroll (or null) and how many seconds ago it was sent. */
+  rickrollLatest(): Promise<{ id: number; ageSeconds: number } | null>;
   /** The weekly treasure hunt: four clues, each a pin hidden on one screen; the full map pays a card. */
   treasureState(): Promise<TreasureState>;
   treasureFind(place: string): Promise<{ ok: boolean; done?: boolean }>;
