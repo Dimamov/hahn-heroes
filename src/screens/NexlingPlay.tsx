@@ -44,6 +44,7 @@ function Result({ title, text, onAgain, onBack }: { title: string; text: string;
 }
 
 const FEED_SECONDS = 20;
+const TREAT_MS = 2400;
 /** Tap the treats your Nexling loves. Skip the ones it does not. */
 function Feed({ pet, onBack }: { pet: Pet; onBack: () => void }) {
   const [treat, setTreat] = useState(nextTreat());
@@ -55,16 +56,19 @@ function Feed({ pet, onBack }: { pet: Pet; onBack: () => void }) {
     const t = setTimeout(() => setLeft((n) => n - 1), 1000);
     return () => clearTimeout(t);
   }, [left]);
-  useEffect(() => { if (left <= 0) return; const t = setTimeout(() => setTreat(nextTreat()), 1400); return () => clearTimeout(t); }, [treat, left]);
+  useEffect(() => { if (left <= 0) return; const t = setTimeout(() => setTreat(nextTreat()), TREAT_MS); return () => clearTimeout(t); }, [treat, left]);
   if (left <= 0) return <Result title="Feeding time" text={`${pet.name} ate ${score} yummy treats!`} onBack={onBack} onAgain={() => { setScore(0); setLeft(FEED_SECONDS); setTreat(nextTreat()); setRound(round + 1); }} />;
   const tap = () => { setScore((s) => Math.max(0, s + (treat.good ? 1 : -1))); beep(treat.good ? 600 : 200, 100, 'triangle'); setTreat(nextTreat()); };
+  // Skipping never costs a point: it just moves on to the next treat.
+  const skip = () => { beep(330, 60, 'sine'); setTreat(nextTreat()); };
   return (
     <main className="screen">
       <ScreenBar title="Feeding time" onBack={onBack} right={<b>{left}s</b>} />
-      <p className="hint">Tap the treats {pet.name} loves. Skip the veggies!</p>
+      <p className="hint">Tap the treats {pet.name} loves. Not a veggie fan? Tap Skip, no points lost.</p>
       <div className="grow" />
       <div className="nex-preview" style={{ borderColor: pet.color }}><span style={{ fontSize: '4rem' }}>{pet.icon}</span><b>🍽 {score}</b></div>
       <button className="treat" key={`${round}-${left}-${treat.icon}`} onClick={tap} aria-label={treat.good ? 'A treat' : 'Not a favorite'}>{treat.icon}</button>
+      <button className="btn ghost" onClick={skip}>Skip ➡️</button>
       <div className="grow" />
     </main>
   );

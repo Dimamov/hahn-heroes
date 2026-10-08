@@ -5,6 +5,7 @@ import { ScreenBar } from '../components/ScreenBar.tsx';
 import { ItemGrid } from '../components/ItemGrid.tsx';
 import { HOUSE_COLORS, type NexlingState } from '../lib/backend.ts';
 import { NexlingPlay } from './NexlingPlay.tsx';
+import { PET_ACCESSORIES, PET_SLOTS, accessoryIcon, loadOutfit, saveOutfit, toggleAccessory, type PetOutfit } from '../lib/pet-accessories.ts';
 import { NEXLING_TYPES, STAGE_NAMES, nexlingType, type NexlingType } from '../lib/nexlings.ts';
 
 const SOURCE_LABEL: Record<string, string> = { learning: 'Learn practice', game: 'arcade games', class_mission: 'class missions', home_mission: 'home missions', streak: 'streaks', daily: 'the daily check-in', event: 'events' };
@@ -28,6 +29,8 @@ export function Nexlings() {
   const [error, setError] = useState('');
   const [evolved, setEvolved] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
+  const [dressing, setDressing] = useState(false);
+  const [outfit, setOutfit] = useState<PetOutfit>(() => loadOutfit(hero.id));
 
   const load = useCallback(() => backend.nexlingState().then((s) => {
     setState(s);
@@ -82,6 +85,29 @@ export function Nexlings() {
 
   if (playing && mineType) return <NexlingPlay pet={{ icon: <NexlingPic type={mineType.id} stage={mine.stage} />, name: mine.nickname, color: mine.color }} onBack={() => setPlaying(false)} />;
   const stage = mine.stage;
+  const wear = (a: (typeof PET_ACCESSORIES)[number]) => { const next = toggleAccessory(outfit, a); setOutfit(next); saveOutfit(hero.id, next); };
+  if (dressing) {
+    return (
+      <main className="screen">
+        <ScreenBar title={`Dress up ${mine.nickname}`} onBack={() => setDressing(false)} />
+        <div className="nex-stage" style={{ borderColor: mine.color }}>
+          <PetWithAccessories outfit={outfit} size={SIZES[stage - 1]}>{mineType && <NexlingPic type={mineType.id} stage={stage} />}</PetWithAccessories>
+        </div>
+        {PET_SLOTS.map((slot) => (
+          <div key={slot.id}>
+            <p className="hint">{slot.label}</p>
+            <div className="chips">
+              {PET_ACCESSORIES.filter((a) => a.slot === slot.id).map((a) => (
+                <button key={a.id} className={`chip${outfit[slot.id] === a.id ? ' chosen' : ''}`} aria-pressed={outfit[slot.id] === a.id} aria-label={a.name} onClick={() => wear(a)}>{a.icon}</button>
+              ))}
+            </div>
+          </div>
+        ))}
+        <div className="grow" />
+        <button className="btn ghost" onClick={() => { setOutfit({}); saveOutfit(hero.id, {}); }}>Take everything off</button>
+      </main>
+    );
+  }
   const lo = state.stages[stage - 1] ?? 0;
   const pct = mine.nextAt ? Math.min(100, Math.round(((mine.growth - lo) / (mine.nextAt - lo)) * 100)) : 100;
   return (
@@ -89,7 +115,7 @@ export function Nexlings() {
       <ScreenBar title="Nexlings" onBack={() => go('home')} />
       {evolved && <button className="evolve" onClick={() => setEvolved(null)}>🎉 {mine.nickname} grew into a {STAGE_NAMES[evolved - 1]}!</button>}
       <div className="nex-stage" style={{ borderColor: mine.color, boxShadow: `0 0 28px ${mine.color}66` }}>
-        <span className={`nex-body s${stage}`} style={{ fontSize: SIZES[stage - 1] }} aria-label={`${mineType?.name}, ${STAGE_NAMES[stage - 1]}`}>{mineType && <NexlingPic type={mineType.id} stage={stage} />}</span>
+        <PetWithAccessories outfit={outfit} size={SIZES[stage - 1]} className={`nex-body s${stage}`} label={`${mineType?.name}, ${STAGE_NAMES[stage - 1]}`}>{mineType && <NexlingPic type={mineType.id} stage={stage} />}</PetWithAccessories>
       </div>
       <b className="house-name" style={{ textAlign: 'center' }}>{mine.nickname}</b>
       <p className="muted" style={{ textAlign: 'center', margin: 0 }}>{mineType?.name} · Stage {stage}: {STAGE_NAMES[stage - 1]}</p>
@@ -99,8 +125,22 @@ export function Nexlings() {
       <button className="btn ghost" onClick={() => setPlaying(true)}>🎮 Play with {mine.nickname}</button>
       <div className="seg">
         <button onClick={() => { setName(mine.nickname); setColor(mine.color); setEditing(true); }}>✏️ Customize</button>
+        <button onClick={() => setDressing(true)}>🎀 Dress up</button>
         <button onClick={() => setSwitching(true)}>🔄 Switch</button>
       </div>
     </main>
+  );
+}
+
+/** A Nexling with its emoji accessories drawn on top. */
+function PetWithAccessories({ outfit, size, className = 'nex-body', label, children }: { outfit: PetOutfit; size: string; className?: string; label?: string; children: React.ReactNode }) {
+  const head = accessoryIcon(outfit, 'head'), face = accessoryIcon(outfit, 'face'), neck = accessoryIcon(outfit, 'neck');
+  return (
+    <span className={`${className} pet-dressed`} style={{ fontSize: size }} aria-label={label}>
+      {children}
+      {head && <i className="pet-acc pet-acc-head" aria-hidden>{head}</i>}
+      {face && <i className="pet-acc pet-acc-face" aria-hidden>{face}</i>}
+      {neck && <i className="pet-acc pet-acc-neck" aria-hidden>{neck}</i>}
+    </span>
   );
 }
