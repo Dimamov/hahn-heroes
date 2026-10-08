@@ -63,24 +63,23 @@ function Bath({ pet, onBack }: { pet: ParkPet; onBack: () => void }) {
   );
 }
 
-/** Stack up to three silly hats on your Nexling. */
+/** Try silly hats on your Nexling: one hat at a time, a new hat swaps the old one. */
 function Hats({ pet, onBack }: { pet: ParkPet; onBack: () => void }) {
-  const [stack, setStack] = useState<string[]>([]);
-  const add = (h: string) => { setStack((s) => [...s.slice(-2), h]); beep(400 + SILLY_HATS.indexOf(h) * 60, 90, 'triangle'); };
-  const lines = ['A bit plain...', 'Looking fancy!', 'Very silly!', 'SO SILLY!!'];
+  const [hat, setHat] = useState<string | null>(null);
+  const wear = (h: string) => { setHat(h); beep(400 + SILLY_HATS.indexOf(h) * 60, 90, 'triangle'); };
   return (
     <main className="screen">
       <ScreenBar title="Silly hats" onBack={onBack} />
-      <p className="hint">{lines[stack.length]}</p>
+      <p className="hint">{hat ? 'Looking silly!' : 'A bit plain... pick a hat!'}</p>
       <div className="grow" />
       <div className="park-stage">
-        <span className="park-hats" aria-hidden>{[...stack].reverse().map((h, i) => <span key={i}>{h}</span>)}</span>
+        <span className="park-hats" aria-hidden>{hat && <span>{hat}</span>}</span>
         <span className="park-pet">{pet.icon}</span>
       </div>
       <div className="chips park-hat-row">
-        {SILLY_HATS.map((h) => <button key={h} className="chip" onClick={() => add(h)} aria-label={`Hat ${h}`}>{h}</button>)}
+        {SILLY_HATS.map((h) => <button key={h} className={`chip${hat === h ? ' chosen' : ''}`} onClick={() => wear(h)} aria-label={`Hat ${h}`}>{h}</button>)}
       </div>
-      <button className="btn ghost" onClick={() => setStack([])}>Take them off</button>
+      <button className="btn ghost" onClick={() => setHat(null)}>Take it off</button>
       <div className="grow" />
     </main>
   );
@@ -94,17 +93,30 @@ function Dance({ pet, onBack }: { pet: ParkPet; onBack: () => void }) {
   const t0 = useRef(0);
   const marks = useRef<('perfect' | 'good' | 'miss')[]>([]);
   const [last, setLast] = useState('');
+  // Phones only allow sound after a tap, so the party starts from a button.
+  const [started, setStarted] = useState(false);
   useEffect(() => {
+    if (!started) return;
     t0.current = performance.now() + 4 * BEAT_MS;
     marks.current = []; setLast(''); setBeat(-4);
+    let lastBeat = -5;
     const id = setInterval(() => {
       const b = Math.floor((performance.now() - t0.current) / BEAT_MS);
       setBeat(b);
-      if (b >= 0) beep(b % 4 === 0 ? 260 : 190, 70, 'triangle');
-    }, 100);
+      if (b !== lastBeat) { lastBeat = b; beep(b < 0 ? 330 : b % 4 === 0 ? 260 : 190, 90, 'triangle', 0.25); }
+    }, 50);
     return () => clearInterval(id);
-  }, [round]);
-  // the tick above only fires every 100ms, so the sound follows beats within 0.1s
+  }, [round, started]);
+  if (!started) {
+    return (
+      <main className="screen center">
+        <ScreenBar title="Dance party" onBack={onBack} />
+        <div className="grow" /><div className="park-stage"><span className="park-pet">{pet.icon}</span></div>
+        <p className="hint">Turn your sound on, then start the music!</p><div className="grow" />
+        <button className="btn primary big-tap" onClick={() => { beep(440, 80, 'triangle', 0.25); setStarted(true); }}>🎵 Start the music</button>
+      </main>
+    );
+  }
   if (beat >= DANCE_BEATS) {
     const perfect = marks.current.filter((m) => m === 'perfect').length;
     const good = marks.current.filter((m) => m === 'good').length;

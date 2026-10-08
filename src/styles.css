@@ -1422,3 +1422,10 @@ html, body { background: #0b0a24; }
 @keyframes shot-glitch { 0%, 100% { transform: none; filter: none; } 20% { transform: translate(-3px, 1px); filter: hue-rotate(40deg) brightness(1.4); } 40% { transform: translate(4px, -2px); filter: hue-rotate(-40deg); } 60% { transform: none; filter: brightness(.5); } 80% { transform: translate(-2px, 0); filter: saturate(2); } }
 @media (prefers-reduced-motion: reduce) { .shot-glitch .shot-img { animation: none; } }
 @media (orientation: landscape) and (min-width: 700px) { .shot-text { left: 50%; transform: translateX(-50%); width: min(560px, 90%); border-radius: 16px 16px 0 0; } }
+
+/* Pet accessories (emoji until real art exists) */
+.pet-dressed { position: relative; display: inline-block; }
+.pet-acc { position: absolute; left: 50%; font-style: normal; font-size: .38em; line-height: 1; pointer-events: none; transform: translateX(-50%); }
+.pet-acc-head { top: -8%; }
+.pet-acc-face { top: 34%; }
+.pet-acc-neck { bottom: 6%; }

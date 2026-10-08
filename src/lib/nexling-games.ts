@@ -34,7 +34,7 @@ export function racePlace(hero: number, seconds: number): number {
 }
 
 /** Pet Park: dance party. Tap on the beat; how far off the beat (in ms) decides the cheer. */
-export const BEAT_MS = 600;
+export const BEAT_MS = 800;
 export function danceJudge(offsetMs: number): 'perfect' | 'good' | 'miss' {
   const d = Math.abs(offsetMs);
   return d <= 120 ? 'perfect' : d <= 250 ? 'good' : 'miss';
