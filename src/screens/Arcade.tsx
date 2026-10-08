@@ -46,7 +46,6 @@ export function Arcade() {
   useEffect(() => { backend.hiddenGames().then(setHidden).catch(() => undefined); }, [backend]);
   const visible = GAMES.filter((g) => !hidden.includes(g.id));
   const games = visible.filter((g) => MULTIPLAYER.has(g.id) === (mode === 'multi'));
-  const dotFor = (m: Mode) => visible.some((g) => MULTIPLAYER.has(g.id) === (m === 'multi') && isOpen(g));
   useEffect(() => { backend.arcadeStatus().then(setStatus).catch(() => setStatus({ coins: 5, games: [], claimed: [] })); }, [backend]);
   const isOpen = (g: (typeof GAMES)[number]) => !!(g.reward && status && status.games.includes(g.id) && !status.claimed.includes(g.id));
   const pages = Array.from({ length: Math.ceil(games.length / 6) }, (_, i) => games.slice(i * 6, i * 6 + 6));
@@ -54,8 +53,8 @@ export function Arcade() {
     <main className="screen">
       <ScreenBar title="Arcade" onBack={() => go('home')} />
       <div className="seg" role="tablist" aria-label="Game type">
-        <button role="tab" aria-selected={mode === 'single'} className={mode === 'single' ? 'on' : ''} onClick={() => setMode('single')}>🎮 Single player{dotFor('single') ? ' ●' : ''}</button>
-        <button role="tab" aria-selected={mode === 'multi'} className={mode === 'multi' ? 'on' : ''} onClick={() => setMode('multi')}>👥 Multiplayer{dotFor('multi') ? ' ●' : ''}</button>
+        <button role="tab" aria-selected={mode === 'single'} className={mode === 'single' ? 'on' : ''} onClick={() => setMode('single')}>🎮 Single player</button>
+        <button role="tab" aria-selected={mode === 'multi'} className={mode === 'multi' ? 'on' : ''} onClick={() => setMode('multi')}>👥 Multiplayer</button>
       </div>
       <p className="hint">{mode === 'single' ? 'Play on your own. Win a ⭐ game to collect points once a day.' : 'Play with your squad and friends. Rooms are private.'}</p>
       <div className="paged">

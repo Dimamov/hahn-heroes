@@ -103,8 +103,9 @@ export const useSession = () => {
 
 type Screen = 'welcome' | 'new' | 'signin' | 'adult' | 'home' | string;
 
-export default function App() {
-  const backend = useMemo(createBackend, []);
+/** `practice` is for the Sensei's practice views: the app runs on a throwaway demo backend and `onExit` returns to the Sensei. */
+export default function App({ practice, onExit }: { practice?: Backend; onExit?: () => void } = {}) {
+  const backend = useMemo(() => practice ?? createBackend(), [practice]);
   const [ready, setReady] = useState(false);
   const [hero, setHero] = useState<Hero | null>(null);
   const [adult, setAdult] = useState<Adult | null>(null);
@@ -196,7 +197,8 @@ export default function App() {
     setArcadeDot(false);
     setQuestDot(false);
     setScreen('welcome');
-  }, [backend]);
+    onExit?.();
+  }, [backend, onExit]);
 
   if (!ready) return <main className="screen center"><div className="spinner" aria-label="Loading" /></main>;
 
@@ -209,7 +211,7 @@ export default function App() {
 
   if (resetting) return <NewPassword backend={backend} onDone={() => { setResetting(false); backend.restore().then((who) => { if (who?.kind === 'adult') setAdult(who.adult); }).catch(() => undefined); }} />;
 
-  if (adult) return <AdultApp backend={backend} adult={adult} onAdult={setAdult} onSignOut={signOut} onPrivacy={() => setPrivacy(true)} />;
+  if (adult) return <AdultApp backend={backend} adult={adult} renderPractice={(b, exit) => <App practice={b} onExit={exit} />} onAdult={setAdult} onSignOut={signOut} onPrivacy={() => setPrivacy(true)} />;
 
   if (!hero) {
     if (screen === 'new') return <Onboarding backend={backend} onDone={enterHero} onBack={() => setScreen('welcome')} />;
