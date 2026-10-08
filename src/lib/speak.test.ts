@@ -9,4 +9,10 @@ describe('read-aloud voices', () => {
     ]);
     expect(ranked.map((v) => v.name)).toEqual(['Samantha (Enhanced)', 'Google US English', 'Daniel', 'Alex']);
   });
+  it('prefers natural online voices over compact or robotic ones', () => {
+    const ranked = rankVoices([
+      { name: 'Compact English', lang: 'en-US' }, { name: 'Microsoft Aria Online (Natural)', lang: 'en-US' }, { name: 'espeak English', lang: 'en-US' },
+    ]);
+    expect(ranked[0].name).toBe('Microsoft Aria Online (Natural)');
+  });
 });

@@ -3,7 +3,7 @@ import { GameFrame, WinPanel } from './GameFrame.tsx';
 import { beep } from '../lib/sound.ts';
 import { burst, flashEdge, popup, shake } from '../lib/fx.ts';
 
-// Five approved picture sets. Each has a left picture and a right picture with five changes; a difference counts
+// Six picture sets. Each has a left picture and a right picture with five changes; a difference counts
 // when tapped in either one. x, y and r are percents of the picture (r is a radius in percent of its width).
 interface Diff { x: number; y: number; r: number }
 interface Scene { id: string; name: string; diffs: Diff[] }
@@ -13,6 +13,8 @@ const SCENES: Scene[] = [
   { id: '03', name: 'Classroom', diffs: [{ x: 76.2, y: 12.9, r: 7 }, { x: 57.3, y: 47.7, r: 6 }, { x: 69.7, y: 48, r: 6 }, { x: 10.4, y: 59.4, r: 7 }, { x: 50.1, y: 81.3, r: 10 }] },
   { id: '04', name: 'Lunch room', diffs: [{ x: 52.1, y: 15.8, r: 12 }, { x: 57.3, y: 72.5, r: 9 }, { x: 73.3, y: 61.7, r: 8 }, { x: 73.6, y: 79.3, r: 7 }, { x: 50, y: 87, r: 8 }] },
   { id: '05', name: 'Science lab', diffs: [{ x: 43, y: 16.8, r: 8 }, { x: 19.5, y: 59.8, r: 8 }, { x: 35.2, y: 53.9, r: 9 }, { x: 81.4, y: 59.5, r: 7 }, { x: 50.1, y: 85.2, r: 9 }] },
+  // Made from our own Episode 1 hallway art: the right picture has hair color, a missing wolf, jeans color, a star and a ball changed.
+  { id: '06', name: 'Hero hallway', diffs: [{ x: 4.2, y: 31.2, r: 7 }, { x: 96, y: 9.8, r: 6 }, { x: 69, y: 85.9, r: 8.5 }, { x: 77.1, y: 86.9, r: 6 }, { x: 62.2, y: 94.7, r: 6 }] },
 ];
 const ASPECT = 2 / 3; // picture height / width, so a tap's up and down distance counts the same as sideways
 

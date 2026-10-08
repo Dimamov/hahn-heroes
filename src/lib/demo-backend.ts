@@ -417,6 +417,7 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
   const db = load();
   const commit = () => save(db);
   const at = () => now().getTime();
+  let rickrollId = 0, rickrollAt = 0; // demo only: a rickroll sent this visit
 
   const strip = ({ picture: _p, failures: _f, ...hero }: Account): Hero => hero;
   const toAdult = ({ email: _e, password: _w, ...adult }: DemoAdult): Adult => adult;
@@ -1874,6 +1875,14 @@ export function createDemoBackend(storage: Pick<Storage, 'getItem' | 'setItem'>,
       if (mine) { mine.seq += clean.length; mine.pads = [...mine.pads, ...clean].slice(-8); mine.at = Date.now(); }
       else all.push({ squadId: sq, heroId: me, seq: clean.length, pads: clean, at: Date.now() });
       commit();
+    },
+    async senseiRickroll() {
+      if (!db.adults.some((a) => a.id === db.current && a.role === 'sensei')) throw new Error('only the Sensei can do that');
+      if (rickrollAt && at() - rickrollAt < 30000) throw new Error('wait a little before the next one');
+      rickrollId += 1; rickrollAt = at();
+    },
+    async rickrollLatest() {
+      return rickrollId ? { id: rickrollId, ageSeconds: Math.floor((at() - rickrollAt) / 1000) } : null;
     },
     async jamFeed() {
       const me = meHero().id;

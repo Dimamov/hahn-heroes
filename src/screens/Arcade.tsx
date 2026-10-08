@@ -15,8 +15,6 @@ export const GAMES = [
   { id: 'chrono-rift', label: 'Chrono-Rift', icon: '🌀', reward: true },
   { id: 'nexus-dash', label: 'Nexus Dash', icon: '🏃', reward: true },
   { id: 'bubble-pop', label: 'Bubble Pop', icon: '🫧', reward: true },
-  { id: 'block-blast', label: 'Block Blast', icon: '🧱', reward: true },
-  { id: 'hero-defense', label: 'Hero Defense', icon: '🛡️', reward: true },
   { id: 'shadow-spy', label: 'Shadow Spy', icon: '🕶️', reward: false },
   { id: 'trivia-clash', label: 'Trivia Clash', icon: '⚔️', reward: false },
   { id: 'odin', label: 'ODIN', icon: '🎴', reward: false },
@@ -27,31 +25,41 @@ export const GAMES = [
   { id: 'hide-seek', label: 'Hide and Seek', icon: '🫣', reward: false },
   { id: 'jam', label: 'Jam Session', icon: '🎛️', reward: false },
   { id: 'rhythm-tap', label: 'Rhythm Tap', icon: '🥁', reward: false },
-  { id: 'arena', label: 'Battle Arena', icon: '🥋', reward: false },
   { id: 'fun-box', label: 'Fun Box', icon: '🎁', reward: false },
 ] as const;
 
 const TAGLINES: Record<string, string> = {
   'trivia-clash': 'Private rooms', odin: 'Private rooms', 'squad-drawing': 'Private rooms', 'escape-nexus': 'Private rooms', 'hide-seek': 'Private rooms',
-  'shadow-signal': 'Rooms or one device', 'shadow-spy': 'Rooms, emoji clues', 'word-rush': 'Pass the device', jam: 'Solo or with your squad', arena: 'Friendly spar',
+  'shadow-signal': 'Rooms or one device', 'shadow-spy': 'Rooms, emoji clues', 'word-rush': 'Pass the device', jam: 'Solo or with your squad',
 };
 
-/** Solo games and squad games, six to a page so the list never scrolls. */
+/** Games you play on your own, or with your squad and friends. Shown in two clearly labelled sections. */
+const MULTIPLAYER = new Set(['trivia-clash', 'odin', 'shadow-signal', 'shadow-spy', 'squad-drawing', 'escape-nexus', 'word-rush', 'hide-seek', 'jam']);
+type Mode = 'single' | 'multi';
+
+/** Single player and multiplayer games, six to a page so the list never scrolls. */
 export function Arcade() {
   const { backend, go } = useSession();
   const [status, setStatus] = useState<ArcadeStatus | null>(null);
   const [hidden, setHidden] = useState<string[]>([]);
+  const [mode, setMode] = useState<Mode>('single');
   useEffect(() => { backend.hiddenGames().then(setHidden).catch(() => undefined); }, [backend]);
-  const games = GAMES.filter((g) => !hidden.includes(g.id));
+  const visible = GAMES.filter((g) => !hidden.includes(g.id));
+  const games = visible.filter((g) => MULTIPLAYER.has(g.id) === (mode === 'multi'));
   useEffect(() => { backend.arcadeStatus().then(setStatus).catch(() => setStatus({ coins: 5, games: [], claimed: [] })); }, [backend]);
   const isOpen = (g: (typeof GAMES)[number]) => !!(g.reward && status && status.games.includes(g.id) && !status.claimed.includes(g.id));
   const pages = Array.from({ length: Math.ceil(games.length / 6) }, (_, i) => games.slice(i * 6, i * 6 + 6));
   return (
     <main className="screen">
       <ScreenBar title="Arcade" onBack={() => go('home')} />
-      <p className="hint">Solo games and squad games with friends. Win a ⭐ game to collect points once a day.</p>
+      <div className="seg" role="tablist" aria-label="Game type">
+        <button role="tab" aria-selected={mode === 'single'} className={mode === 'single' ? 'on' : ''} onClick={() => setMode('single')}>🎮 Single player</button>
+        <button role="tab" aria-selected={mode === 'multi'} className={mode === 'multi' ? 'on' : ''} onClick={() => setMode('multi')}>👥 Multiplayer</button>
+      </div>
+      <p className="hint">{mode === 'single' ? 'Play on your own. Win a ⭐ game to collect points once a day.' : 'Play with your squad and friends. Rooms are private.'}</p>
       <div className="paged">
         <Pager
+          key={mode}
           badges={pages.map((page) => page.some(isOpen))}
           pages={pages.map((page, n) => (
             <div className="subjects games" key={n}>

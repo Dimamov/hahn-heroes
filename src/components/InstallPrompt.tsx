@@ -19,7 +19,7 @@ export function installKind(env: { ua: string; standalone: boolean; chromebook: 
   return null;
 }
 
-function currentKind() {
+export function currentKind() {
   try {
     const nav = navigator as Navigator & { standalone?: boolean };
     const standalone = window.matchMedia?.('(display-mode: standalone)').matches || nav.standalone === true;

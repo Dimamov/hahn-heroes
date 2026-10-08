@@ -80,16 +80,22 @@ export function Home() {
         {tile('explore', 'All areas', 'Squad · House · Cards', <span className="art-emoji">🧭</span>, '#a78bfa', questDot)}
       </div>
 
+      <button className="feature-banner episodes-banner" onClick={() => go('adventures')}>
+        <span className="feature-pad" aria-hidden>📖</span>
+        <span className="feature-text"><b>Episodes</b><small>New story adventures</small></span>
+        <img className="feature-art" src="/assets/ui/nav-adventures.webp" alt="" draggable={false} />
+        <span className="art-tile-go" aria-hidden>›</span>
+      </button>
+
       <div className="art-tiles">
         {tile('learn', 'Learn', 'Math · Words · Reading', <span className="art-emoji">🧠</span>, '#34d399')}
         {tile('hero', 'Character Lab', '', <HeroArt id={hero.starter} />, '#38bdf8')}
         {tile('missions', 'Nexus Missions', 'Home / Class', img('/assets/backgrounds/hahn-entrance-tall.webp'), '#34d399', missionDot)}
-        {tile('adventures', 'Story Episodes', '', img('/assets/ui/nav-adventures.webp'), '#fb923c')}
         {tile('treasure', 'Mystery Solver', '', img('/assets/games/escape-room-02-wide.webp'), '#8b5cff')}
         {tile('game:fun-box', 'Fun Box', '', img('/assets/games/fun-box-open.webp'), '#22d3ee')}
         {tile('donotpress', 'Do Not Press', '', img('/assets/games/do-not-press.webp'), '#ef4444')}
         <button className="sensei-bar" onClick={() => go('sensei')}>
-        <span className="sensei-face" aria-hidden>🧙</span>
+        <span className="sensei-face" aria-hidden><img src="/assets/sensei/sensei-announce.webp" alt="" draggable={false} /></span>
         <span><b>The Sensei</b><small>I&apos;m here to help</small></span>
         <span className="art-tile-go" aria-hidden>›</span>
       </button>

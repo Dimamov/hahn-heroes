@@ -622,6 +622,12 @@ export function createSupabaseBackend(url: string, publishableKey: string): Back
     async jamFeed() {
       return (await rpc('jam_feed')) as never;
     },
+    async senseiRickroll() {
+      await rpc('sensei_rickroll');
+    },
+    async rickrollLatest() {
+      return ((await rpc('rickroll_latest')) as { id: number; ageSeconds: number } | null) ?? null;
+    },
     async baseRemove(cell) {
       await rpc('base_remove', { p_cell: cell });
     },

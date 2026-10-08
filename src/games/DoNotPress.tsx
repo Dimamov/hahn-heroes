@@ -23,7 +23,7 @@ function youtube(): Promise<YTApi> {
 }
 
 /** The warning button. The siren can never stack: taps are ignored while it is sounding. */
-export function DoNotPress() {
+export function DoNotPress({ auto = false }: { auto?: boolean }) {
   const [phase, setPhase] = useState<'idle' | 'siren' | 'video'>('idle');
   const { go } = useSession();
   const busy = useRef(false);
@@ -101,6 +101,12 @@ export function DoNotPress() {
       window.setTimeout(checkVideo, 600);
     }, ms);
   };
+
+  // A Sensei takeover presses the button for the hero, once the player is ready.
+  const autoDone = useRef(false);
+  useEffect(() => {
+    if (auto && ready && !autoDone.current) { autoDone.current = true; press(); }
+  }); // eslint-disable-line react-hooks/exhaustive-deps
 
   const closeVideo = () => {
     setPhase('idle');

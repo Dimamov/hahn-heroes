@@ -111,7 +111,7 @@ export function Onboarding({ backend, onDone, onBack }: { backend: Backend; onDo
 
       {step === 'name' && (
         <>
-          <h2>Pick your hero name</h2>
+          <h2>Generate your Nexus name</h2>
           <p className="name-preview">{adjective || '…'} {noun || '…'}</p>
           <div className="chips">{adjectives.map((a) => <button key={a} className={`chip${adjective === a ? ' chosen' : ''}`} onClick={() => setAdjective(a)}>{a}</button>)}</div>
           <div className="chips">{nouns.map((n) => <button key={n} className={`chip${noun === n ? ' chosen' : ''}`} onClick={() => setNoun(n)}>{n}</button>)}</div>

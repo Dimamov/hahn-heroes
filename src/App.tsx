@@ -9,6 +9,8 @@ import { SignIn } from './screens/SignIn.tsx';
 import { Home } from './screens/Home.tsx';
 import { Destination } from './screens/Destination.tsx';
 import { InstallPrompt } from './components/InstallPrompt.tsx';
+import { Tutorial } from './components/Tutorial.tsx';
+import { ParentLinkPrompt } from './components/ParentLinkPrompt.tsx';
 import { SenseiTakeover } from './components/SenseiTakeover.tsx';
 import { SenseiContact } from './screens/SenseiContact.tsx';
 import { Notifications } from './screens/Notifications.tsx';
@@ -38,8 +40,6 @@ import { HideSeek } from './games/HideSeek.tsx';
 import { NexusDash } from './games/NexusDash.tsx';
 import { Voice } from './screens/Voice.tsx';
 import { BubblePop } from './games/BubblePop.tsx';
-import { BlockBlast } from './games/BlockBlast.tsx';
-import { HeroDefense } from './games/HeroDefense.tsx';
 import { Race } from './screens/Race.tsx';
 import { Badges } from './screens/Badges.tsx';
 import { Codes } from './screens/Codes.tsx';
@@ -58,7 +58,6 @@ import { Nexlings } from './screens/Nexlings.tsx';
 import { Cards } from './screens/Cards.tsx';
 import { Arcade } from './screens/Arcade.tsx';
 import { PatternPulse } from './games/PatternPulse.tsx';
-import { Arena } from './games/Arena.tsx';
 import { RhythmTap } from './games/RhythmTap.tsx';
 import { MemoryFlip } from './games/MemoryFlip.tsx';
 import { WordBuilder } from './games/WordBuilder.tsx';
@@ -106,8 +105,9 @@ export const useSession = () => {
 
 type Screen = 'welcome' | 'new' | 'signin' | 'adult' | 'home' | string;
 
-export default function App() {
-  const backend = useMemo(createBackend, []);
+/** `practice` is for the Sensei's practice views: the app runs on a throwaway demo backend and `onExit` returns to the Sensei. */
+export default function App({ practice, onExit }: { practice?: Backend; onExit?: () => void } = {}) {
+  const backend = useMemo(() => practice ?? createBackend(), [practice]);
   const [ready, setReady] = useState(false);
   const [hero, setHero] = useState<Hero | null>(null);
   const [adult, setAdult] = useState<Adult | null>(null);
@@ -124,6 +124,7 @@ export default function App() {
   const [questDot, setQuestDot] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [classroom, setClassroom] = useState(false);
+  const [rickrolled, setRickrolled] = useState(false);
 
   const [secret, setSecret] = useState<SecretState | null>(null);
   const [treasure, setTreasure] = useState<TreasureState | null>(null);
@@ -184,6 +185,23 @@ export default function App() {
     const id = window.setInterval(look, 10000);
     return () => { stop = true; window.clearInterval(id); };
   }, [backend, hero]);
+  // The Sensei's rickroll: when a fresh one appears, this hero's screen goes straight to Do Not Press, as if they pressed it.
+  useEffect(() => {
+    if (!hero || classroom) return;
+    const KEY = 'hh-rickroll-seen';
+    let stop = false;
+    const look = () => backend.rickrollLatest().then((r) => {
+      if (stop || !r) return;
+      let seen: number | null = null;
+      try { const v = localStorage.getItem(KEY); seen = v === null ? null : Number(v); } catch { /* blocked storage */ }
+      try { localStorage.setItem(KEY, String(r.id)); } catch { /* blocked storage */ }
+      if (seen !== null && r.id > seen && r.ageSeconds < 120) { setRickrolled(true); setScreen('donotpress'); }
+    }).catch(() => undefined);
+    void look();
+    const id = window.setInterval(look, 5000);
+    return () => { stop = true; window.clearInterval(id); };
+  }, [backend, hero, classroom]);
+  useEffect(() => { if (screen !== 'donotpress') setRickrolled(false); }, [screen]);
   const go = useCallback((id: string) => setScreen(classroom && !classroomAllows(id) ? 'home' : id), [classroom]);
   useEffect(() => { if (classroom && !classroomAllows(screen)) setScreen('home'); }, [classroom, screen]);
 
@@ -199,7 +217,8 @@ export default function App() {
     setArcadeDot(false);
     setQuestDot(false);
     setScreen('welcome');
-  }, [backend]);
+    onExit?.();
+  }, [backend, onExit]);
 
   if (!ready) return <main className="screen center"><div className="spinner" aria-label="Loading" /></main>;
 
@@ -212,7 +231,7 @@ export default function App() {
 
   if (resetting) return <NewPassword backend={backend} onDone={() => { setResetting(false); backend.restore().then((who) => { if (who?.kind === 'adult') setAdult(who.adult); }).catch(() => undefined); }} />;
 
-  if (adult) return <AdultApp backend={backend} adult={adult} onAdult={setAdult} onSignOut={signOut} onPrivacy={() => setPrivacy(true)} />;
+  if (adult) return <AdultApp backend={backend} adult={adult} renderPractice={(b, exit) => <App practice={b} onExit={exit} />} onAdult={setAdult} onSignOut={signOut} onPrivacy={() => setPrivacy(true)} />;
 
   if (!hero) {
     if (screen === 'new') return <Onboarding backend={backend} onDone={enterHero} onBack={() => setScreen('welcome')} />;
@@ -227,6 +246,8 @@ export default function App() {
   return (
     <SessionContext.Provider value={session}>
       <InstallPrompt />
+      <ParentLinkPrompt />
+      <Tutorial />
       <SenseiTakeover backend={backend} heroId={hero.id} paused={screen.startsWith('game:') || !!quizId || !!practiceSubject} onDone={() => { refresh().catch(() => undefined); }} />
       {screen === 'home' && <Home />}
       {screen === 'profile' && <Profile />}
@@ -271,7 +292,6 @@ export default function App() {
       {secret && !secret.found && secret.place === screen && <SecretSpot week={Math.floor(Date.parse(new Date().toISOString().slice(0, 10)) / 604800000)} onFound={() => backend.secretState().then(setSecret).catch(() => undefined)} />}
       {screen === 'game:pattern-pulse' && <PatternPulse />}
       {screen === 'game:rhythm-tap' && <RhythmTap />}
-      {screen === 'game:arena' && <Arena />}
       {screen === 'game:memory-flip' && <MemoryFlip />}
       {screen === 'game:word-builder' && <WordBuilder />}
       {screen === 'game:spot-difference' && <SpotDifference />}
@@ -287,11 +307,9 @@ export default function App() {
       {screen === 'game:hide-seek' && <HideSeek />}
       {screen === 'game:nexus-dash' && <NexusDash />}
       {screen === 'game:bubble-pop' && <BubblePop />}
-      {screen === 'game:block-blast' && <BlockBlast />}
-      {screen === 'game:hero-defense' && <HeroDefense />}
       {screen === 'game:shadow-spy' && <ShadowSignal emoji />}
       {screen === 'game:fun-box' && <FunBox />}
-      {screen === 'donotpress' && <DoNotPress />}
+      {screen === 'donotpress' && <DoNotPress auto={rickrolled} />}
       {screen === 'announcements' && <Announcements />}
       {screen === 'parentcode' && <ParentCode />}
       {screen === 'notifications' && <Notifications />}

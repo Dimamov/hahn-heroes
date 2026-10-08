@@ -75,6 +75,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
         <button className="btn" onClick={() => setView('events')}>🍂 Seasonal events</button>
         <button className="btn" onClick={() => setView('delete')}>🗑️ Delete a hero</button>
         <button className="btn" onClick={() => setView('trivia')}>🎤 Trivia Night time</button>
+        <RickrollButton backend={backend} />
       </div>
     </main>
   );
@@ -584,4 +585,15 @@ function SecretHunt({ backend, onBack }: { backend: Backend; onBack: () => void 
       )}
     </main>
   );
+}
+
+/** Sends every hero's screen to the Do Not Press rickroll. Asks first, because it reaches everyone at once. */
+function RickrollButton({ backend }: { backend: Backend }) {
+  const [state, setState] = useState<'idle' | 'sure' | 'sent' | 'error'>('idle');
+  const send = async () => {
+    try { await backend.senseiRickroll(); setState('sent'); } catch { setState('error'); }
+    window.setTimeout(() => setState('idle'), 4000);
+  };
+  if (state === 'sure') return <button className="btn primary" onClick={send}>🚨 Really send it to everyone?</button>;
+  return <button className="btn" onClick={() => setState('sure')}>{state === 'sent' ? '✅ Sent! Screens are going red' : state === 'error' ? 'Wait a moment, then try again' : '🚨 Rickroll everyone'}</button>;
 }

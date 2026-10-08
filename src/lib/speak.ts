@@ -2,7 +2,8 @@
 export const canSpeak = (): boolean => typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
 
 export interface VoiceInfo { name: string; lang: string; localService?: boolean }
-const NICE = /natural|neural|enhanced|premium|siri|google|samantha|ava\b|allison|zoe|nicky|aaron|serena|karen|daniel|moira|tessa/i;
+const NICE = /natural|neural|enhanced|premium|siri|google|samantha|ava\b|allison|zoe|nicky|aaron|serena|karen|daniel|moira|tessa|aria|jenny|michelle|ana\b|guy\b|online/i;
+const ROBOTIC = /compact|espeak|robot/i;
 const NOVELTY = /fred|albert|zarvox|bad news|bahh|bells|boing|bubbles|cellos|deranged|good news|hysterical|junior|kathy|organ|pipe|ralph|trinoids|whisper|wobble|superstar|grandma|grandpa|eddy|flo|reed|rocko|sandy|shelley/i;
 
 /** Higher is better: natural-sounding English voices first, novelty voices last. */
@@ -12,6 +13,8 @@ export function voiceScore(v: VoiceInfo): number {
   if (NICE.test(v.name)) n += 4;
   if (/enhanced|premium|neural|natural/i.test(v.name)) n += 3;
   if (/^en[-_]US/i.test(v.lang)) n += 2;
+  if (/microsoft.*(natural|online)/i.test(v.name)) n += 3;
+  if (ROBOTIC.test(v.name)) n -= 3;
   if (NOVELTY.test(v.name)) n -= 6;
   return n;
 }
@@ -21,7 +24,7 @@ export const rankVoices = <T extends VoiceInfo>(voices: T[]): T[] =>
 
 export interface VoicePrefs { name: string | null; rate: number }
 const KEY = 'hahn-heroes-voice';
-export const DEFAULT_RATE = 0.85;
+export const DEFAULT_RATE = 0.8;
 export function loadPrefs(): VoicePrefs {
   try {
     const p = JSON.parse(localStorage.getItem(KEY) ?? '{}');

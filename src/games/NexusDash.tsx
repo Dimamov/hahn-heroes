@@ -168,9 +168,11 @@ function draw(ctx: CanvasRenderingContext2D, s: DashState, sparks: Spark[], trai
       ctx.beginPath(); ctx.moveTo(o.x, GROUND); ctx.lineTo(o.x + o.w * 0.25, o.top); ctx.lineTo(o.x + o.w * 0.5, GROUND); ctx.lineTo(o.x + o.w * 0.75, o.top); ctx.lineTo(o.x + o.w, GROUND); ctx.closePath(); ctx.fill();
       ctx.fillStyle = '#f0abfc'; ctx.fillRect(o.x + o.w * 0.2, o.top + 3, 1.2, 1.2); ctx.fillRect(o.x + o.w * 0.65, o.top + 3, 1.2, 1.2);
     } else {
-      ctx.fillStyle = '#22d3ee'; ctx.fillRect(o.x, o.top, o.w, o.h);
-      ctx.fillStyle = '#ecfeff'; ctx.fillRect(o.x, o.top + 2, o.w, 1);
-      ctx.fillStyle = '#0891b2'; ctx.fillRect(o.x - 1, o.top - 1, 2, o.h + 2); ctx.fillRect(o.x + o.w - 1, o.top - 1, 2, o.h + 2);
+      const bottom = o.top + o.h; // the glowing bar sits at the bottom of a beam that hangs from the top
+      ctx.fillStyle = '#0e7490'; ctx.fillRect(o.x + o.w / 2 - 1, o.top, 2, o.h - 5);
+      ctx.fillStyle = '#22d3ee'; ctx.fillRect(o.x, bottom - 6, o.w, 6);
+      ctx.fillStyle = '#ecfeff'; ctx.fillRect(o.x, bottom - 4, o.w, 1);
+      ctx.fillStyle = '#0891b2'; ctx.fillRect(o.x - 1, bottom - 7, 2, 8); ctx.fillRect(o.x + o.w - 1, bottom - 7, 2, 8);
     }
   }
   // pickups
