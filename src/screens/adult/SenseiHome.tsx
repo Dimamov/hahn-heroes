@@ -11,8 +11,9 @@ import { CodeMaker } from './CodeMaker.tsx';
 import { PushSettings } from '../../components/PushSettings.tsx';
 import { SenseiInbox } from './SenseiInbox.tsx';
 import { PagedList } from '../../components/PagedList.tsx';
+import { ParentHome } from './ParentHome.tsx';
 
-type View = 'home' | 'challenge' | 'events' | 'delete' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes' | 'kind' | 'usage' | 'email' | 'inbox' | 'push';
+type View = 'home' | 'family' | 'challenge' | 'events' | 'delete' | 'card' | 'teachers' | 'announce' | 'trivia' | 'traffic' | 'chat' | 'drawings' | 'characters' | 'secret' | 'codes' | 'kind' | 'usage' | 'email' | 'inbox' | 'push';
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
@@ -23,6 +24,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
   useEffect(() => { reload(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const back = () => { reload(); setView('home'); };
 
+  if (view === 'family') return <ParentHome backend={backend} adult={adult} onSignOut={back} />;
   if (view === 'teachers') return <Teachers backend={backend} onBack={back} />;
   if (view === 'push') return <main className="screen"><ScreenBar title="Notifications" onBack={back} /><PushSettings backend={backend} role="sensei" /></main>;
   if (view === 'inbox') return <SenseiInbox backend={backend} onBack={back} />;
@@ -57,6 +59,7 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
       )}
       <div className="grow" />
       <div className="btn-grid">
+        <button className="btn primary" onClick={() => setView('family')}>👪 Parent portal (my children)</button>
         <button className="btn" onClick={() => setView('characters')}>🧙 Teacher characters</button>
         <button className="btn" onClick={() => setView('secret')}>✨ Weekly secret</button>
         <button className="btn" onClick={() => setView('codes')}>🔑 Secret codes</button>
