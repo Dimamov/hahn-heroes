@@ -19,6 +19,7 @@ const cap = (d: string) => d.charAt(0).toUpperCase() + d.slice(1, 3);
 
 export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; adult: Adult; onSignOut: () => void }) {
   const [view, setView] = useState<View>('home');
+  const [page, setPage] = useState<1 | 2>(1);
   const [overview, setOverview] = useState<SenseiOverview | null>(null);
   const reload = () => backend.senseiOverview().then(setOverview).catch(() => {});
   useEffect(() => { reload(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -58,28 +59,35 @@ export function SenseiHome({ backend, adult, onSignOut }: { backend: Backend; ad
         </div>
       )}
       <div className="grow" />
-      <div className="btn-grid">
-        <button className="btn primary" onClick={() => setView('family')}>👪 Parent portal (my children)</button>
-        <button className="btn" onClick={() => setView('characters')}>🧙 Teacher characters</button>
-        <button className="btn" onClick={() => setView('secret')}>✨ Weekly secret</button>
-        <button className="btn" onClick={() => setView('codes')}>🔑 Secret codes</button>
-        <button className="btn" onClick={() => setView('kind')}>💛 Kindness</button>
-        <button className="btn" onClick={() => setView('card')}>🎁 Give a card</button>
-        <button className="btn" onClick={() => setView('chat')}>💬 Chat unlocks</button>
-        <button className="btn" onClick={() => setView('email')}>📧 Email help</button>
-        <button className="btn" onClick={() => setView('drawings')}>🚩 Drawing reports</button>
-        <button className="btn" onClick={() => setView('traffic')}>📈 Players and traffic</button>
-        <button className="btn" onClick={() => setView('usage')}>🗓 Monthly report</button>
-        <button className="btn" onClick={() => setView('teachers')}>Teachers to approve{overview && overview.pendingTeachers > 0 ? ` (${overview.pendingTeachers})` : ''}</button>
-        <button className="btn" onClick={() => setView('inbox')}>📬 Inbox: messages, bugs, ideas</button>
-        <button className="btn" onClick={() => setView('push')}>🔔 Notifications on this device</button>
-        <button className="btn" onClick={() => setView('announce')}>📣 Post an announcement</button>
-        <button className="btn" onClick={() => setView('challenge')}>🏁 Weekly House challenge</button>
-        <button className="btn" onClick={() => setView('events')}>🍂 Seasonal events</button>
-        <button className="btn" onClick={() => setView('delete')}>🗑️ Delete a hero</button>
-        <button className="btn" onClick={() => setView('trivia')}>🎤 Trivia Night time</button>
-        <RickrollButton backend={backend} />
-      </div>
+      {page === 1 ? (
+        <div className="btn-grid">
+          <button className="btn primary" onClick={() => setView('family')}>👪 Parent portal (my children)</button>
+          <button className="btn" onClick={() => setView('inbox')}>📬 Inbox: messages, bugs, ideas</button>
+          <button className="btn" onClick={() => setView('announce')}>📣 Post an announcement</button>
+          <button className="btn" onClick={() => setView('push')}>🔔 Notifications on this device</button>
+          <button className="btn" onClick={() => setView('teachers')}>Teachers to approve{overview && overview.pendingTeachers > 0 ? ` (${overview.pendingTeachers})` : ''}</button>
+          <RickrollButton backend={backend} />
+          <button className="btn ghost" onClick={() => setPage(2)}>More tools ▶ (page 1 of 2)</button>
+        </div>
+      ) : (
+        <div className="btn-grid">
+          <button className="btn ghost" onClick={() => setPage(1)}>◀ Back (page 2 of 2)</button>
+          <button className="btn" onClick={() => setView('characters')}>🧙 Teacher characters</button>
+          <button className="btn" onClick={() => setView('secret')}>✨ Weekly secret</button>
+          <button className="btn" onClick={() => setView('codes')}>🔑 Secret codes</button>
+          <button className="btn" onClick={() => setView('kind')}>💛 Kindness</button>
+          <button className="btn" onClick={() => setView('card')}>🎁 Give a card</button>
+          <button className="btn" onClick={() => setView('chat')}>💬 Chat unlocks</button>
+          <button className="btn" onClick={() => setView('email')}>📧 Email help</button>
+          <button className="btn" onClick={() => setView('drawings')}>🚩 Drawing reports</button>
+          <button className="btn" onClick={() => setView('traffic')}>📈 Players and traffic</button>
+          <button className="btn" onClick={() => setView('usage')}>🗓 Monthly report</button>
+          <button className="btn" onClick={() => setView('challenge')}>🏁 Weekly House challenge</button>
+          <button className="btn" onClick={() => setView('events')}>🍂 Seasonal events</button>
+          <button className="btn" onClick={() => setView('trivia')}>🎤 Trivia Night time</button>
+          <button className="btn" onClick={() => setView('delete')}>🗑️ Delete a hero</button>
+        </div>
+      )}
     </main>
   );
 }
