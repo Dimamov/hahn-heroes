@@ -1401,3 +1401,6 @@ html, body { background: #0b0a24; }
 .home2 > .episodes-banner .feature-text b { font-size: clamp(1.6rem, 4.2vh, 2.4rem); }
 .art-tiles .sensei-bar { grid-column: span 2; flex-direction: row; text-align: left; justify-content: flex-start; padding: 6px 14px; }
 .art-tiles .sensei-bar small { display: block; }
+
+.tut-icon { position: relative; min-height: 3.4rem; }
+.tut-dot { position: static; display: inline-block; width: 44px; height: 44px; }

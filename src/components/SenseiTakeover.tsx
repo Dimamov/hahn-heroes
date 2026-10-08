@@ -10,6 +10,7 @@ interface Msg { key: string; title: string; text: string; reward: number; kind: 
 export function SenseiTakeover({ backend, heroId, paused, onDone }: { backend: Backend; heroId: string; paused: boolean; onDone: () => void }) {
   const [queue, setQueue] = useState<Msg[]>([]);
   const busy = useRef(false);
+  const shown = useRef(0);
 
   const check = useCallback(async () => {
     if (busy.current) return;
@@ -29,6 +30,11 @@ export function SenseiTakeover({ backend, heroId, paused, onDone }: { backend: B
   }, [backend]);
 
   useEffect(() => { if (!paused && queue.length === 0) check(); }, [paused, heroId, check]); // eslint-disable-line react-hooks/exhaustive-deps
+  // New messages from the Sensei take over the screen soon after they are sent, not only when the app opens.
+  useEffect(() => {
+    const id = window.setInterval(() => { if (document.visibilityState === 'visible' && !paused && shown.current === 0) check(); }, 30000);
+    return () => window.clearInterval(id);
+  }, [check, paused]);
   useEffect(() => {
     const on = () => { if (document.visibilityState === 'visible' && !paused) check(); };
     document.addEventListener('visibilitychange', on);
@@ -44,6 +50,7 @@ export function SenseiTakeover({ backend, heroId, paused, onDone }: { backend: B
       onDone();
     }
   };
+  shown.current = queue.length;
   const m = queue[0];
   useEffect(() => {
     if (!m) return;

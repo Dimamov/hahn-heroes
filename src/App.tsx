@@ -9,6 +9,7 @@ import { SignIn } from './screens/SignIn.tsx';
 import { Home } from './screens/Home.tsx';
 import { Destination } from './screens/Destination.tsx';
 import { InstallPrompt } from './components/InstallPrompt.tsx';
+import { Tutorial } from './components/Tutorial.tsx';
 import { ParentLinkPrompt } from './components/ParentLinkPrompt.tsx';
 import { SenseiTakeover } from './components/SenseiTakeover.tsx';
 import { SenseiContact } from './screens/SenseiContact.tsx';
@@ -228,6 +229,7 @@ export default function App({ practice, onExit }: { practice?: Backend; onExit?:
     <SessionContext.Provider value={session}>
       <InstallPrompt />
       <ParentLinkPrompt />
+      <Tutorial />
       <SenseiTakeover backend={backend} heroId={hero.id} paused={screen.startsWith('game:') || !!quizId || !!practiceSubject} onDone={() => { refresh().catch(() => undefined); }} />
       {screen === 'home' && <Home />}
       {screen === 'profile' && <Profile />}
