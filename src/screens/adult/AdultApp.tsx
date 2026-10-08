@@ -27,7 +27,7 @@ function SenseiShell({ backend, adult, onSignOut, onPrivacy, renderPractice }: O
           : !practicing || !renderPractice ? <SenseiHome backend={backend} adult={adult} onSignOut={onSignOut} />
             : practice ? renderPractice(practice, () => pick('sensei')) : <main className="screen center"><div className="spinner" aria-label="Loading" /></main>}
       </div>
-      {renderPractice && (
+      {renderPractice && view !== 'family' && (
         <nav className="view-switch" aria-label="Switch view">
           {VIEWS.map((v) => <button key={v.id} className={v.id === view ? 'on' : ''} aria-pressed={v.id === view} onClick={() => pick(v.id)}>{v.label}</button>)}
           {practicing && <small>Practice view: nothing here is real or saved.</small>}
